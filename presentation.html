@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI כמנוע חשיבה ל-UI/UX | שלי אור גיסר</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=Heebo:wght@300;400;500;700;900&display=swap');
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg-dark: #0f0a1a;
+    --bg-card: rgba(255,255,255,0.06);
+    --accent-pink: #f093fb;
+    --accent-purple: #ba68c8;
+    --accent-blue: #81d4fa;
+    --accent-amber: #ffca28;
+    --accent-red: #ef5350;
+    --accent-green: #66bb6a;
+    --text-primary: #f5f0ff;
+    --text-secondary: rgba(245,240,255,0.7);
+    --text-muted: rgba(245,240,255,0.45);
+    --gradient-1: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-2: linear-gradient(135deg, #ba68c8 0%, #81d4fa 100%);
+    --gradient-3: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  body {
+    font-family: 'Heebo', 'Assistant', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ─── Slide Engine ─── */
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; opacity: 1; }
+
+  .slide-inner {
+    max-width: 1100px;
+    width: 100%;
+    text-align: right;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ─── Background Effects ─── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(186,104,200,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(129,212,250,0.06) 0%, transparent 60%);
+    z-index: 0;
+    animation: bgFloat 20s ease-in-out infinite;
+  }
+  @keyframes bgFloat {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    33% { transform: translate(2%,-1%) rotate(1deg); }
+    66% { transform: translate(-1%,2%) rotate(-1deg); }
+  }
+
+  /* ─── Typography ─── */
+  .slide-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent-pink);
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  h1.mega {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h1.title {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+
+  h2.subtitle {
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+  }
+
+  h2.section-title {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+
+  h3.section-sub {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+  }
+
+  /* ─── Components ─── */
+  .cards {
+    display: grid;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .cards.cols-2 { grid-template-columns: 1fr 1fr; }
+  .cards.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cards.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .cards.cols-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 28px 24px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(186,104,200,0.3);
+    transform: translateY(-2px);
+  }
+
+  .card-num {
+    font-size: 36px;
+    font-weight: 900;
+    background: var(--gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .card-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .card-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .bullets {
+    list-style: none;
+    margin-top: 16px;
+  }
+  .bullets li {
+    font-size: 22px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    padding: 8px 20px 8px 0;
+    border-right: 3px solid transparent;
+    margin-bottom: 4px;
+    transition: all 0.3s ease;
+  }
+  .bullets li::before {
+    content: '—';
+    margin-left: 12px;
+    color: var(--accent-purple);
+    font-weight: 700;
+  }
+  .bullets li strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .bullets li.highlight-line {
+    border-right-color: var(--accent-pink);
+    background: rgba(240,147,251,0.05);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .quote-block {
+    background: rgba(240,147,251,0.06);
+    border-right: 4px solid var(--accent-pink);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+    margin: 24px 0;
+    font-size: 22px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+  .quote-block .quote-source {
+    display: block;
+    margin-top: 12px;
+    font-size: 15px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+  }
+  .compare-box {
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+  .compare-box.bad {
+    background: rgba(239,83,80,0.08);
+    border: 1px solid rgba(239,83,80,0.2);
+  }
+  .compare-box.good {
+    background: rgba(102,187,106,0.08);
+    border: 1px solid rgba(102,187,106,0.2);
+  }
+  .compare-label {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .compare-box.bad .compare-label { color: var(--accent-red); }
+  .compare-box.good .compare-label { color: var(--accent-green); }
+  .compare-text {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    direction: ltr;
+    text-align: left;
+    font-family: 'Courier New', monospace;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    margin: 30px 0;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: 72px;
+    font-weight: 900;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .table-wrap {
+    margin: 24px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    background: rgba(186,104,200,0.15);
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-pink);
+    text-align: right;
+  }
+  td {
+    padding: 14px 20px;
+    font-size: 18px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+  }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  td strong { color: var(--text-primary); }
+
+  .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 4px;
+  }
+  .tag.pink { background: rgba(240,147,251,0.15); color: var(--accent-pink); }
+  .tag.blue { background: rgba(129,212,250,0.15); color: var(--accent-blue); }
+  .tag.amber { background: rgba(255,202,40,0.15); color: var(--accent-amber); }
+  .tag.green { background: rgba(102,187,106,0.15); color: var(--accent-green); }
+  .tag.red { background: rgba(239,83,80,0.15); color: var(--accent-red); }
+
+  /* centered */
+  .centered { text-align: center; }
+  .centered h1.title, .centered h2.section-title { text-align: center; }
+  .centered h2.subtitle, .centered h3.section-sub { text-align: center; }
+
+  .section-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .section-divider .part-num {
+    font-size: 120px;
+    font-weight: 900;
+    background: var(--gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 30px 0;
+    direction: ltr;
+  }
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 160px;
+  }
+  .flow-step .step-num {
+    font-size: 13px;
+    color: var(--accent-pink);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .flow-step .step-text {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .flow-arrow {
+    font-size: 24px;
+    color: var(--accent-purple);
+    opacity: 0.5;
+  }
+
+  .layers-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .layer-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px 24px;
+    transition: all 0.3s;
+  }
+  .layer-item:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(186,104,200,0.3);
+  }
+  .layer-num {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--accent-purple);
+    min-width: 40px;
+    text-align: center;
+  }
+  .layer-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 180px;
+  }
+  .layer-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
+
+  /* ─── Footer ─── */
+  .slide-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    left: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    z-index: 10;
+  }
+
+  /* ─── Progress Bar ─── */
+  .progress-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    height: 3px;
+    background: var(--gradient-1);
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* ─── Nav ─── */
+  .nav-hint {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: var(--text-muted);
+    z-index: 100;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .timer-display {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    z-index: 100;
+    font-family: 'Courier New', monospace;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .timer-display:hover { color: var(--accent-pink); }
+  .timer-display.running { color: var(--accent-green); }
+
+  .slide-counter {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    z-index: 100;
+    font-family: 'Courier New', monospace;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 14px;
+    border-radius: 8px;
+  }
+
+  /* ─── Speaker Notes (press N) ─── */
+  .speaker-notes {
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(186,104,200,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    z-index: 200;
+    backdrop-filter: blur(20px);
+  }
+  .speaker-notes.visible { display: block; }
+  .speaker-notes h4 {
+    color: var(--accent-pink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .slide { padding: 30px 24px; }
+    h1.mega { font-size: 40px; }
+    h1.title { font-size: 32px; }
+    h2.section-title { font-size: 30px; }
+    h2.subtitle { font-size: 20px; }
+    .cards.cols-3, .cards.cols-4, .cards.cols-5 { grid-template-columns: 1fr 1fr; }
+    .compare { grid-template-columns: 1fr; }
+    .bullets li { font-size: 18px; }
+    .stat-num { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="timer-display" id="timer" onclick="toggleTimer()">00:00 | לחצי להתחיל טיימר</div>
+<div class="slide-counter" id="slideCounter">1 / 29</div>
+<div class="progress-bar" id="progressBar"></div>
+<div class="nav-hint">← → חיצי מקלדת לניווט &nbsp;|&nbsp; N = הערות מרצה &nbsp;|&nbsp; F = מסך מלא</div>
+
+<div class="speaker-notes" id="speakerNotes"></div>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════ SLIDE 1: COVER ═══════════ -->
+<div class="slide active" data-notes="פתיחה. תני לקהל רגע להתיישב. חייכי. התחילי רק כשיש שקט.">
+  <div class="slide-inner centered">
+    <div class="slide-label">שלי אור גיסר &nbsp;|&nbsp; @AI.GOS &nbsp;|&nbsp; Gitam BBDO</div>
+    <h1 class="mega">AI כמנוע חשיבה<br>ל-UI/UX</h1>
+    <h2 class="subtitle">איך מחלצים לוגיקה עיצובית ממסכים קיימים<br>ומתרגמים אותה לכיוון קריאטיבי, עקרונות וכללי UI פרומפטביליים</h2>
+    <div style="margin-top: 24px;">
+      <span class="tag pink">20 דקות</span>
+      <span class="tag blue">פרקטי</span>
+      <span class="tag amber">עם דוגמאות</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 2: THE QUESTION ═══════════ -->
+<div class="slide" data-notes="0:00 — תשאלי את השאלה ותעצרי. תני לקהל לחשוב 3 שניות. זה הרגע שלכם ליצור חיבור.">
+  <div class="slide-inner centered">
+    <h1 class="title" style="font-size:48px; line-height:1.3;">
+      &ldquo;אתם <span style="color:var(--accent-pink)">יודעים</span> שזה עובד.<br>
+      אתם <span style="color:var(--accent-blue)">לא יכולים</span> להסביר למה.&rdquo;
+    </h1>
+    <div style="margin-top: 40px;">
+      <div class="cards cols-3">
+        <div class="card centered">
+          <span class="card-icon">👁️</span>
+          <div class="card-title">הרגשה</div>
+          <div class="card-text">≠ הסבר</div>
+        </div>
+        <div class="card centered">
+          <span class="card-icon">💡</span>
+          <div class="card-title">אינטואיציה</div>
+          <div class="card-text">≠ שפה</div>
+        </div>
+        <div class="card centered">
+          <span class="card-icon">🔓</span>
+          <div class="card-title">הפער הזה</div>
+          <div class="card-text">= ההזדמנות</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 3: DEFINITION ═══════════ -->
+<div class="slide" data-notes="0:45 — הדגישי את ההבדל. AI לא מחליף — הוא עוזר לראות. זה המסר המרכזי של כל ההרצאה.">
+  <div class="slide-inner">
+    <div class="slide-label">ההגדרה</div>
+    <h2 class="section-title">AI כמנוע חשיבה — לא כמנוע ייצור</h2>
+    <div class="compare" style="margin-top:30px;">
+      <div class="compare-box bad" style="text-align:right; direction:rtl;">
+        <span class="compare-label">❌ לא זה</span>
+        <div style="font-size:22px; color:var(--text-primary); font-weight:600; margin-bottom:12px;">מכונת ייצור</div>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.6;">
+          "תעצב לי דשבורד"<br>
+          "תייצר לי 10 וריאציות"<br>
+          "תחליף את המעצב"
+        </div>
+      </div>
+      <div class="compare-box good" style="text-align:right; direction:rtl;">
+        <span class="compare-label">✅ כן זה</span>
+        <div style="font-size:22px; color:var(--text-primary); font-weight:600; margin-bottom:12px;">מנוע חשיבה</div>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.6;">
+          "למה המסך הזה עובד?"<br>
+          "מה הלוגיקה מאחורי ההיררכיה?"<br>
+          "תרגם לי תובנות לכללים"
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:24px; text-align:center;">
+      <span class="tag pink">שפה</span>
+      <span class="tag blue">מבנה</span>
+      <span class="tag amber">שיטתיות</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 4: PIPELINE ═══════════ -->
+<div class="slide" data-notes="1:30 — הציגי את הפייפליין במהירות. אל תעצרי פה — זה מפת דרכים, הפירוט בהמשך.">
+  <div class="slide-inner centered">
+    <div class="slide-label">התהליך</div>
+    <h2 class="section-title">5 צעדים — ממסך לכיוון קריאטיבי</h2>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">01</div>
+        <div class="step-text">קליטת מסכים</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">02</div>
+        <div class="step-text">חשיבה ויזואלית</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">03</div>
+        <div class="step-text">סינתזת תבניות</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">04</div>
+        <div class="step-text">תרגום קריאטיבי</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">05</div>
+        <div class="step-text">פלט שמיש</div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="cards cols-3">
+        <div class="card centered">
+          <div class="card-title">Insights</div>
+          <div class="card-text">תובנות + עקרונות</div>
+        </div>
+        <div class="card centered">
+          <div class="card-title">Rules</div>
+          <div class="card-text">כללי UI מדידים</div>
+        </div>
+        <div class="card centered">
+          <div class="card-title">Prompts</div>
+          <div class="card-text">פרומפטים מוכנים</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 5: SECTION DIVIDER — PART 1 ═══════════ -->
+<div class="slide" data-notes="2:00 — מעבר לחלק 1. תעצרי שנייה, תשני קצב.">
+  <div class="slide-inner section-divider">
+    <div class="part-num">01</div>
+    <h2 class="section-title" style="text-align:center;">מסך זה לא תמונה — זה טיעון</h2>
+    <h3 class="section-sub" style="text-align:center;">2:00–5:30</h3>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 6: SCREEN = ARGUMENT ═══════════ -->
+<div class="slide" data-notes="2:00 — 'כל מסך הוא טיעון ויזואלי'. תגידי את זה באמירה חדה ותעצרי רגע.">
+  <div class="slide-inner">
+    <div class="slide-label">הרעיון המרכזי</div>
+    <h2 class="section-title">מסך UI הוא <span style="color:var(--accent-pink)">טיעון ויזואלי</span></h2>
+    <ul class="bullets">
+      <li class="highlight-line"><strong>מישהו החליט</strong> מה תראו קודם, מה שני, ומה אחרון</li>
+      <li><strong>מישהו החליט</strong> איפה לשים חיכוך ואיפה להסיר אותו</li>
+      <li><strong>מישהו החליט</strong> מה מרגיש גדול ומה מרגיש קטן</li>
+    </ul>
+    <div class="quote-block" style="margin-top:30px;">
+      מה שמעניין במסך זה לא <strong>מה</strong> כתוב עליו — אלא <strong>איך</strong> הוא בנוי.
+      <br>מבנה &gt; תוכן.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 7: 5 LAYERS ═══════════ -->
+<div class="slide" data-notes="3:00 — עברי על 5 השכבות. תני דוגמה קצרה לכל אחת. אל תעמיקי — רק תטעימי.">
+  <div class="slide-inner">
+    <div class="slide-label">חשיבה ויזואלית</div>
+    <h2 class="section-title">5 שכבות שחושפות לוגיקה</h2>
+    <div class="layers-stack">
+      <div class="layer-item">
+        <div class="layer-num">1</div>
+        <div class="layer-title">צפיפות ויזואלית</div>
+        <div class="layer-desc">דליל / מאוזן / צפוף — מה המותג מרגיש לגבי פשטות?</div>
+      </div>
+      <div class="layer-item">
+        <div class="layer-num">2</div>
+        <div class="layer-title">תפקידי צבע</div>
+        <div class="layer-desc">לא "איזה צבעים" — אלא מה הצבע של הרקע, הפעולה, והאקסנט <strong>עושים</strong></div>
+      </div>
+      <div class="layer-item">
+        <div class="layer-num">3</div>
+        <div class="layer-title">לוגיקת היררכיה</div>
+        <div class="layer-desc">מה תופס את העין קודם? שני? שלישי? → סדר עדיפויות</div>
+      </div>
+      <div class="layer-item">
+        <div class="layer-num">4</div>
+        <div class="layer-title">לוגיקת CTA</div>
+        <div class="layer-desc">איפה מעודדים פעולה? כמה בחוזקה? לוחש או צועק?</div>
+      </div>
+      <div class="layer-item">
+        <div class="layer-num">5</div>
+        <div class="layer-title">התנהגות רכיבים</div>
+        <div class="layer-desc">כרטיסים, טפסים, ניווט — לא רק *מה* יש, אלא *איך* זה מתנהג</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 8: DENSITY ═══════════ -->
+<div class="slide" data-notes="3:30 — דוגמאות חיות. Apple=דליל=פרימיום. Notion=מאוזן. Bloomberg=צפוף=כוח.">
+  <div class="slide-inner">
+    <div class="slide-label">שכבה 1</div>
+    <h2 class="section-title">צפיפות ויזואלית = אמירה</h2>
+    <div class="cards cols-3">
+      <div class="card centered">
+        <span class="card-icon" style="font-size:50px;">🍎</span>
+        <div class="card-title">דליל</div>
+        <div class="card-text" style="font-size:15px;">
+          פרימיום, נשימה, "אנחנו לא צריכים לצעוק"<br><br>
+          <span class="tag pink">Apple</span>
+          <span class="tag pink">Stripe</span>
+        </div>
+      </div>
+      <div class="card centered">
+        <span class="card-icon" style="font-size:50px;">📋</span>
+        <div class="card-title">מאוזן</div>
+        <div class="card-text" style="font-size:15px;">
+          מקצועי, נגיש, "הכל במקום"<br><br>
+          <span class="tag blue">Notion</span>
+          <span class="tag blue">Linear</span>
+        </div>
+      </div>
+      <div class="card centered">
+        <span class="card-icon" style="font-size:50px;">📊</span>
+        <div class="card-title">צפוף</div>
+        <div class="card-text" style="font-size:15px;">
+          מידע-ראשון, כוח למשתמש מקצועי<br><br>
+          <span class="tag amber">Bloomberg</span>
+          <span class="tag amber">Jira</span>
+        </div>
+      </div>
+    </div>
+    <div class="quote-block" style="margin-top:20px;">
+      אין צפיפות "נכונה". יש צפיפות שמתאימה <strong>למה שהמסך מנסה להשיג</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 9: CTA LOGIC ═══════════ -->
+<div class="slide" data-notes="4:00 — זה שקף חזק. Airbnb לוחש, Booking צועק. תני לקהל להרגיש את ההבדל.">
+  <div class="slide-inner">
+    <div class="slide-label">שכבה 4</div>
+    <h2 class="section-title">Airbnb לוחש. Booking צועק.</h2>
+    <h3 class="section-sub">שתי אסטרטגיות. שתיהן עובדות. הלוגיקה — שונה לחלוטין.</h3>
+    <div class="compare">
+      <div class="compare-box" style="background: rgba(240,147,251,0.05); border:1px solid rgba(240,147,251,0.15); text-align:right;">
+        <span class="compare-label" style="color:var(--accent-pink);">AIRBNB — לוחש</span>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.8;">
+          CTA שקט, משתלב בעיצוב<br>
+          אווירה לפני פעולה<br>
+          "קח את הזמן, תרגיש בבית"<br>
+          <strong>מייעל ל:</strong> חוויה רגשית
+        </div>
+      </div>
+      <div class="compare-box" style="background: rgba(239,83,80,0.05); border:1px solid rgba(239,83,80,0.15); text-align:right;">
+        <span class="compare-label" style="color:var(--accent-red);">BOOKING — צועק</span>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.8;">
+          Urgency, scarcity, FOMO<br>
+          "רק 2 חדרים נשארו!"<br>
+          CTA אדום, גדול, חוזר<br>
+          <strong>מייעל ל:</strong> המרה מיידית
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:20px; font-size:20px; color:var(--accent-purple); font-weight:600;">
+      השאלה היא לא "מה הצבע?" — השאלה היא "מה הלוגיקה?"
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 10: CARD PATTERN ═══════════ -->
+<div class="slide" data-notes="4:30 — דוגמה קונקרטית. תמונה→כותרת→כפתור = רצף עיבוד מכוון. אינטואיציה→שיטתיות.">
+  <div class="slide-inner">
+    <div class="slide-label">דוגמה</div>
+    <h2 class="section-title">תמונה → כותרת → כפתור<br>= רצף עיבוד מכוון</h2>
+    <div class="cards cols-3" style="margin-top:30px;">
+      <div class="card centered" style="border-color: rgba(240,147,251,0.3);">
+        <span class="card-num" style="font-size:48px;">🖼️</span>
+        <div class="card-title">שלב 1: אמוציונלי</div>
+        <div class="card-text">תמונה — תופסת את העין, יוצרת רגש</div>
+      </div>
+      <div class="card centered" style="border-color: rgba(129,212,250,0.3);">
+        <span class="card-num" style="font-size:48px;">📝</span>
+        <div class="card-title">שלב 2: רציונלי</div>
+        <div class="card-text">כותרת + טקסט — מסביר, מצדיק</div>
+      </div>
+      <div class="card centered" style="border-color: rgba(102,187,106,0.3);">
+        <span class="card-num" style="font-size:48px;">👆</span>
+        <div class="card-title">שלב 3: אקטיבי</div>
+        <div class="card-text">כפתור — מוביל לפעולה</div>
+      </div>
+    </div>
+    <div class="quote-block" style="margin-top:24px;">
+      זה לא "עיצוב נפוץ". זו <strong>החלטה מודעת</strong> על סדר עיבוד מידע.<br>
+      אינטואיציה אנושית → שיטתיות AI.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 11: TOOLS ═══════════ -->
+<div class="slide" data-notes="5:00 — תזכירי את הכלים בקצרה. אל תעמיקי — הם מפרקים, אתם מרכיבים.">
+  <div class="slide-inner">
+    <div class="slide-label">כלים</div>
+    <h2 class="section-title">כלים שעושים את זה היום</h2>
+    <div class="cards cols-3" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-pink);">Visily</div>
+        <div class="card-text">ממסך → ויירפריים עריך. מפרק UI למרכיבים שאפשר לנתח.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-blue);">Uizard</div>
+        <div class="card-text">סורק screenshot + מייצר heatmap תשומת לב. חוזה לאן העין הולכת.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-amber);">Attention Insight</div>
+        <div class="card-text">חוזה מבט עם 90% דיוק. לא צריך בדיקת משתמשים — AI עושה את זה.</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:24px; font-size:20px; color:var(--text-secondary);">
+      הם <strong style="color:var(--text-primary);">מפרקים</strong> — אתם <strong style="color:var(--text-primary);">מרכיבים</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 12: SECTION DIVIDER — PART 2 ═══════════ -->
+<div class="slide" data-notes="5:30 — מעבר לליבה. זה החלק הכי חשוב. האטי קצת.">
+  <div class="slide-inner section-divider">
+    <div class="part-num">02</div>
+    <h2 class="section-title" style="text-align:center;">מתבניות לעקרונות: הליבה</h2>
+    <h3 class="section-sub" style="text-align:center;">5:30–10:00</h3>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 13: AESTHETICS ≠ LOGIC ═══════════ -->
+<div class="slide" data-notes="5:30 — זו הנקודה הכי חשובה בהרצאה. תגידי אותה לאט וברור.">
+  <div class="slide-inner centered">
+    <h2 class="section-title" style="font-size:50px;">
+      הטעות הנפוצה:<br>
+      להסתכל על <span style="color:var(--accent-red);">איך</span><br>
+      במקום על <span style="color:var(--accent-green);">מה</span>
+    </h2>
+    <div class="quote-block" style="margin-top:30px; text-align:center; border-right:none; border-bottom:4px solid var(--accent-pink);">
+      שני אתרים יכולים להיראות שונים לחלוטין —<br>
+      אבל לפעול לפי <strong>אותה לוגיקה</strong> בדיוק:<br><br>
+      שניהם ממזערים בחירות. שניהם דוחפים לפעולה אחת.<br>
+      שניהם מסתירים מורכבות מאחורי progressive disclosure.<br><br>
+      <span style="font-size:24px; color:var(--accent-pink); font-weight:700;">
+        "זה כחול" → "זה ממזער בחירות"
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 14: 4 QUESTIONS ═══════════ -->
+<div class="slide" data-notes="6:30 — ארבע שאלות מעשיות. תבקשי מהקהל לזכור אותן. אלה כלים שלוקחים הביתה.">
+  <div class="slide-inner">
+    <div class="slide-label">כלי חשיבה</div>
+    <h2 class="section-title">4 שאלות שחושפות לוגיקה עיצובית</h2>
+    <div class="cards cols-2" style="margin-top:20px;">
+      <div class="card" style="border-right: 3px solid var(--accent-pink);">
+        <span class="card-num">01</span>
+        <div class="card-title">למה הם מייעלים?</div>
+        <div class="card-text">מהירות? אמון? גילוי? החלטה? כל מסך ממוטב למשהו.</div>
+      </div>
+      <div class="card" style="border-right: 3px solid var(--accent-blue);">
+        <span class="card-num">02</span>
+        <div class="card-title">ממה הם נמנעים?</div>
+        <div class="card-text">טקסט ארוך? צבעים חזקים? אפשרויות? ה"לא" מעניין כמו ה"כן".</div>
+      </div>
+      <div class="card" style="border-right: 3px solid var(--accent-green);">
+        <span class="card-num">03</span>
+        <div class="card-title">איפה הם מפשטים?</div>
+        <div class="card-text">ניווט מינימלי? טופס קצר? CTA יחיד? פישוט = החלטה אקטיבית.</div>
+      </div>
+      <div class="card" style="border-right: 3px solid var(--accent-amber);">
+        <span class="card-num">04</span>
+        <div class="card-title">איפה הם מוסיפים חיכוך בכוונה?</div>
+        <div class="card-text">אישור מחיקה, שלבים ב-checkout, גלילה. חיכוך מכוון = בגרות.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 15: OUTPUT ═══════════ -->
+<div class="slide" data-notes="8:00 — הציגי את הפלט. תדגישי: 3 כיוונים קריאטיביים מאותו מידע = הערך האמיתי.">
+  <div class="slide-inner">
+    <div class="slide-label">הפלט</div>
+    <h2 class="section-title">מה AI מפיק מ-8–15 מסכים</h2>
+    <div class="cards cols-3" style="margin-top:20px;">
+      <div class="card centered" style="border-top: 3px solid var(--accent-pink);">
+        <span class="card-num">8–12</span>
+        <div class="card-title">תובנות עיצוביות</div>
+        <div class="card-text">בשפה אנושית, לא טכנית. "כל המסכים משתמשים בגובה קו 1.6+ ליצירת שקט ויזואלי."</div>
+      </div>
+      <div class="card centered" style="border-top: 3px solid var(--accent-blue);">
+        <span class="card-num">6–10</span>
+        <div class="card-title">עקרונות מוסקים</div>
+        <div class="card-text">"פשטות ניווט = לא פחות אפשרויות, אלא אפשרויות ברורות יותר."</div>
+      </div>
+      <div class="card centered" style="border-top: 3px solid var(--accent-amber);">
+        <span class="card-num">3</span>
+        <div class="card-title">כיוונים קריאטיביים</div>
+        <div class="card-text">
+          <span class="tag green">בטוח</span>
+          <span class="tag blue">ביטחוני</span>
+          <span class="tag pink">רדיקלי</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:24px; text-align:center; font-size:18px; color:var(--text-secondary);">
+      3 כיוונים שונים מ<strong style="color:var(--text-primary);">אותם נתונים בדיוק</strong> — זה הערך
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 16: THE STAT ═══════════ -->
+<div class="slide" data-notes="9:00 — המספר הזה חזק. תני לו רגע. 78% יעילים אבל פחות ממחצית טובים יותר = הפער שאנחנו סוגרים.">
+  <div class="slide-inner centered">
+    <div class="slide-label">Figma AI Report 2025</div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <span class="stat-num">78%</span>
+        <div class="stat-label">מרגישים <strong>יעילים</strong> יותר</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" style="background: var(--gradient-3); -webkit-background-clip:text; background-clip:text;">&lt;50%</span>
+        <div class="stat-label">מרגישים <strong>טובים</strong> יותר</div>
+      </div>
+    </div>
+    <div class="quote-block" style="text-align:center; border-right:none; border-bottom:4px solid var(--accent-pink);">
+      יעילות ≠ איכות<br>
+      AI שעוזר לעבוד מהר ≠ AI שעוזר לחשוב טוב<br><br>
+      <strong style="color:var(--accent-pink);">הפער הזה = מה שאנחנו סוגרים היום</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 17: SECTION DIVIDER — PART 3 ═══════════ -->
+<div class="slide" data-notes="10:00 — חצי מההרצאה. בדקי שאת בזמן. מעבר לחלק הפרקטי ביותר.">
+  <div class="slide-inner section-divider">
+    <div class="part-num">03</div>
+    <h2 class="section-title" style="text-align:center;">תרגום קריאטיבי</h2>
+    <h3 class="section-sub" style="text-align:center;">מתובנות לכיוון עיצובי | 10:00–14:00</h3>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 18: THREE PRODUCTS ═══════════ -->
+<div class="slide" data-notes="10:00 — שלושה מוצרים שמעצב יכול להשתמש בהם ישר. זה התרגום מניתוח לעבודה.">
+  <div class="slide-inner">
+    <div class="slide-label">תרגום קריאטיבי</div>
+    <h2 class="section-title">3 מוצרים שמיד אפשר להשתמש בהם</h2>
+    <div class="cards cols-3" style="margin-top:24px;">
+      <div class="card" style="border-top: 3px solid var(--accent-pink);">
+        <span class="card-num">A</span>
+        <div class="card-title">בריף קריאטיבי קצר</div>
+        <div class="card-text">פסקה אחת שמכוונת צוות שלם. לא 20 עמודים — אמירה חדה.</div>
+      </div>
+      <div class="card" style="border-top: 3px solid var(--accent-blue);">
+        <span class="card-num">B</span>
+        <div class="card-title">כללי UI מדידים</div>
+        <div class="card-text">ריווח, היררכיה, דגש, צפיפות. מספרים — לא תחושות. שמירה כ-JSON.</div>
+      </div>
+      <div class="card" style="border-top: 3px solid var(--accent-green);">
+        <span class="card-num">C</span>
+        <div class="card-title">פרומפטים מוכנים</div>
+        <div class="card-text">Copy-paste ישר ל-Google Stitch, Figma Make, או כל כלי prompt-based.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 19: BRIEF EXAMPLE ═══════════ -->
+<div class="slide" data-notes="10:30 — תקריאי את הבריף בקול. תני לקהל להרגיש איך פסקה אחת נותנת כיוון.">
+  <div class="slide-inner">
+    <div class="slide-label">A — בריף קריאטיבי</div>
+    <h2 class="section-title">פסקה אחת. כיוון שלם.</h2>
+    <div class="quote-block" style="font-size:24px; line-height:1.8; margin-top:30px;">
+      &ldquo;הכיוון הוא <strong>מינימליזם פונקציונלי</strong> — לא מינימליזם &#34;יפה&#34; אלא מינימליזם <strong>שפועל</strong>.
+      כל אלמנט על המסך חייב להצדיק את קיומו.
+      רווח לבן הוא לא ריק — הוא <strong>חלק מההיררכיה</strong>.
+      CTA יחיד בכל מסך, בולט אבל לא צועק.&rdquo;
+    </div>
+    <div style="margin-top:20px; font-size:18px; color:var(--text-muted); text-align:center;">
+      זה לא סתם טקסט — זו <strong style="color:var(--text-primary);">מפת דרכים</strong> לצוות עיצוב
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 20: UI RULES ═══════════ -->
+<div class="slide" data-notes="11:00 — כללים מדידים. תדגישי: מספרים, לא תחושות. אפשר לשמור כ-JSON, לשתף, להשתמש.">
+  <div class="slide-inner">
+    <div class="slide-label">B — כללי UI</div>
+    <h2 class="section-title">כללים מדידים, לא הנחיות מעורפלות</h2>
+    <div class="cards cols-2" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-pink);">ריווח</div>
+        <div class="card-text" style="direction:ltr; text-align:left; font-family: 'Courier New', monospace; font-size:16px;">
+          group-spacing: 24px<br>
+          card-padding: 16px<br>
+          section-gap: 48px
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-blue);">היררכיה</div>
+        <div class="card-text" style="direction:ltr; text-align:left; font-family: 'Courier New', monospace; font-size:16px;">
+          type-levels: 3 max<br>
+          scale-ratio: 1.5<br>
+          weight-range: [400, 700]
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-green);">דגש</div>
+        <div class="card-text" style="direction:ltr; text-align:left; font-family: 'Courier New', monospace; font-size:16px;">
+          primary-cta-per-viewport: 1<br>
+          accent-color-use: actions-only<br>
+          emphasis-method: size + weight
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-amber);">צפיפות</div>
+        <div class="card-text" style="direction:ltr; text-align:left; font-family: 'Courier New', monospace; font-size:16px;">
+          max-elements-above-fold: 7<br>
+          visual-density: sparse<br>
+          whitespace-ratio: 0.4
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:16px;">
+      <span class="tag blue">JSON</span>
+      <span class="tag green">Design Tokens</span>
+      <span class="tag pink">שיתוף צוותי</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 21: PROMPT COMPARISON ═══════════ -->
+<div class="slide" data-notes="11:30 — ההשוואה הכי חשובה. תקריאי את שני הפרומפטים. ההבדל ברור בשנייה.">
+  <div class="slide-inner">
+    <div class="slide-label">C — פרומפטים</div>
+    <h2 class="section-title">פרומפט גנרי מול פרומפט מבוסס-ניתוח</h2>
+    <div class="compare" style="margin-top:20px;">
+      <div class="compare-box bad">
+        <span class="compare-label">❌ גנרי</span>
+        <div class="compare-text" style="font-size:18px;">
+          Design a dashboard
+        </div>
+      </div>
+      <div class="compare-box good">
+        <span class="compare-label">✅ מבוסס-ניתוח</span>
+        <div class="compare-text" style="font-size:14px; line-height:1.7;">
+          SaaS analytics dashboard.<br>
+          Sparse density. Max 5 data cards.<br>
+          Single metric + micro-chart per card.<br>
+          CTA: 1 primary (export),<br>
+          2 secondary (filter, date).<br>
+          Left sidebar, icons only.<br>
+          Gray-50 bg, blue-500 data,<br>
+          amber-500 attention, red-500 alerts.<br>
+          3 type levels. 24px group spacing.
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:16px; font-size:22px; color:var(--accent-pink); font-weight:700;">
+      הראשון נותן dashboard. השני נותן <span style="text-decoration:underline;">את</span> ה-dashboard הנכון.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 22: GOOGLE STITCH ═══════════ -->
+<div class="slide" data-notes="12:00 — Google Stitch = חינמי, מהיר, מייצא ל-Figma. אם יש זמן — תעשי דמו חי.">
+  <div class="slide-inner">
+    <div class="slide-label">כלי</div>
+    <h2 class="section-title">Google Stitch — מפרומפט ל-UI</h2>
+    <div class="cards cols-2" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">מה זה?</div>
+        <ul class="bullets">
+          <li>Google רכשה את <strong>Galileo AI</strong> (I/O 2025)</li>
+          <li>כותבים prompt → מקבלים מסכים + HTML/CSS</li>
+          <li>ייצוא ל-<strong>Figma</strong> בלחיצה אחת</li>
+          <li><strong>Gemini 3</strong> integration (דצמבר 2025)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">למה זה חשוב?</div>
+        <ul class="bullets">
+          <li class="highlight-line"><strong>חינמי לחלוטין</strong></li>
+          <li>פרומפט מבוסס-ניתוח = תוצאה <strong>10x</strong> טובה יותר</li>
+          <li>Standard Mode (מהיר) + Experimental (איכותי)</li>
+          <li>מושלם לקונספטים ראשוניים</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 23: FIGMA MAKE ═══════════ -->
+<div class="slide" data-notes="12:30 — Figma Make = ההקשר הוא הכוח. הוא שולף את הרכיבים של הצוות שלכם.">
+  <div class="slide-inner">
+    <div class="slide-label">כלי</div>
+    <h2 class="section-title">Figma Make — ה-design system שלכם הוא הפרומפט</h2>
+    <ul class="bullets" style="margin-top:20px;">
+      <li>שולף את הכפתורים, הכרטיסים והלייאאוטים <strong>שהצוות כבר משתמש בהם</strong></li>
+      <li>מייצר פרוטוטייפים <strong>on-brand</strong> מהשנייה הראשונה</li>
+      <li>משתמש ב-<strong>Claude 3.7</strong> מתחת למכסה המנוע</li>
+      <li>MCP Server — סורק codebase ומפיק קבצי כללים מובנים</li>
+    </ul>
+    <div class="quote-block" style="margin-top:24px;">
+      ניתוח AI + מערכת עיצוב קיימת = <strong>פרומפט שהוא כבר חצי-מוצר</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 24: SECTION DIVIDER — PART 4 ═══════════ -->
+<div class="slide" data-notes="14:00 — עכשיו הפיל בחדר. דיוק. זה חלק חשוב — תהיי ישירה.">
+  <div class="slide-inner section-divider">
+    <div class="part-num">04</div>
+    <h2 class="section-title" style="text-align:center;">רמת הדיוק</h2>
+    <h3 class="section-sub" style="text-align:center;">למה 70% זה לא מספיק טוב | 14:00–17:00</h3>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 25: ACCURACY TABLE ═══════════ -->
+<div class="slide" data-notes="14:00 — הטבלה אומרת הכל. 20% מול 95%. תני לזה לשקוע. הציטוט של Holst חזק.">
+  <div class="slide-inner">
+    <div class="slide-label">דיוק</div>
+    <h2 class="section-title">70% דיוק = value proposition נורא</h2>
+    <div class="table-wrap" style="margin-top:24px;">
+      <table>
+        <tr><th>כלי / גישה</th><th>דיוק</th></tr>
+        <tr><td>ChatGPT גנרי (2024)</td><td><strong style="color:var(--accent-red);">~20%</strong></td></tr>
+        <tr><td>כלי AI כללי</td><td><strong style="color:var(--accent-amber);">50–75%</strong></td></tr>
+        <tr><td>Baymard UX-Ray 2.0</td><td><strong style="color:var(--accent-green);">95%</strong></td></tr>
+        <tr><td>מומחה אנושי + AI ייעודי</td><td><strong style="color:var(--accent-pink);">הכי טוב ✦</strong></td></tr>
+      </table>
+    </div>
+    <div class="quote-block" style="margin-top:20px;">
+      &ldquo;CEO עשוי לחשוב ש-70% דיוק מקובל. בפועל — זה value proposition נורא.&rdquo;
+      <span class="quote-source">— Christian Holst, Baymard Institute</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 26: CLASSIFICATION VS ANALYSIS ═══════════ -->
+<div class="slide" data-notes="15:30 — ההבחנה הכי חשובה. AI מסווג מצוין. AI מנתח — פחות. אתם = הניתוח.">
+  <div class="slide-inner">
+    <div class="slide-label">הפריצה המתודולוגית</div>
+    <h2 class="section-title">סיווג ≠ ניתוח</h2>
+    <div class="compare" style="margin-top:24px;">
+      <div class="compare-box good" style="text-align:right;">
+        <span class="compare-label" style="font-size:16px;">✅ סיווג — CLASSIFICATION</span>
+        <div style="font-size:20px; color:var(--text-primary); font-weight:600; margin:12px 0;">"מה התבנית הזו?"</div>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.6;">
+          Sticky header? Hamburger menu?<br>Card layout? Sidebar nav?<br><br>
+          <strong style="color:var(--accent-green);">AI = 95% דיוק</strong>
+        </div>
+      </div>
+      <div class="compare-box" style="background: rgba(255,202,40,0.08); border:1px solid rgba(255,202,40,0.2); text-align:right;">
+        <span class="compare-label" style="color:var(--accent-amber); font-size:16px;">⚠️ ניתוח — ANALYSIS</span>
+        <div style="font-size:20px; color:var(--text-primary); font-weight:600; margin:12px 0;">"האם זו הבחירה הנכונה פה?"</div>
+        <div style="font-size:17px; color:var(--text-secondary); line-height:1.6;">
+          דורש הבנת הקשר, משתמשים,<br>מטרות עסקיות<br><br>
+          <strong style="color:var(--accent-amber);">AI צריך אתכם</strong>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:20px; font-size:20px; color:var(--text-secondary);">
+      <strong style="color:var(--accent-pink);">AI ממוצע &lt; מומחה אנושי &lt; AI ייעודי + מומחה</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 27: 4 RULES ═══════════ -->
+<div class="slide" data-notes="16:30 — 4 כללים פרקטיים. תקריאי בקצרה. אלה כללים שלוקחים הביתה.">
+  <div class="slide-inner">
+    <div class="slide-label">כללי אצבע</div>
+    <h2 class="section-title">4 כללים לעבודה עם AI כמנוע חשיבה</h2>
+    <div class="cards cols-2" style="margin-top:20px;">
+      <div class="card">
+        <span class="card-icon">🏷️</span>
+        <div class="card-title">סמכו עליו לסיווג</div>
+        <div class="card-text">לזהות תבניות, לתייג רכיבים, לארגן מידע. בזה הוא מצוין.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">❓</span>
+        <div class="card-title">תשאלו שאלות</div>
+        <div class="card-text">"למה המסך בנוי ככה?" — ותבדקו את התשובות בעצמכם.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🛡️</span>
+        <div class="card-title">אל תסמכו על ניתוח עיוור</div>
+        <div class="card-text">ההערכה "טוב/רע" = עדיין שלכם. AI לא מבין הקשר עסקי.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎯</span>
+        <div class="card-title">ייצרו אפשרויות, בחרו אתם</div>
+        <div class="card-text">AI מייצר 3 כיוונים. אתם בוחרים, מערבבים, משנים. אתם הבוס.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 28: DESIGN SYSTEMS FOR AI ═══════════ -->
+<div class="slide" data-notes="17:00 — התובנה שמשנה הכל. Design systems נבנים עכשיו בשביל AI, לא בשביל בני אדם.">
+  <div class="slide-inner">
+    <div class="slide-label">חלק 5 | 17:00–19:00</div>
+    <h2 class="section-title">מערכות עיצוב כבר לא נבנות בשביל מעצבים —<br>הן נבנות <span style="color:var(--accent-pink);">בשביל AI</span></h2>
+    <div class="cards cols-3" style="margin-top:24px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-blue);">Microsoft</div>
+        <div class="card-text">AI-first design systems. פעולות כמו "summarize" ו-"create" = interaction patterns.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-pink);">Figma MCP</div>
+        <div class="card-text">סורק codebase → מפיק כללים מובנים: tokens, רכיבים, היררכיה, שמות.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--accent-amber);">Airbnb</div>
+        <div class="card-text">ML מסווג 150+ רכיבים. מייצר פרוטוטייפים לפי התנהגות משתמשים.</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:24px;">
+      <div style="display:inline-flex; gap:12px; align-items:center; direction:ltr;">
+        <span class="tag pink">Tokens</span>
+        <span style="color:var(--text-muted);">+</span>
+        <span class="tag blue">Rules</span>
+        <span style="color:var(--text-muted);">+</span>
+        <span class="tag amber">Hierarchy</span>
+        <span style="color:var(--text-muted);">=</span>
+        <span class="tag green">AI generates on-brand</span>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:16px; font-size:18px; color:var(--text-secondary);">
+      prescriptive → <strong style="color:var(--accent-green);">generative</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 29: 3 ACTIONS ═══════════ -->
+<div class="slide" data-notes="19:00 — הסיום. 3 פעולות קונקרטיות. תדברי ישר, באנרגיה, תסיימי חזק. תודה.">
+  <div class="slide-inner">
+    <div class="slide-label">סיכום | 19:00–20:00</div>
+    <h2 class="section-title">שלוש פעולות שתעשו מחר בבוקר</h2>
+    <div class="cards" style="margin-top:24px; gap:16px;">
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; border-right:4px solid var(--accent-pink);">
+        <span class="card-num" style="font-size:48px; min-width:50px;">1</span>
+        <div>
+          <div class="card-title">תצלמו 5 מסכים</div>
+          <div class="card-text">אפליקציות שמרגישות "נכון". תשאלו את AI את 4 השאלות: למה? ממה? איפה פשוט? איפה חיכוך?</div>
+        </div>
+      </div>
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; border-right:4px solid var(--accent-blue);">
+        <span class="card-num" style="font-size:48px; min-width:50px;">2</span>
+        <div>
+          <div class="card-title">תייצרו פרומפט מהניתוח</div>
+          <div class="card-text">תכניסו ל-Google Stitch (חינם) או Figma Make. תשוו לפרומפט גנרי. תראו את ההבדל.</div>
+        </div>
+      </div>
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; border-right:4px solid var(--accent-green);">
+        <span class="card-num" style="font-size:48px; min-width:50px;">3</span>
+        <div>
+          <div class="card-title">תבנו קובץ כללים</div>
+          <div class="card-text">ריווח, היררכיה, דגש, צפיפות → JSON או Markdown → שתפו עם הצוות. זה הצעד הראשון ל-design system שמדבר AI.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SLIDE 30: CLOSING ═══════════ -->
+<div class="slide" data-notes="20:00 — תודה. חייכי. אם יש שאלות — מצוין. אם לא — סגרת חזק.">
+  <div class="slide-inner centered">
+    <h1 class="mega" style="font-size:52px;">
+      AI לא צריך לעצב בשבילכם.<br>
+      הוא צריך לעזור לכם <span style="color:var(--accent-blue);">לראות</span>.
+    </h1>
+    <h2 class="subtitle" style="margin-top:24px;">שפה. מבנה. שיטתיות.</h2>
+    <div style="margin-top:40px;">
+      <div style="font-size:22px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">שלי אור גיסר</div>
+      <div style="font-size:16px; color:var(--text-secondary);">Generative AI Design Lead | Gitam BBDO</div>
+      <div style="margin-top:16px;">
+        <span class="tag pink">@AI.GOS</span>
+        <span class="tag blue">Instagram</span>
+        <span class="tag amber">LinkedIn</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let notesVisible = false;
+
+  // Timer
+  let timerRunning = false;
+  let timerStart = 0;
+  let timerInterval = null;
+
+  function updateSlide() {
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === current);
+    });
+    document.getElementById('slideCounter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progressBar').style.width = ((current + 1) / total * 100) + '%';
+    updateNotes();
+  }
+
+  function updateNotes() {
+    const notesEl = document.getElementById('speakerNotes');
+    const noteText = slides[current].getAttribute('data-notes') || '';
+    notesEl.innerHTML = '<h4>SPEAKER NOTES</h4>' + noteText;
+  }
+
+  function next() {
+    if (current < total - 1) { current++; updateSlide(); }
+  }
+  function prev() {
+    if (current > 0) { current--; updateSlide(); }
+  }
+
+  function toggleNotes() {
+    notesVisible = !notesVisible;
+    document.getElementById('speakerNotes').classList.toggle('visible', notesVisible);
+  }
+
+  window.toggleTimer = function() {
+    const el = document.getElementById('timer');
+    if (!timerRunning) {
+      timerStart = Date.now();
+      timerRunning = true;
+      el.classList.add('running');
+      timerInterval = setInterval(() => {
+        const elapsed = Date.now() - timerStart;
+        const mins = Math.floor(elapsed / 60000);
+        const secs = Math.floor((elapsed % 60000) / 1000);
+        el.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + ' | 20:00';
+        if (elapsed >= 20 * 60 * 1000) {
+          el.style.color = 'var(--accent-red)';
+          el.textContent += ' ⚠️';
+        }
+      }, 1000);
+    } else {
+      timerRunning = false;
+      clearInterval(timerInterval);
+      el.classList.remove('running');
+      el.textContent = '00:00 | לחצי להתחיל טיימר';
+      el.style.color = '';
+    }
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); next();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); prev();
+    }
+    if (e.key === 'n' || e.key === 'N' || e.key === 'נ') {
+      toggleNotes();
+    }
+    if (e.key === 'f' || e.key === 'F' || e.key === 'כ') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    if (e.key === 'Home') { current = 0; updateSlide(); }
+    if (e.key === 'End') { current = total - 1; updateSlide(); }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next(); else prev();
+    }
+  });
+
+  updateSlide();
+})();
+</script>
+</body>
+</html>
