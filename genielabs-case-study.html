@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenieLabs × Bingo Blitz | Mini Case Study — שלי אור גיסר @AI.GOS</title>
+<style>
+  :root{
+    --pink:#fce4ec; --lilac:#f3e5f5; --sky:#e1f5fe;
+    --purple:#4a148c; --accent:#ba68c8; --accent2:#b39ddb;
+    --ink:#333; --muted:#6b6b6b; --card:rgba(255,255,255,.85);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(180deg,var(--pink) 0%,var(--lilac) 50%,var(--sky) 100%);
+    color:var(--ink); line-height:1.7; padding:0 0 80px;
+  }
+  body::before{content:'';position:fixed;inset:0;
+    background:linear-gradient(45deg,rgba(255,182,193,.10),rgba(186,104,200,.10),rgba(179,157,219,.10));
+    animation:shift 15s ease infinite;z-index:-1}
+  @keyframes shift{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(4deg) scale(1.08)}}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px}
+
+  /* HERO */
+  .hero{text-align:center;padding:64px 0 30px;animation:down .8s ease}
+  .badge{display:inline-block;background:linear-gradient(135deg,rgba(186,104,200,.15),rgba(179,157,219,.15));
+    color:var(--purple);font-weight:600;padding:6px 16px;border-radius:30px;font-size:14px;margin-bottom:18px}
+  h1{font-size:34px;color:var(--purple);font-weight:700;line-height:1.25;margin-bottom:12px}
+  .hero p{color:var(--muted);font-size:17px;max-width:640px;margin:0 auto}
+  .author{margin-top:18px;font-size:15px;color:var(--purple);font-weight:600}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0 10px}
+  .kpi{background:var(--card);backdrop-filter:blur(10px);border:1px solid rgba(186,104,200,.12);
+    border-radius:22px;padding:22px 14px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+  .kpi b{display:block;font-size:30px;color:var(--purple);font-weight:700}
+  .kpi span{font-size:13px;color:var(--muted)}
+
+  /* SECTIONS */
+  section{margin-top:46px;animation:up .8s ease both}
+  .eyebrow{font-size:13px;letter-spacing:.5px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:6px}
+  h2{font-size:25px;color:var(--purple);margin-bottom:14px;font-weight:700}
+  h3{font-size:18px;color:var(--purple);margin:18px 0 8px}
+  p.lead{font-size:17px}
+  .card{background:var(--card);backdrop-filter:blur(10px);border:1px solid rgba(186,104,200,.12);
+    border-radius:22px;padding:26px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  ul{padding-right:20px;margin:6px 0}
+  li{margin:6px 0}
+  .tag{display:inline-block;background:rgba(186,104,200,.12);color:var(--purple);
+    padding:3px 11px;border-radius:14px;font-size:13px;margin:3px 3px;font-weight:500}
+
+  /* process timeline */
+  .step{display:flex;gap:16px;align-items:flex-start;margin:14px 0}
+  .num{flex:0 0 38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;
+    background:linear-gradient(135deg,#f093fb,#ba68c8)}
+  .step h3{margin:0 0 2px}
+
+  /* prompt cards */
+  .prompt{background:#2b1840;color:#f3e9ff;border-radius:16px;padding:16px 18px;margin:10px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;line-height:1.6;
+    direction:ltr;text-align:left;position:relative;overflow:auto}
+  .prompt .where{display:block;color:#d8b4fe;font-size:12px;margin-bottom:6px;font-family:inherit}
+
+  /* SWOT */
+  .swot{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .swot .card{border-top:4px solid}
+  .s{border-color:#66bb6a}.w{border-color:#ef5350}.o{border-color:#42a5f5}.t{border-color:#ffa726}
+  .swot h3{margin-top:0}
+
+  .callout{background:linear-gradient(135deg,rgba(186,104,200,.12),rgba(179,157,219,.12));
+    border-right:4px solid var(--accent);border-radius:14px;padding:16px 18px;margin:14px 0}
+
+  footer{text-align:center;margin-top:54px;color:var(--muted);font-size:14px}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+
+  @keyframes down{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+  @keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @media(max-width:720px){
+    .grid2,.swot,.kpis{grid-template-columns:1fr}
+    h1{font-size:27px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="badge">Mini Case Study · Generative AI for LiveOps</span>
+    <h1>GenieLabs × Bingo Blitz<br>ייצור נכסים ויזואליים בקנה מידה תעשייתי</h1>
+    <p>איך פלטפורמת AaaS (Assets-as-a-Service) שעברה fine-tuning על עולם המשחק
+       מקצרת הפקת אלבום LiveOps מ-90 יום ל-9 — וכיצד ניגשתי לבנות איתה תוצרים חכמים.</p>
+    <div class="author">שלי אור גיסר · @AI.GOS · Generative AI Design Lead</div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi"><b>90→9</b><span>ימים להפקת אלבום (Bingo Blitz, מקור Playtika)</span></div>
+    <div class="kpi"><b>1</b><span>Prompt ליצירת נכס on-brand מוכן לפרודקשן</span></div>
+    <div class="kpi"><b>4+</b><span>משטחי תוכן: משחק · מונטיזציה · אירועים · סושיאל</span></div>
+  </div>
+
+  <!-- CONTEXT -->
+  <section>
+    <div class="eyebrow">הרקע</div>
+    <h2>מה זה GenieLabs ולמה זה משנה</h2>
+    <div class="card">
+      <p class="lead">GenieLabs (סטארטאפ ישראלי, לקוחות בהם <b>Playtika ו-Zynga</b>) היא פלטפורמת
+      תוכן מבוססת AI אג'נטי לסטודיו של משחקים. ההבדל המהותי מ-Midjourney/DALL·E:
+      <b>כל "Recipe" עבר fine-tuning על נכסי המשחק עצמם</b> — כך שכל פלט יוצא עקבי לעולם הוויזואלי
+      של Bingo ומוכן לפרודקשן ללא עיבוד נוסף. הממשק בנוי סביב <b>תפקידים ארגוניים</b>
+      (Chef Team, Monetization, EVENT, SEASONAL), כך שכל צוות מקבל בדיוק את הכלים הרלוונטיים לו.</p>
+      <div class="pill-row" style="justify-content:flex-start;margin-top:12px">
+        <span class="tag">Genie Agent / Agent Studio (Beta)</span>
+        <span class="tag">Chef Team — Recipes לדמויות</span>
+        <span class="tag">Monetization Team</span>
+        <span class="tag">EVENT / SEASONAL</span>
+        <span class="tag">Magic Composition</span>
+        <span class="tag">Social Tools</span>
+        <span class="tag">ToolBox · Resizer · Remix</span>
+        <span class="tag">Gallery / Assets</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHALLENGE -->
+  <section>
+    <div class="eyebrow">האתגר</div>
+    <h2>צוואר הבקבוק של LiveOps</h2>
+    <div class="card">
+      <p>משחקי LiveOps חיים מקצב תוכן בלתי פוסק — אלבומים, אירועים, הצעות חנות.
+      כל אלבום דרש היסטורית עשרות נכסים ידניים בפוטושופ, תהליך של <b>~90 יום</b> שחנק את קצב ה-LiveOps
+      ופגע במונטיזציה. <b>המשימה שלי:</b> להפיק עבור שתי תמות אלבום —
+      <span class="tag">Where's Waldo (חפש-ומצא)</span> ו-<span class="tag">Quotes (ציטוטים)</span> —
+      סט תוצרים חכם, עקבי-למותג ומדיד, ולתעד את התהליך כ-case study.</p>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section>
+    <div class="eyebrow">התהליך</div>
+    <h2>איך ניגשתי לעבודה בכלי</h2>
+    <div class="card">
+      <div class="step"><div class="num">1</div><div>
+        <h3>מיפוי הממשק</h3>
+        <p>סקירה שיטתית של כל Team ו-Recipe, והבנת ההיררכיה: Theme → Collection → Asset.
+        זיהוי לאיזה Recipe שייכת כל דמות (Winston ≠ Moxie — שימוש ב-Recipe הלא נכון = פלט off-brand).</p>
+      </div></div>
+      <div class="step"><div class="num">2</div><div>
+        <h3>בניית שפת פרומפט</h3>
+        <p>גיבוש תבנית פרומפט קבועה: <i>נושא · פעולה/רגש · אווירה · פלטת צבע · יחס תמונה · use-case</i>.
+        שימוש ב-<b>Reference Image</b> להמרת רפרנס לפרומפט וב-<b>Improve Prompt</b> לליטוש.</p>
+      </div></div>
+      <div class="step"><div class="num">3</div><div>
+        <h3>הפקת וריאציות</h3>
+        <p>לכל פריט — מספר וריאציות דרך <b>Magic Composition</b> (תיוג סגנון עם @) ו-<b>Characters</b>,
+        כדי לאפשר A/B testing — הלב של העלאת ARPU.</p>
+      </div></div>
+      <div class="step"><div class="num">4</div><div>
+        <h3>התאמה והרחבה</h3>
+        <p><b>Resizer</b> ליחסי תמונה לכל משטח, ו-<b>Social Tools</b> (Image Animator / Social Video Maker)
+        למיחזור נכסי המשחק לסרטוני סושיאל — נכס אחד, שימוש מרובה.</p>
+      </div></div>
+      <div class="step"><div class="num">5</div><div>
+        <h3>QA מול גיידליינים</h3>
+        <p>בדיקת כל פלט מול ספר המותג (צבעים, טון, פרופורציות דמות) לפני handoff לפרודקשן,
+        ושמירה ב-Gallery כארכיון.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- SMART OUTPUTS -->
+  <section>
+    <div class="eyebrow">התוצרים החכמים</div>
+    <h2>Where's Waldo — אלבום חפש-ומצא</h2>
+    <div class="card">
+      <p>הרעיון: סצנות עמוסות ופרטניות שבהן מוסתרות דמויות Bingo. האתגר העיצובי הוא
+      <b>צפיפות מבוקרת</b> — מספיק עמוס כדי שיהיה מאתגר, אך עם תאורה אחידה כך שהדמות "מוצאת אך לא מובנת מאליה".</p>
+
+      <h3>פרומפט · רקע סצנה (MAP / Backgrounds Team)</h3>
+      <div class="prompt"><span class="where">▸ Team: Backgrounds / MAP · Aspect: 16:9 · Improve Prompt: ON</span>
+A vibrant top-down bustling carnival scene in the Bingo Blitz art style,
+packed with dozens of tiny colorful characters, balloons, food stalls and
+confetti. Bright saturated palette, clean readable foreground details,
+even soft lighting suitable for a seek-and-find game layout.</div>
+
+      <h3>פרומפט · הסתרת דמות (Magic Composition)</h3>
+      <div class="prompt"><span class="where">▸ Magic Composition · style tag: @BingoBlitz · Aspect: 16:9</span>
+@BingoBlitz a busy beach boardwalk crowd, hide Blitzy the cat among
+sunbathers and ice-cream stands, playful cartoon style, high detail,
+consistent lighting so the hidden character is findable but not obvious.</div>
+
+      <div class="callout">💡 <b>טיפ עקביות:</b> הפיקי את הרקע פעם אחת, ואז השתמשי ב-<b>Image Remix</b> (Agent Studio)
+      כדי להחדיר אותו לכל וריאציה — כך כל פריטי האלבום חולקים DNA ויזואלי אחד.</div>
+    </div>
+
+    <h2 style="margin-top:30px">Quotes — אלבום ציטוטים</h2>
+    <div class="card">
+      <p>הרעיון: כרטיסי ציטוט שמשלבים דמות Bingo + טיפוגרפיה משחקית. כאן ה-<b>Text Editing</b>
+      וה-<b>Social Post Maker</b> הם הכוכבים.</p>
+
+      <h3>פרומפט · כרטיס ציטוט עם דמות (Characters + Magic Composition)</h3>
+      <div class="prompt"><span class="where">▸ Characters: Moxie · Magic Composition · Aspect: 1:1</span>
+Moxie smiling and holding a blank wooden sign, Bingo Blitz character style,
+warm golden bokeh background, generous clear space at the top for bold
+playful typography, centered composition, social-ready.</div>
+
+      <h3>פרומפט · רקע ציטוט נקי (Backgrounds + Text Editing)</h3>
+      <div class="prompt"><span class="where">▸ Backgrounds → ToolBox: Text Editing · Aspect: 1:1</span>
+Soft pastel confetti background in Bingo Blitz palette, subtle radial glow
+in the center, minimal and uncluttered to keep quote text fully legible.
+[then add via Text Editing]: "Lucky's my middle name"</div>
+
+      <div class="callout">💡 <b>למה זה חכם:</b> סדרת ציטוטים על אותו רקע + Moxie = סדרה מותגית עקבית לאינסטגרם/פייסבוק,
+      שמיוצרת בדקות במקום בשעות, ומחזקת את הנוכחות החברתית של המשחק.</div>
+    </div>
+    <p style="margin-top:12px;font-size:14px;color:var(--muted)">
+      *הפרומפטים מבוססים על מיפוי הממשק ועל best-practice. עם ספר המותג (PDF) אדייק אותם
+       לערכי הצבע, הטון והפרופורציות המדויקים של Bingo.</p>
+  </section>
+
+  <!-- SWOT -->
+  <section>
+    <div class="eyebrow">ניתוח אסטרטגי</div>
+    <h2>SWOT — מבט של Lead, לא רק של מבצעת</h2>
+    <div class="swot">
+      <div class="card s"><h3>💪 חוזקות</h3><ul>
+        <li>Fine-tuning על המשחק = פלט on-brand מוכן לפרודקשן</li>
+        <li>מהירות קיצונית (90→9 ימים)</li>
+        <li>ארכיטקטורה לפי תפקידים ארגוניים</li>
+        <li>Improve Prompt + Reference Image מורידים את חסם הכניסה</li>
+        <li>כיסוי רב-משטחי: משחק · מונטיזציה · סושיאל</li>
+      </ul></div>
+      <div class="card w"><h3>⚠️ חולשות / לשים לב</h3><ul>
+        <li>Recipes נוקשים — קל לטעות ב-Recipe ולקבל off-brand</li>
+        <li>תלות גבוהה באיכות הפרומפט → צורך בסטנדרט/playbook</li>
+        <li>עקביות לאורך אלבום שלם (עשרות נכסים) — האם יש style-lock/batch?</li>
+        <li>פיצ'רים ב-Beta (Agent Studio, Social Post) = יציבות משתנה</li>
+        <li>handoff: פורמטים, שכבות לעיצובי layout של מונטיזציה</li>
+      </ul></div>
+      <div class="card o"><h3>🚀 הזדמנויות</h3><ul>
+        <li>ספריית פרומפטים סטנדרטית לכל Team = איכות שמתרחבת בכל הארגון</li>
+        <li>מנוע וריאציות ל-A/B במונטיזציה → ARPU</li>
+        <li>מיחזור נכסי משחק לסושיאל בלחיצה</li>
+        <li>תמות חדשות (Quotes, Where's Waldo) כ-Recipes לשימוש חוזר</li>
+      </ul></div>
+      <div class="card t"><h3>🛡️ סיכונים</h3><ul>
+        <li>Style drift / סטייה מהמותג ללא governance</li>
+        <li>הסתמכות יתר על חשבון craft — חובה QA אנושי</li>
+        <li>שיקולי IP בתמות מבוססות-מותג (לוודא codename/רישוי)</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- RECO + IMPACT -->
+  <section>
+    <div class="eyebrow">המלצות והשפעה</div>
+    <h2>מה הייתי לוקחת קדימה</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>3 המלצות מוצר</h3>
+        <ul>
+          <li><b>Prompt Library</b> פנימית לכל Team — להפוך ידע אישי לנכס ארגוני.</li>
+          <li><b>Style-lock לאלבום</b> — נעילת seed/סגנון לעקביות על פני כל הפריטים.</li>
+          <li><b>Variation→A/B pipeline</b> ישיר ל-LiveOps למדידת ARPU אמיתית.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>השפעה (השערות מדידות)</h3>
+        <ul>
+          <li>זמן הפקת אלבום: <b>↓ ~90%</b> (בהתאם ל-benchmark של Bingo).</li>
+          <li>מספר וריאציות לבדיקה: <b>×3–5</b> ביחס לתהליך ידני.</li>
+          <li>מיחזור נכס משחק→סושיאל: נכס אחד, <b>3+</b> תפוקות.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="pill-row">
+      <span class="tag">Generative AI</span><span class="tag">Game LiveOps</span>
+      <span class="tag">Prompt Engineering</span><span class="tag">Brand Consistency</span>
+      <span class="tag">@AI.GOS</span>
+    </div>
+    ✨ Prepared by Shelly Or Gisser · Generative AI Design Lead ✨
+  </footer>
+
+</div>
+</body>
+</html>
