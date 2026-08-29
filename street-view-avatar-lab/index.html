@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AVATAR LAB">
 <meta name="description" content="STREET VIEW AVATAR LAB — לוח הפקה נייד למיקומי צילום בארה״ב">
 <title>STREET VIEW AVATAR LAB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +54,7 @@ textarea{resize:vertical;line-height:1.6}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:60;background:rgba(5,5,5,.82);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-bottom:1px solid var(--b-s)}
-.topbar-in{max-width:1240px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.topbar-in{max-width:1240px;margin:0 auto;padding:calc(13px + env(safe-area-inset-top)) 22px 13px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .logo{font-family:var(--display);font-weight:800;font-size:1rem;letter-spacing:-.02em;line-height:1;white-space:nowrap}
 .logo small{display:block;font-family:var(--sans);font-weight:300;font-size:.54rem;letter-spacing:.14em;color:var(--muted);margin-top:4px;text-transform:uppercase}
 .tabs{display:flex;gap:6px;margin-inline-start:auto;overflow-x:auto;scrollbar-width:none}
@@ -58,7 +65,10 @@ textarea{resize:vertical;line-height:1.6}
 .tab .n{font-size:.62rem;opacity:.7;margin-inline-start:5px}
 
 /* LAYOUT */
-.wrap{max-width:1240px;margin:0 auto;padding:26px 22px 120px;position:relative;z-index:1}
+.wrap{max-width:1240px;margin:0 auto;padding:26px 22px calc(120px + env(safe-area-inset-bottom));position:relative;z-index:1}
+.offline{display:none;align-items:center;gap:6px;font-family:var(--display);font-weight:500;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);border:1px solid rgba(255,216,190,.25);background:rgba(255,216,190,.05);border-radius:100px;padding:5px 10px}
+body.off .offline{display:inline-flex}
+.drawer-f{padding:14px 20px calc(14px + env(safe-area-inset-bottom));}
 .view{display:none;animation:fadeUp .7s var(--ease)}
 .view.on{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
@@ -247,6 +257,7 @@ html[dir="rtl"] .drawer{transform:translateX(100%)}
 <div id="app" style="display:none">
 <header class="topbar"><div class="topbar-in">
   <div class="logo"><span class="gt">AVATAR</span><span style="color:#808080;font-weight:400">.LAB</span><small>Street View · USA</small></div>
+  <span class="offline"><span style="width:5px;height:5px;border-radius:50%;background:currentColor"></span>אופליין</span>
   <nav class="tabs">
     <button class="tab on" data-view="map">מפה</button>
     <button class="tab" data-view="gallery">גלריה <span class="n" id="n-gal">0</span></button>
@@ -338,6 +349,19 @@ html[dir="rtl"] .drawer{transform:translateX(100%)}
       <div class="field"><label>לוק / סטיילינג ברירת מחדל</label><textarea id="s-outfit" rows="2" placeholder="oversized cream linen blazer, white tank, straight-leg denim, tan leather boots"></textarea></div>
       <div class="field"><label>חתימה קולנועית</label><input id="s-look" placeholder="shot on 35mm, shallow depth of field, natural warm light, editorial realism"></div>
       <button class="btn sm" id="s-save">שמירה</button>
+      <div class="divider"></div>
+      <div class="eyebrow">תמונות הפנים שלך</div>
+      <p class="sub" style="margin:10px 0 13px">הרפרנסים שאת מעלה לכלי היצירה כדי לנעול את הזהות. 3–8 תמונות: חזית, פרופיל, שלושת-רבעי, תאורות שונות, בלי משקפיים ובלי כובע.</p>
+      <div class="shots" id="av-shots"></div>
+      <input type="file" id="av-file" accept="image/*" multiple style="display:none">
+      <div class="hint">לחיצה על תמונה מסמנת אותה כרפרנס הראשי. התמונות נשמרות רק במכשיר הזה.</div>
+    </div>
+
+    <div class="card purple" style="margin-bottom:13px" id="install-card">
+      <div class="eyebrow">התקנה בטלפון</div>
+      <p class="sub" style="margin:10px 0 13px">מתקינים פעם אחת והמעבדה נפתחת כמו אפליקציה — מסך מלא, בלי סרגל דפדפן, ונטענת גם בלי קליטה.</p>
+      <button class="btn sm" id="install-btn" style="display:none">התקנה עכשיו</button>
+      <div class="hint" id="install-hint">באייפון: כפתור השיתוף בסאפרי ← "הוספה למסך הבית". באנדרואיד: תפריט שלוש הנקודות ← "התקנת אפליקציה".</div>
     </div>
 
     <div class="card" style="margin-bottom:13px">
@@ -825,6 +849,7 @@ function buildPrompt(l,time,shot){
   const frame='heading '+Math.round(l.heading||0)+'°, pitch '+Math.round(l.pitch||0)+'°, fov '+Math.round(l.fov||80)+'°';
   return [
 '[CHARACTER LOCK] '+name+' — '+desc+'. Same face, same bone structure, same hair in every frame. Identity must stay pixel-consistent.',
+((a.refs&&a.refs.length)?'[IDENTITY REFERENCE] '+a.refs.length+' reference photographs of '+name+' are attached. Treat them as the single source of truth for the face — bone structure, eye shape and spacing, nose, lips, jawline, hairline. Do not beautify, slim, or age the face away from the references.':''),
 '[WARDROBE] '+outfit+'.',
 '[LOCATION] '+place+', USA. Real street-level geography at '+geo+'. Reproduce the actual architecture, signage, road surface, vegetation and skyline of this exact spot.',
 '[CAMERA] '+(SHOTS[shot]||SHOTS.full)+'. Street View reference framing: '+frame+' — match this exact vantage point and eye level.',
@@ -969,12 +994,85 @@ function fillSettings(){
   $('#s-name').value=AVATAR.name||''; $('#s-desc').value=AVATAR.desc||'';
   $('#s-outfit').value=AVATAR.outfit||''; $('#s-look').value=AVATAR.look||'';
   $('#s-key').value=MAPKEY;
+  renderAvatarRefs();
 }
+function saveAvatar(){localStorage.setItem(K_AV,JSON.stringify(AVATAR));}
 $('#s-save').onclick=()=>{
-  AVATAR={name:$('#s-name').value.trim(),desc:$('#s-desc').value.trim(),
-          outfit:$('#s-outfit').value.trim(),look:$('#s-look').value.trim()};
-  localStorage.setItem(K_AV,JSON.stringify(AVATAR)); toast('ה-Character Lock נשמר');
+  AVATAR.name=$('#s-name').value.trim(); AVATAR.desc=$('#s-desc').value.trim();
+  AVATAR.outfit=$('#s-outfit').value.trim(); AVATAR.look=$('#s-look').value.trim();
+  saveAvatar(); toast('ה-Character Lock נשמר');
 };
+
+/* ---------- avatar reference photos ---------- */
+async function renderAvatarRefs(){
+  const box=$('#av-shots'); if(!box)return;
+  AVATAR.refs=AVATAR.refs||[];
+  box.innerHTML='<button class="add-shot" id="av-add"><svg width="18" height="18" viewBox="0 0 24 24" stroke="#c3a6ff"><path d="M12 5v14M5 12h14"/></svg>הוספה</button>';
+  for(const id of AVATAR.refs){
+    const r=await shotGet(id); if(!r)continue;
+    const d=document.createElement('div'); d.className='shot';
+    const primary=AVATAR.primary===id;
+    d.innerHTML='<img src="'+r.data+'" alt="">'+
+      (primary?'<span style="position:absolute;bottom:4px;inset-inline-start:4px;background:rgba(5,5,5,.8);border:1px solid var(--pbd-m);color:var(--purple);border-radius:5px;font-size:.5rem;letter-spacing:.08em;padding:2px 5px">ראשי</span>':'')+
+      '<button class="x" data-rmav="'+id+'">×</button>';
+    d.querySelector('img').onclick=()=>{AVATAR.primary=id;saveAvatar();renderAvatarRefs();toast('סומנה כרפרנס ראשי');};
+    box.appendChild(d);
+  }
+  $('#av-add').onclick=()=>$('#av-file').click();
+  box.onclick=async e=>{const b=e.target.closest('[data-rmav]'); if(!b)return;
+    const id=b.dataset.rmav; await shotDel(id);
+    AVATAR.refs=AVATAR.refs.filter(x=>x!==id);
+    if(AVATAR.primary===id)AVATAR.primary='';
+    saveAvatar(); renderAvatarRefs(); storageInfo();};
+}
+$('#av-file').onchange=async e=>{
+  const files=[...e.target.files]; if(!files.length)return;
+  toast('מעבד '+files.length+' תמונות...');
+  AVATAR.refs=AVATAR.refs||[];
+  for(const f of files){
+    try{const data=await compress(f,1600,.88); const id='av'+uid(); await shotPut(id,data); AVATAR.refs.push(id);}
+    catch(err){toast('תמונה אחת נכשלה')}
+  }
+  if(!AVATAR.primary)AVATAR.primary=AVATAR.refs[0];
+  saveAvatar(); renderAvatarRefs(); storageInfo(); toast('נוספו '+files.length+' רפרנסים');
+  e.target.value='';
+};
+
+/* ---------- PWA: install + offline + updates ---------- */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=$('#install-btn'); if(b)b.style.display='inline-flex';
+});
+$('#install-btn').onclick=async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  const {outcome}=await deferredPrompt.userChoice;
+  deferredPrompt=null; $('#install-btn').style.display='none';
+  toast(outcome==='accepted'?'מותקנת — חפשי את האייקון במסך הבית':'בוטל');
+};
+window.addEventListener('appinstalled',()=>{
+  $('#install-btn').style.display='none';
+  $('#install-hint').textContent='מותקנת במכשיר הזה.';
+});
+function netState(){document.body.classList.toggle('off',!navigator.onLine);}
+window.addEventListener('online',()=>{netState();toast('חזרת לרשת');});
+window.addEventListener('offline',()=>{netState();toast('אין קליטה — הגלריה והפרומפטים ממשיכים לעבוד');});
+if('serviceWorker' in navigator && window.isSecureContext){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound',()=>{
+        const w=reg.installing; if(!w)return;
+        w.addEventListener('statechange',()=>{
+          if(w.state==='installed'&&navigator.serviceWorker.controller)toast('יש גרסה חדשה — רענני את הדף');
+        });
+      });
+    }).catch(()=>{});
+  });
+}
+if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone){
+  const h=$('#install-hint'); if(h)h.textContent='מותקנת במכשיר הזה.';
+}
 $('#s-key-save').onclick=()=>{
   const k=$('#s-key').value.trim();
   if(!k)return toast('הדביקי מפתח');
@@ -993,7 +1091,8 @@ async function storageInfo(){
     const e=await navigator.storage.estimate();
     if(e.quota)quota=' · מתוך ~'+(e.quota/1048576/1024).toFixed(1)+'GB זמינים';
   }
-  $('#storage-info').textContent=LOCS.length+' מיקומים · '+shots.length+' רפרנסים · '+(bytes/1048576).toFixed(1)+'MB'+quota;
+  const av=(AVATAR.refs||[]).length;
+  $('#storage-info').textContent=LOCS.length+' מיקומים · '+(shots.length-av)+' רפרנסים · '+av+' תמונות אוואטר · '+(bytes/1048576).toFixed(1)+'MB'+quota;
 }
 
 function download(name,text,type){
@@ -1061,6 +1160,7 @@ $('#wipe').onclick=async()=>{
 
 /* ---------- boot ---------- */
 function startApp(){
+  netState();
   $('#gate').style.display='none';
   $('#app').style.display='block';
   fillSettings(); refreshCounts(); renderGallery(); storageInfo();
