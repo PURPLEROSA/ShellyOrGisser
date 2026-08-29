@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#05060a">
-<meta name="description" content="NIR'S BITE — Eat the damn thing. משחק רחוב בסגנון GTA על מסלול האוכל של ניר בניו יורק.">
+<meta name="description" content="NIR'S BITE — Eat the damn thing. משחק רחוב בסגנון GTA על מסלול הזהב של ניר בארה״ב, 10–31.8.">
 <title>NIR'S BITE — Eat the damn thing</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,9 +215,9 @@ body{
 #btnDays:active{transform:translateY(2px)}
 
 /* progress pips, inside the mission plate */
-#pips{display:flex;gap:6px;margin-top:9px}
-#pips i{width:26px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);
-  box-shadow:0 1px 0 rgba(0,0,0,.6)}
+#pips{display:flex;gap:4px;margin-top:9px;max-width:100%}
+#pips i{flex:1 1 0;min-width:6px;max-width:26px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.22);box-shadow:0 1px 0 rgba(0,0,0,.6)}
 #pips i.done{background:var(--lime)}
 #pips i.now{background:var(--neon);box-shadow:0 0 12px var(--neon)}
 
@@ -395,7 +395,14 @@ body{
   display:flex;flex-direction:column;align-items:center;gap:1px;min-width:62px;
 }
 #dayTabs button small{font-size:10px;color:#7f8aa3;font-weight:400}
+#dayTabs button{border-top-width:3px}
+#dayTabs button[data-city="ANA"]{border-top-color:#b39dff}
+#dayTabs button[data-city="LA"]{border-top-color:#ffb300}
+#dayTabs button[data-city="SD"]{border-top-color:#6fe3ff}
+#dayTabs button[data-city="LV"]{border-top-color:#c8ff2e}
+#dayTabs button[data-city="NYC"]{border-top-color:#ff2e88}
 #dayTabs button.active{background:linear-gradient(180deg,var(--neon),#c4145f);color:#fff;border-color:rgba(255,255,255,.4)}
+#dayTabs button.active small{color:#ffd9ec}
 #dayTabs button.today{border-color:var(--lime)}
 #stopList{flex:1;overflow-y:auto;padding:12px 14px calc(20px + var(--safeB));display:flex;flex-direction:column;gap:10px}
 .stopCard{
@@ -521,7 +528,7 @@ body{
   #actor.veh-bike{bottom:calc(29% + var(--safeB))}
   #actor.veh-car{bottom:calc(27% + var(--safeB))}
   #shadow{bottom:calc(29.4% + var(--safeB));width:min(10vh,82px);height:min(2.6vh,20px)}
-  #pips i{width:18px;height:4px}
+  #pips i{max-width:18px;height:4px}
   #status{gap:5px}
   #status .cell{padding:6px 8px;min-width:0}
   #status .k{font-size:9px;letter-spacing:1.6px}
@@ -666,7 +673,8 @@ body{
     <div class="slogan">EAT THE DAMN THING</div>
     <div class="sub">
       האיש שאפשר לסמוך עליו כשצריך לאכול טוב.<br>
-      הרחובות האמיתיים של ניו יורק, ניר בפרונט, המסלול של ניר — בדיוק לפי הימים 24–31.8.
+      הרחובות האמיתיים, ניר בפרונט, ובדיוק המסלול שהוא בנה —<br>
+      אנהיים · לוס אנג׳לס · סן דייגו · לאס וגאס · ניו יורק · 10–31.8
     </div>
     <div class="keybox">
       <input id="keyInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
@@ -888,186 +896,1495 @@ var RIG_CAR =
    ניתן להחליף בייבוא JSON מתוך התפריט (☰ ימים ← ייבוא)
    ============================================================ */
 var TRIP_DEFAULT = {
-  city:'New York',
-  year:2026,
-  days:[
-  { d:'24.8', code:'LES', title:'PASTRAMI RUN', hood:'Lower East Side → SoHo', stops:[
-    { t:'09:30', mode:'WALKING', name:"Russ & Daughters", addr:'179 E Houston St',
-      q:"Russ & Daughters, 179 E Houston St, New York, NY",
-      lat:40.72258, lng:-73.98828,
-      eat:'בייגל עם לוקס, קרם צ׳יז, בצל וקייפרס. לבקש את הסלמון פרוס דק.',
-      why:'חנות ה־appetizing של 1914. זה לא דלי — זה מוסד. פותחים כאן את היום כי מאוחר יותר יש תור.' },
-    { t:'12:30', mode:'WALKING', name:"Katz's Delicatessen", addr:'205 E Houston St',
-      q:"Katz's Delicatessen, 205 E Houston St, New York, NY",
-      lat:40.72224, lng:-73.98733,
-      eat:'פסטרמי על לחם שיפון, חרדל, חמוץ. לבקש hand-carved, fatty.',
-      why:'שתי דקות הליכה מראס. שומרים את הכרטיס הכתום — בלעדיו לא יוצאים. טיפ לחותך = פרוסה לטעימה.' },
-    { t:'15:00', mode:'WALKING', name:'Prince Street Pizza', addr:'27 Prince St',
-      q:"Prince Street Pizza, 27 Prince St, New York, NY",
-      lat:40.72294, lng:-73.99444,
-      eat:'Spicy Spring — פרוסה מרובעת עם פפרוני שמתקפל לכוסיות.',
-      why:'התור ארוך אבל זז. אוכלים בעמידה על המדרכה, זו חצי מהחוויה.' },
-    { t:'17:30', mode:'WALKING', name:'Dominique Ansel Bakery', addr:'189 Spring St',
-      q:"Dominique Ansel Bakery, 189 Spring St, New York, NY",
-      lat:40.72524, lng:-74.00281,
-      eat:'קרונאט של החודש + DKA. לקחת לחצר האחורית.',
-      why:'סוגרים את היום במתוק ובכיוון סוהו, בדיוק לפני שהחנויות נסגרות.' }
-  ]},
-  { d:'25.8', code:'WV', title:'SLICE & TACOS', hood:'West Village → Chelsea', stops:[
-    { t:'10:30', mode:'WALKING', name:"Joe's Pizza", addr:'7 Carmine St',
-      q:"Joe's Pizza, 7 Carmine St, New York, NY",
-      lat:40.73043, lng:-74.00201,
-      eat:'פרוסת plain אחת. מקפלים לאורך, אוכלים בעמידה.',
-      why:'הפרוסה שכל ניו יורקי ישלח אליה. לא יושבים, לא מצטלמים הרבה — אוכלים.' },
-    { t:'12:30', mode:'WALKING', name:'Los Tacos No.1 — Chelsea Market', addr:'75 9th Ave',
-      q:"Los Tacos No. 1, 75 9th Ave, New York, NY",
-      lat:40.74234, lng:-74.00611,
-      eat:'שלושה אדובדה על טורטיית תירס + קסדייה אחת לשולחן.',
-      why:'עומדים בבר, בלי כיסאות. הרוטב הירוק חריף — מתחילים בטיפה.' },
-    { t:'15:00', mode:'WALKING', name:'The High Line', addr:'Gansevoort St entrance',
-      q:"The High Line, Gansevoort St, New York, NY",
-      lat:40.73962, lng:-74.00817,
-      eat:'לא אוכלים — מעכלים. קפה קר בדרך.',
-      why:'הליכה על פסי הרכבת הישנים מצפון לדרום. זה הקטע שמחבר בין הטאקוס לקינוח.' },
-    { t:'17:00', mode:'WALKING', name:'Magnolia Bakery — Bleecker', addr:'401 Bleecker St',
-      q:"Magnolia Bakery, 401 Bleecker St, New York, NY",
-      lat:40.73558, lng:-74.00566,
-      eat:'בננה פודינג, גודל בינוני. לא קאפקייק.',
-      why:'הסניף המקורי של West Village. יושבים על המדרכה ממול.' }
-  ]},
-  { d:'26.8', code:'MID', title:'THE HALAL RUN', hood:'Midtown East → Garment District', stops:[
-    { t:'09:00', mode:'WALKING', name:'Ess-a-Bagel', addr:'831 3rd Ave',
-      q:"Ess-a-Bagel, 831 3rd Ave, New York, NY",
-      lat:40.75529, lng:-73.96955,
-      eat:'בייגל everything, scallion cream cheese, נובה. לא לבקש טוסט.',
-      why:'הבייגל הכי גדול בעיר. מספיק לשניים, וזה בסדר.' },
-    { t:'12:30', mode:'WALKING', name:'The Halal Guys', addr:'W 53rd St & 6th Ave',
-      q:"The Halal Guys, W 53rd St & 6th Ave, New York, NY",
-      lat:40.76194, lng:-73.97906,
-      eat:'Combo over rice. רוטב לבן בנדיבות, אדום בזהירות — הוא באמת חריף.',
-      why:'העגלה המקורית, פינה צפון־מזרחית. אוכלים על המדרכה כמו כולם.' },
-    { t:'15:00', mode:'WALKING', name:'Grand Central Oyster Bar', addr:'89 E 42nd St, Lower Level',
-      q:"Grand Central Oyster Bar, 89 E 42nd St, New York, NY",
-      lat:40.75264, lng:-73.97682,
-      eat:'פאן רוסט צדפות + חצי תריסר Blue Point.',
-      why:'יושבים בבר המעוקל מתחת לתקרות הקמרון. לפני זה — לוחשים בפינת הלחישות.' },
-    { t:'19:30', mode:'WALKING', name:'Keens Steakhouse', addr:'72 W 36th St',
-      q:"Keens Steakhouse, 72 W 36th St, New York, NY",
-      lat:40.75011, lng:-73.98577,
-      eat:'Mutton Chop. אחד. לשולחן.',
-      why:'מ־1885, עם 50,000 מקטרות חימר על התקרה. הזמנה מראש חובה.' }
-  ]},
-  { d:'27.8', code:'CP', title:'BIKE DAY', hood:'Upper West Side + Central Park', stops:[
-    { t:'09:30', mode:'WALKING', name:'Levain Bakery', addr:'351 Amsterdam Ave',
-      q:"Levain Bakery, 351 Amsterdam Ave, New York, NY",
-      lat:40.78072, lng:-73.98013,
-      eat:'עוגיית Chocolate Chip Walnut. חמה. אחת לאדם — היא 170 גרם.',
-      why:'מתחילים את יום האופניים בסוכר. אוכלים בדרך לפארק, לא בחנות.' },
-    { t:'11:00', mode:'BICYCLING', name:'Bethesda Terrace, Central Park', addr:'Central Park, 72nd St',
-      q:"Bethesda Terrace, Central Park, New York, NY",
-      lat:40.77420, lng:-73.97089,
-      eat:'מים ופרצל מהעגלה. זה הכל.',
-      why:'רוכבים את הלולאה של הפארק דרומה. עוצרים במזרקה, ממשיכים למול.' },
-    { t:'13:00', mode:'BICYCLING', name:'Barney Greengrass', addr:'541 Amsterdam Ave',
-      q:"Barney Greengrass, 541 Amsterdam Ave, New York, NY",
-      lat:40.78659, lng:-73.97690,
-      eat:'סטרג׳ן עם ביצים מקושקשות ובצל + חלה קלויה.',
-      why:'"מלך הסטרג׳ן" מ־1908. פורמייקה, מלצרים חדים, אפס עיצוב — וזה הקטע.' },
-    { t:'16:30', mode:'BICYCLING', name:"Gray's Papaya", addr:'2090 Broadway',
-      q:"Gray's Papaya, 2090 Broadway, New York, NY",
-      lat:40.77957, lng:-73.98169,
-      eat:'Recession Special — שתי נקניקיות ומשקה פפאיה.',
-      why:'עומדים בדלפק מול החלון. סוגרים את יום האופניים בזול ובמושלם.' }
-  ]},
-  { d:'28.8', code:'BK', title:'BRIDGE & BEEF', hood:'Dumbo → Williamsburg', stops:[
-    { t:'11:00', mode:'DRIVING', name:"Juliana's Pizza", addr:'19 Old Fulton St, Brooklyn',
-      q:"Juliana's Pizza, 19 Old Fulton St, Brooklyn, NY",
-      lat:40.70274, lng:-73.99354,
-      eat:'No.1 — מרגריטה עם באזיל טרי, תנור פחמים.',
-      why:'פטסי גרימלדי חזר לרחוב שלו. הפיצה מחכה לכם מתחת לגשר.' },
-    { t:'13:30', mode:'WALKING', name:'Time Out Market New York', addr:'55 Water St, Brooklyn',
-      q:"Time Out Market New York, 55 Water St, Brooklyn, NY",
-      lat:40.70326, lng:-73.99036,
-      eat:'סבבה — כל אחד לוקח דוכן אחר ומתחלקים.',
-      why:'הגג משקיף על מנהטן והגשר. זו התמונה של הטיול.' },
-    { t:'16:00', mode:'DRIVING', name:"L'Industrie Pizzeria", addr:'254 S 2nd St, Brooklyn',
-      q:"L'Industrie Pizzeria, 254 S 2nd St, Brooklyn, NY",
-      lat:40.71230, lng:-73.95760,
-      eat:'Burrata slice. אחת. אחר כך תרצו עוד.',
-      why:'ויליאמסבורג, תור בחוץ, פרוסה שמחליפה את כל מה שידעתם על בורטה.' },
-    { t:'19:45', mode:'DRIVING', name:'Peter Luger Steak House', addr:'178 Broadway, Brooklyn',
-      q:"Peter Luger Steak House, 178 Broadway, Brooklyn, NY",
-      lat:40.70988, lng:-73.96222,
-      eat:'Steak for Two, medium rare, עם הרוטב שלהם. בייקון עבה להתחלה.',
-      why:'מזומן בלבד או כרטיס של הבית. מ־1887, מתחת לגשר ויליאמסבורג. Eat the damn thing.' }
-  ]},
-  { d:'29.8', code:'CT', title:'CHINATOWN CRAWL', hood:'Chinatown → Little Italy', stops:[
-    { t:'11:00', mode:'WALKING', name:'Nom Wah Tea Parlor', addr:'13 Doyers St',
-      q:"Nom Wah Tea Parlor, 13 Doyers St, New York, NY",
-      lat:40.71446, lng:-73.99807,
-      eat:'האג רול המקורי + שומאי + שרימפ דמפלינג.',
-      why:'1920, על הרחוב המעוקל של דויירס. מסמנים על הדף, לא מזמינים במלצר.' },
-    { t:'13:30', mode:'WALKING', name:'Xi\'an Famous Foods', addr:'45 Bayard St',
-      q:"Xi'an Famous Foods, 45 Bayard St, New York, NY",
-      lat:40.71542, lng:-73.99789,
-      eat:'Spicy Cumin Lamb Hand-Ripped Noodles. מספר 1 בתפריט.',
-      why:'עומדים בתור, מזמינים במספר, מוצאים שולחן. הנודלס נמשכים ביד מאחורה.' },
-    { t:'16:00', mode:'WALKING', name:'Ferrara Bakery & Café', addr:'195 Grand St',
-      q:"Ferrara Bakery, 195 Grand St, New York, NY",
-      lat:40.71906, lng:-73.99722,
-      eat:'קנולי ממולא ברגע + אספרסו כפול.',
-      why:'ליטל איטלי מ־1892. מבקשים שימלאו את הקנולי מולכם, אחרת הוא רך.' },
-    { t:'19:00', mode:'WALKING', name:'Great NY Noodletown', addr:'28 Bowery',
-      q:"Great N.Y. Noodletown, 28 Bowery, New York, NY",
-      lat:40.71482, lng:-73.99653,
-      eat:'ברווז קלוי על אורז + ג׳ינג׳ר־סקאליון נודלס.',
-      why:'פתוח עד מאוחר, אורות פלורסנט, אפס אווירה, אוכל מושלם.' }
-  ]},
-  { d:'30.8', code:'HAR', title:'UPTOWN SOUL', hood:'Harlem', stops:[
-    { t:'11:30', mode:'DRIVING', name:"Sylvia's Restaurant", addr:'328 Malcolm X Blvd',
-      q:"Sylvia's Restaurant, 328 Malcolm X Blvd, New York, NY",
-      lat:40.80785, lng:-73.94493,
-      eat:'Smothered chicken + mac and cheese + collard greens.',
-      why:'"מלכת הסול פוד" מ־1962. בראנץ׳ עם גוספל אם מגיעים ביום ראשון.' },
-    { t:'14:00', mode:'WALKING', name:"Amy Ruth's", addr:'113 W 116th St',
-      q:"Amy Ruth's, 113 W 116th St, New York, NY",
-      lat:40.80181, lng:-73.94858,
-      eat:'"The Rev. Al Sharpton" — עוף מטוגן על וופל.',
-      why:'המנות נקראות על שם דמויות מהארלם. זו לא גימיק — זו היסטוריה מקומית.' },
-    { t:'16:30', mode:'WALKING', name:'Red Rooster Harlem', addr:'310 Lenox Ave',
-      q:"Red Rooster Harlem, 310 Lenox Ave, New York, NY",
-      lat:40.80828, lng:-73.94547,
-      eat:'Fried Yard Bird + קורנברד עם חמאת דבש.',
-      why:'מרקוס סמואלסון. מוזיקה חיה למטה ב־Ginny\'s אם יש כוח.' },
-    { t:'19:00', mode:'DRIVING', name:'Riverside Park — Pier i', addr:'W 70th St at Hudson River',
-      q:"Pier i Cafe, Riverside Park, New York, NY",
-      lat:40.77852, lng:-73.98894,
-      eat:'בירה וכוס קרח מול השקיעה. סיימנו לאכול היום.',
-      why:'השמש יורדת מעבר לנהר. זה הסיום של היום הצפוני.' }
-  ]},
-  { d:'31.8', code:'FIN', title:'THE LAST BITE', hood:'Flatiron → Midtown', stops:[
-    { t:'11:00', mode:'WALKING', name:'Shake Shack — Madison Square Park', addr:'Madison Ave & E 23rd St',
-      q:"Shake Shack Madison Square Park, New York, NY",
-      lat:40.74146, lng:-73.98803,
-      eat:'ShackBurger כפול, fries עם גבינה, שייק Black & White.',
-      why:'הדוכן המקורי בפארק. יושבים על ספסל, יונים כלולות.' },
-    { t:'13:30', mode:'WALKING', name:'Eataly NYC Flatiron', addr:'200 5th Ave',
-      q:"Eataly NYC Flatiron, 200 5th Ave, New York, NY",
-      lat:40.74209, lng:-73.98965,
-      eat:'פסטה מהדלפק + מוצרלה טרייה. קונים שמן זית הביתה.',
-      why:'התחנה של הקניות. מה שלא נקנה עכשיו — לא ייקנה.' },
-    { t:'16:00', mode:'DRIVING', name:'Serendipity 3', addr:'225 E 60th St',
-      q:"Serendipity 3, 225 E 60th St, New York, NY",
-      lat:40.76267, lng:-73.96490,
-      eat:'Frrrozen Hot Chocolate. אחד לשניים, באמת.',
-      why:'קיטש מוחלט, ומגיע לו. אחרי זה עולים צפונה לרוקפלר.' },
-    { t:'19:00', mode:'WALKING', name:'Top of the Rock', addr:'30 Rockefeller Plaza',
-      q:"Top of the Rock, 30 Rockefeller Plaza, New York, NY",
-      lat:40.75907, lng:-73.97925,
-      eat:'כלום. רק מסתכלים. אכלנו מספיק.',
-      why:'התצפית האחרונה. משם רואים את כל המסלול של השבוע. Eat the damn thing — עשינו את זה.' }
-  ]}
-  ]
+ "city": "USA",
+ "year": 2026,
+ "days": [
+  {
+   "d": "10.8",
+   "code": "ANA",
+   "title": "TOUCHDOWN",
+   "hood": "LAX → Anaheim",
+   "stops": [
+    {
+     "t": "16:30",
+     "mode": "DRIVING",
+     "name": "Los Angeles International Airport",
+     "addr": "LAX, Terminal Arrivals",
+     "q": "Los Angeles International Airport, Los Angeles, CA",
+     "lat": 33.9416,
+     "lng": -118.4085,
+     "eat": "כלום. אוכלים כשמגיעים.",
+     "why": "נחיתה, ביקורת גבולות ומזוודות. היום הזה נועד להגיע, לאכול ולישון — לא להוכיח כלום."
+    },
+    {
+     "t": "19:30",
+     "mode": "DRIVING",
+     "name": "Best Western Plus Park Place Inn",
+     "addr": "1544 S Harbor Blvd, Anaheim",
+     "q": "Best Western Plus Park Place Inn - Mini Suites, 1544 S Harbor Blvd, Anaheim, CA",
+     "lat": 33.8103,
+     "lng": -117.9186,
+     "eat": "ארוחה קלה ליד המלון. ארוחת בוקר כלולה למחר.",
+     "why": "צ׳ק-אין. המלון על הארבור, מרחק הליכה מהשערים — זה כל הרעיון."
+    },
+    {
+     "t": "20:00",
+     "mode": "WALKING",
+     "name": "Downtown Disney District",
+     "addr": "Disneyland Resort, Anaheim",
+     "q": "Downtown Disney District, Anaheim, CA",
+     "lat": 33.8085,
+     "lng": -117.9226,
+     "eat": "משהו קטן, מה שפתוח.",
+     "why": "רק אם נשאר כוח. אין חובה — מחר יום ארוך."
+    }
+   ]
+  },
+  {
+   "d": "11.8",
+   "code": "ANA",
+   "title": "GOOFY'S BRUNCH",
+   "hood": "Downtown Disney → California Adventure",
+   "stops": [
+    {
+     "t": "09:50",
+     "mode": "WALKING",
+     "name": "Downtown Disney District",
+     "addr": "Disneyland Resort, Anaheim",
+     "q": "Downtown Disney District, Anaheim, CA",
+     "lat": 33.8085,
+     "lng": -117.9226,
+     "eat": "קפה ומשהו קטן בלבד — לא לאכול לפני גופי.",
+     "why": "סיבוב רגוע: חנויות, תמונות ואווירה. מתחילים לאט."
+    },
+    {
+     "t": "11:45",
+     "mode": "WALKING",
+     "name": "Goofy's Kitchen",
+     "addr": "Disneyland Hotel, 1150 Magic Way, Anaheim",
+     "q": "Goofy's Kitchen, Disneyland Hotel, Anaheim, CA",
+     "lat": 33.8062,
+     "lng": -117.9243,
+     "eat": "בראנץ׳ דמויות — בופה all-you-care-to-enjoy. מגיעים רעבים.",
+     "why": "צ׳ק-אין ב-11:45, הזמנה ל-12:00 לארבעה. הדמויות עוברות בין השולחנות."
+    },
+    {
+     "t": "16:00",
+     "mode": "WALKING",
+     "name": "Disney California Adventure Park",
+     "addr": "Disneyland Resort, Anaheim",
+     "q": "Disney California Adventure Park, Anaheim, CA",
+     "lat": 33.808,
+     "lng": -117.919,
+     "eat": "דוכנים לפי האזור. Mobile Order מקצר תור.",
+     "why": "פארק הפתיחה. מפעילים Lightning Lane ראשון על Soarin׳ או WEB SLINGERS."
+    },
+    {
+     "t": "17:00",
+     "mode": "WALKING",
+     "name": "Cars Land",
+     "addr": "Disney California Adventure, Anaheim",
+     "q": "Cars Land, Disney California Adventure, Anaheim, CA",
+     "lat": 33.8055,
+     "lng": -117.9175,
+     "eat": "ארוחת ערב מדוכני Cars Land או Avengers Campus.",
+     "why": "Mater, Luigi ו-Radiator Springs Racers לפי התור. בלילה זה הדבר הכי יפה בפארק."
+    },
+    {
+     "t": "19:15",
+     "mode": "WALKING",
+     "name": "Pixar Pier",
+     "addr": "Disney California Adventure, Anaheim",
+     "q": "Pixar Pier, Disney California Adventure, Anaheim, CA",
+     "lat": 33.8059,
+     "lng": -117.9204,
+     "eat": "גלידה על המזח.",
+     "why": "Toy Story Midway Mania, Little Mermaid ו-Pixar Pal-A-Round — הקרון שלא מתנדנד."
+    }
+   ]
+  },
+  {
+   "d": "12.8",
+   "code": "ANA",
+   "title": "DISNEYLAND",
+   "hood": "Disneyland Park — יום מלא",
+   "stops": [
+    {
+     "t": "07:30",
+     "mode": "WALKING",
+     "name": "Main Street, U.S.A.",
+     "addr": "Disneyland Park, Anaheim",
+     "q": "Main Street U.S.A., Disneyland Park, Anaheim, CA",
+     "lat": 33.8107,
+     "lng": -117.9189,
+     "eat": "ארוחת בוקר קלה במלון לפני היציאה.",
+     "why": "כניסה מוקדמת. מזמינים Lightning Lane ראשון עוד לפני שנכנסים."
+    },
+    {
+     "t": "08:00",
+     "mode": "WALKING",
+     "name": "Fantasyland",
+     "addr": "Disneyland Park, Anaheim",
+     "q": "Fantasyland, Disneyland Park, Anaheim, CA",
+     "lat": 33.8129,
+     "lng": -117.9189,
+     "eat": "עוד לא. שומרים מקום.",
+     "why": "Alice in Wonderland ו-it's a small world. פיטר פן רק אם התור קצר."
+    },
+    {
+     "t": "10:00",
+     "mode": "WALKING",
+     "name": "Star Wars: Galaxy's Edge",
+     "addr": "Disneyland Park, Anaheim",
+     "q": "Star Wars Galaxy's Edge, Disneyland Park, Anaheim, CA",
+     "lat": 33.815,
+     "lng": -117.9223,
+     "eat": "Quick Service ב-Docking Bay 7 — ובלו מילק.",
+     "why": "Rise of the Resistance ו-Millennium Falcon. שעתיים שלמות, זה שווה את זה."
+    },
+    {
+     "t": "13:15",
+     "mode": "WALKING",
+     "name": "New Orleans Square",
+     "addr": "Disneyland Park, Anaheim",
+     "q": "New Orleans Square, Disneyland Park, Anaheim, CA",
+     "lat": 33.8112,
+     "lng": -117.92,
+     "eat": "בייני מהעגלה.",
+     "why": "Pirates of the Caribbean או Haunted Mansion לפי התור. אחר כך חוזרים למלון למזגן."
+    },
+    {
+     "t": "20:00",
+     "mode": "WALKING",
+     "name": "Sleeping Beauty Castle",
+     "addr": "Disneyland Park, Anaheim",
+     "q": "Sleeping Beauty Castle, Disneyland Park, Anaheim, CA",
+     "lat": 33.8121,
+     "lng": -117.9189,
+     "eat": "ארוחת ערב מדוכנים, בלי הזמנה קשיחה.",
+     "why": "מצעד וזיקוקים לפי האפליקציה. תמונות לילה, ואז הליכה חזרה למלון לפי האנרגיה."
+    }
+   ]
+  },
+  {
+   "d": "13.8",
+   "code": "LA",
+   "title": "HOLLYWOOD MOVE",
+   "hood": "Anaheim → Hollywood + Warner Bros.",
+   "stops": [
+    {
+     "t": "10:40",
+     "mode": "DRIVING",
+     "name": "Forest Lawn Hollywood Hills",
+     "addr": "6300 Forest Lawn Dr, Los Angeles",
+     "q": "Forest Lawn Memorial Park Hollywood Hills, 6300 Forest Lawn Dr, Los Angeles, CA",
+     "lat": 34.1478,
+     "lng": -118.323,
+     "eat": "לא אוכלים כאן.",
+     "why": "עצירה קצרה לזכר מת׳יו פרי. 30–40 דקות, לא יותר."
+    },
+    {
+     "t": "11:45",
+     "mode": "DRIVING",
+     "name": "Hollywood Boulevard",
+     "addr": "Hollywood Walk of Fame, Los Angeles",
+     "q": "Hollywood Walk of Fame, Hollywood Blvd, Los Angeles, CA",
+     "lat": 34.1016,
+     "lng": -118.3406,
+     "eat": "עוד רגע — 25 Degrees ממש כאן.",
+     "why": "סיבוב קצר ותמונות. הכוכבים על המדרכה, TCL Chinese Theatre, וזהו."
+    },
+    {
+     "t": "12:15",
+     "mode": "WALKING",
+     "name": "25 Degrees",
+     "addr": "Hollywood Roosevelt, 7000 Hollywood Blvd",
+     "q": "25 Degrees, 7000 Hollywood Blvd, Los Angeles, CA",
+     "lat": 34.1018,
+     "lng": -118.341,
+     "eat": "המבורגר Number One עם גבינת קמומבר ובצל מקורמל.",
+     "why": "בלובי של הרוזוולט. אפלולי, אדום, ומצוין — הפוגה מהשמש של הבולוורד."
+    },
+    {
+     "t": "15:00",
+     "mode": "DRIVING",
+     "name": "Warner Bros. Studio Tour Hollywood",
+     "addr": "3400 W Riverside Dr, Burbank",
+     "q": "Warner Bros. Studio Tour Hollywood, 3400 W Riverside Dr, Burbank, CA",
+     "lat": 34.1487,
+     "lng": -118.337,
+     "eat": "קפה בקפיטריה של הסטודיו.",
+     "why": "שלוש שעות בתוך הסטים האמיתיים. יוצאים ב-13:30 עם מרווח לתנועה ולחניה."
+    },
+    {
+     "t": "18:30",
+     "mode": "DRIVING",
+     "name": "Loews Hollywood Hotel",
+     "addr": "1755 N Highland Ave, Los Angeles",
+     "q": "Loews Hollywood Hotel, 1755 N Highland Ave, Los Angeles, CA",
+     "lat": 34.103,
+     "lng": -118.3387,
+     "eat": "מנוחה לפני הערב.",
+     "why": "הבסיס לחמשת הימים הבאים. Valet, מזוודות, ונושמים."
+    },
+    {
+     "t": "20:00",
+     "mode": "WALKING",
+     "name": "Mel's Drive-In Hollywood",
+     "addr": "1660 N Highland Ave, Los Angeles",
+     "q": "Mel's Drive-In, 1660 N Highland Ave, Los Angeles, CA",
+     "lat": 34.1022,
+     "lng": -118.3385,
+     "eat": "צ׳יזבורגר, פרנץ׳ פרייז ומילקשייק. דיינר אמריקאי קלאסי.",
+     "why": "מרחק הליכה מהמלון. ערב ראשון בהוליווד — לא צריך יותר."
+    }
+   ]
+  },
+  {
+   "d": "14.8",
+   "code": "LA",
+   "title": "BEVERLY HILLS",
+   "hood": "Rodeo Drive → The Grove",
+   "stops": [
+    {
+     "t": "14:35",
+     "mode": "DRIVING",
+     "name": "Rodeo Drive",
+     "addr": "Beverly Hills, CA",
+     "q": "Rodeo Drive, Beverly Hills, CA",
+     "lat": 34.0674,
+     "lng": -118.4009,
+     "eat": "עוד לא — צ׳יזקייק בערב.",
+     "why": "סיבוב, תמונות וחנויות. חונים ב-345 N Beverly Dr, שעתיים ראשונות בדרך כלל חינם."
+    },
+    {
+     "t": "15:30",
+     "mode": "WALKING",
+     "name": "Beverly Hills Sign & Lily Pond",
+     "addr": "9439 Santa Monica Blvd",
+     "q": "Beverly Gardens Park Beverly Hills Sign, 9439 Santa Monica Blvd, Beverly Hills, CA",
+     "lat": 34.067,
+     "lng": -118.4,
+     "eat": "מים. חם.",
+     "why": "מהחניה הולכים צפונה ב-N Beverly Dr, שבע עד עשר דקות. השלט והבריכה — התמונה הקלאסית."
+    },
+    {
+     "t": "16:05",
+     "mode": "DRIVING",
+     "name": "The Beverly Hills Hotel",
+     "addr": "9641 Sunset Blvd, Beverly Hills",
+     "q": "The Beverly Hills Hotel, 9641 Sunset Blvd, Beverly Hills, CA",
+     "lat": 34.0814,
+     "lng": -118.4136,
+     "eat": "אפשר לימונדה ב-Fountain Coffee Room אם עוצרים.",
+     "why": "הפינק פאלאס. מעבר וצילום מבחוץ, לא נכנסים."
+    },
+    {
+     "t": "16:15",
+     "mode": "DRIVING",
+     "name": "Carolwood Drive",
+     "addr": "Holmby Hills, Los Angeles",
+     "q": "Carolwood Drive, Los Angeles, CA",
+     "lat": 34.079,
+     "lng": -118.43,
+     "eat": "בלי עצירות.",
+     "why": "סיור נסיעה ברחובות היוקרה. רוב ״בתי הסלב״ הם שערים וגדרות — החוויה היא הנסיעה עצמה."
+    },
+    {
+     "t": "16:55",
+     "mode": "DRIVING",
+     "name": "Greystone Mansion & Gardens",
+     "addr": "905 Loma Vista Dr, Beverly Hills",
+     "q": "Greystone Mansion and Gardens, 905 Loma Vista Dr, Beverly Hills, CA",
+     "lat": 34.0925,
+     "lng": -118.4005,
+     "eat": "כלום — זה גן.",
+     "why": "רק אם השעות והעומס מאפשרים. אם התנועה מתארכת, זו התחנה הראשונה שיורדת."
+    },
+    {
+     "t": "18:00",
+     "mode": "DRIVING",
+     "name": "The Grove",
+     "addr": "189 The Grove Dr, Los Angeles",
+     "q": "The Grove, 189 The Grove Dr, Los Angeles, CA",
+     "lat": 34.0722,
+     "lng": -118.3576,
+     "eat": "דוכני Farmers Market בזמן ההמתנה.",
+     "why": "נרשמים ב-Cheesecake Factory מיד בהגעה ובודקים זמן המתנה, ואז מסתובבים."
+    },
+    {
+     "t": "19:30",
+     "mode": "WALKING",
+     "name": "The Cheesecake Factory",
+     "addr": "The Grove, 189 The Grove Dr",
+     "q": "The Cheesecake Factory, The Grove, Los Angeles, CA",
+     "lat": 34.0718,
+     "lng": -118.358,
+     "eat": "מנה אחת לשניים ופרוסת צ׳יזקייק אחת לשולחן. המנות ענקיות.",
+     "why": "אם ההמתנה בלתי אפשרית — La Piazza או דוכני Farmers Market."
+    }
+   ]
+  },
+  {
+   "d": "15.8",
+   "code": "LA",
+   "title": "BEACH RIDE",
+   "hood": "Santa Monica → Venice → Griffith",
+   "stops": [
+    {
+     "t": "09:30",
+     "mode": "DRIVING",
+     "name": "Santa Monica Pier",
+     "addr": "200 Santa Monica Pier, Santa Monica",
+     "q": "Santa Monica Pier, Santa Monica, CA",
+     "lat": 34.0094,
+     "lng": -118.4973,
+     "eat": "עוד לא. אוכלים אחרי הרכיבה.",
+     "why": "חונים ב-Santa Monica Beach Parking Lot 1 North. מזח, גלגל ענק, חוף."
+    },
+    {
+     "t": "10:15",
+     "mode": "BICYCLING",
+     "name": "Venice Beach Boardwalk",
+     "addr": "1800 Ocean Front Walk, Venice",
+     "q": "Venice Beach Boardwalk, Los Angeles, CA",
+     "lat": 33.985,
+     "lng": -118.4695,
+     "eat": "מיץ טרי או גלידה על הבורדווק.",
+     "why": "משכירים אופניים על המזח ורוכבים דרומה לוונציה וחזרה. שביל האופניים צמוד לחוף כל הדרך."
+    },
+    {
+     "t": "12:15",
+     "mode": "BICYCLING",
+     "name": "Third Street Promenade",
+     "addr": "Third Street Promenade, Santa Monica",
+     "q": "Third Street Promenade, Santa Monica, CA",
+     "lat": 34.0163,
+     "lng": -118.496,
+     "eat": "ארוחת צהריים באזור Ocean Avenue או המזח.",
+     "why": "מחזירים אופניים, אוכלים, וחוזרים ללואוס למנוחה ארוכה עד הערב."
+    },
+    {
+     "t": "18:30",
+     "mode": "DRIVING",
+     "name": "Griffith Observatory",
+     "addr": "2800 E Observatory Rd, Los Angeles",
+     "q": "Griffith Observatory, 2800 E Observatory Rd, Los Angeles, CA",
+     "lat": 34.1184,
+     "lng": -118.3004,
+     "eat": "מים וחטיף — ארוחת הערב מאוחרת.",
+     "why": "מגיעים ב-Uber לשעת הזהב. תצפית, שלט הוליווד, שקיעה ואורות העיר."
+    },
+    {
+     "t": "21:30",
+     "mode": "DRIVING",
+     "name": "Mel's Drive-In Hollywood",
+     "addr": "1660 N Highland Ave, Los Angeles",
+     "q": "Mel's Drive-In, 1660 N Highland Ave, Los Angeles, CA",
+     "lat": 34.1022,
+     "lng": -118.3385,
+     "eat": "ארוחת ערב מאוחרת — בורגר ושייק, או Dave & Buster's לפי האנרגיה.",
+     "why": "מזמינים Uber חזרה ב-20:45. אם הילדים גמורים, יוצאים מגריפית׳ ב-20:15."
+    }
+   ]
+  },
+  {
+   "d": "16.8",
+   "code": "LA",
+   "title": "MELROSE DAY",
+   "hood": "Melrose → CityWalk",
+   "stops": [
+    {
+     "t": "11:00",
+     "mode": "DRIVING",
+     "name": "Melrose Place",
+     "addr": "Melrose Place, Los Angeles",
+     "q": "Melrose Place, Los Angeles, CA",
+     "lat": 34.0838,
+     "lng": -118.3776,
+     "eat": "קפה בבוטיק.",
+     "why": "קפה, בוטיקים ותמונות. יום הטעינה לפני יוניברסל — לא מוסיפים אטרקציה."
+    },
+    {
+     "t": "12:30",
+     "mode": "DRIVING",
+     "name": "Pink's Hot Dogs",
+     "addr": "709 N La Brea Ave, Los Angeles",
+     "q": "Pink's Hot Dogs, 709 N La Brea Ave, Los Angeles, CA",
+     "lat": 34.0838,
+     "lng": -118.3444,
+     "eat": "צ׳ילי דוג. אחד. עומדים ואוכלים.",
+     "why": "רק אם התור סביר. מעל 20–25 דקות — אוכלים ליד המלון וזהו."
+    },
+    {
+     "t": "18:50",
+     "mode": "DRIVING",
+     "name": "Universal CityWalk Hollywood",
+     "addr": "100 Universal City Plaza, Universal City",
+     "q": "Universal CityWalk Hollywood, Universal City, CA",
+     "lat": 34.136,
+     "lng": -118.3534,
+     "eat": "שומרים מקום ל-Toothsome.",
+     "why": "מגיעים ב-Uber. סיבוב קצר לפני הארוחה."
+    },
+    {
+     "t": "19:30",
+     "mode": "WALKING",
+     "name": "Toothsome Chocolate Emporium",
+     "addr": "Universal CityWalk Hollywood",
+     "q": "Toothsome Chocolate Emporium, Universal CityWalk, Universal City, CA",
+     "lat": 34.1365,
+     "lng": -118.353,
+     "eat": "מילקשייק מפלצתי אחד לשולחן. באמת אחד.",
+     "why": "הזמנה קיימת ל-19:30. חוזרים מוקדם — מחר יוניברסל מ-07:00."
+    }
+   ]
+  },
+  {
+   "d": "17.8",
+   "code": "LA",
+   "title": "UNIVERSAL",
+   "hood": "Universal Studios Hollywood",
+   "stops": [
+    {
+     "t": "07:20",
+     "mode": "DRIVING",
+     "name": "Universal Studios Hollywood",
+     "addr": "100 Universal City Plaza, Universal City",
+     "q": "Universal Studios Hollywood, Universal City, CA",
+     "lat": 34.1381,
+     "lng": -118.3534,
+     "eat": "ארוחת בוקר ב-06:30 במלון. בפארק אוכלים בצהריים.",
+     "why": "Uber ב-07:00, בידוק והתייצבות בשערים לפני הפתיחה."
+    },
+    {
+     "t": "08:00",
+     "mode": "WALKING",
+     "name": "Super Nintendo World",
+     "addr": "Universal Studios Hollywood",
+     "q": "Super Nintendo World, Universal Studios Hollywood, Universal City, CA",
+     "lat": 34.1372,
+     "lng": -118.3585,
+     "eat": "עוד לא.",
+     "why": "Mario Kart בתור הרגיל בבוקר, ושומרים את Express לסיבוב נוסף."
+    },
+    {
+     "t": "11:15",
+     "mode": "WALKING",
+     "name": "Studio Tour",
+     "addr": "Universal Studios Hollywood",
+     "q": "Studio Tour, Universal Studios Hollywood, Universal City, CA",
+     "lat": 34.1395,
+     "lng": -118.3538,
+     "eat": "אחרי הסיור — Three Broomsticks.",
+     "why": "הסטים האמיתיים, קינג קונג והמפולת. זה הדבר שאי אפשר לפספס כאן."
+    },
+    {
+     "t": "12:35",
+     "mode": "WALKING",
+     "name": "Three Broomsticks",
+     "addr": "Wizarding World, Universal Studios Hollywood",
+     "q": "Three Broomsticks, Universal Studios Hollywood, Universal City, CA",
+     "lat": 34.136,
+     "lng": -118.357,
+     "eat": "פיש אנד צ׳יפס או צלעות, ובאטרבירה קרה. Mobile Order אם זמין.",
+     "why": "אוכלים בתוך הוגסמיד. אחר כך Forbidden Journey וההיפוגריף."
+    },
+    {
+     "t": "17:15",
+     "mode": "WALKING",
+     "name": "Universal CityWalk Hollywood",
+     "addr": "100 Universal City Plaza",
+     "q": "Universal CityWalk Hollywood, Universal City, CA",
+     "lat": 34.136,
+     "lng": -118.3534,
+     "eat": "משהו קטן בדרך החוצה.",
+     "why": "קניות אחרונות, ואז Uber חזרה למלון. מחר יוצאים לסן דייגו."
+    }
+   ]
+  },
+  {
+   "d": "18.8",
+   "code": "SD",
+   "title": "COAST MOVE",
+   "hood": "Laguna Beach → Mission Bay",
+   "stops": [
+    {
+     "t": "10:25",
+     "mode": "DRIVING",
+     "name": "Heisler Park",
+     "addr": "375 Cliff Dr, Laguna Beach",
+     "q": "Heisler Park, 375 Cliff Dr, Laguna Beach, CA",
+     "lat": 33.545,
+     "lng": -117.792,
+     "eat": "עוד לא. קפה וגלידה בהמשך.",
+     "why": "מחליפים רכב ב-Avis ויוצאים ב-09:00. הליכה לאורך המצוק והתצפיות."
+    },
+    {
+     "t": "11:10",
+     "mode": "WALKING",
+     "name": "Laguna Main Beach",
+     "addr": "Main Beach Park, Laguna Beach",
+     "q": "Main Beach Park, Laguna Beach, CA",
+     "lat": 33.5427,
+     "lng": -117.7854,
+     "eat": "גלידה או קפה בדרך למרכז לגונה.",
+     "why": "בריכות הגאות רק אם השפל מתאים. נעלי מים הן בונוס."
+    },
+    {
+     "t": "14:00",
+     "mode": "DRIVING",
+     "name": "Bahia Resort Hotel",
+     "addr": "998 W Mission Bay Dr, San Diego",
+     "q": "Bahia Resort Hotel, 998 W Mission Bay Dr, San Diego, CA",
+     "lat": 32.7702,
+     "lng": -117.24,
+     "eat": "ארוחת צהריים במלון או במישן ביץ׳.",
+     "why": "רישום מוקדם והשארת מזוודות. החדר ב-16:00. אחרי לגונה נותנים ל-Waze לבחור את הדרך."
+    },
+    {
+     "t": "16:30",
+     "mode": "WALKING",
+     "name": "Mission Beach Boardwalk",
+     "addr": "Ocean Front Walk, San Diego",
+     "q": "Mission Beach Boardwalk, San Diego, CA",
+     "lat": 32.7708,
+     "lng": -117.252,
+     "eat": "ארוחת ערב קרובה לפי החשק.",
+     "why": "בריכה, Mission Bay ומנוחה. שלושה לילות כאן — אפשר להוריד הילוך."
+    }
+   ]
+  },
+  {
+   "d": "19.8",
+   "code": "SD",
+   "title": "SEAWORLD",
+   "hood": "SeaWorld San Diego",
+   "stops": [
+    {
+     "t": "08:00",
+     "mode": "WALKING",
+     "name": "Dockside 1953",
+     "addr": "Bahia Resort Hotel, San Diego",
+     "q": "Dockside 1953, Bahia Resort Hotel, San Diego, CA",
+     "lat": 32.7702,
+     "lng": -117.2405,
+     "eat": "ארוחת בוקר על המים, או קפה מ-Better Buzz בדרך.",
+     "why": "יוצאים ב-09:15 בהנחה שהפארק נפתח ב-10:00."
+    },
+    {
+     "t": "10:00",
+     "mode": "DRIVING",
+     "name": "SeaWorld San Diego",
+     "addr": "500 Sea World Dr, San Diego",
+     "q": "SeaWorld San Diego, 500 Sea World Dr, San Diego, CA",
+     "lat": 32.7645,
+     "lng": -117.2265,
+     "eat": "עוד לא — אוכלים אחרי מופע הדולפינים.",
+     "why": "חניית Up-Close מקצרת הליכה, לא בידוק. מתחילים ב-Explorer's Reef."
+    },
+    {
+     "t": "11:15",
+     "mode": "WALKING",
+     "name": "Dolphin Stadium",
+     "addr": "SeaWorld San Diego",
+     "q": "Dolphin Point, SeaWorld San Diego, San Diego, CA",
+     "lat": 32.764,
+     "lng": -117.228,
+     "eat": "אחרי המופע — צהריים באזור שבו הוא נגמר.",
+     "why": "מגיעים 20–25 דקות מראש. זמני המופעים בפועל קובעים את סדר היום."
+    },
+    {
+     "t": "14:00",
+     "mode": "WALKING",
+     "name": "Orca Encounter",
+     "addr": "SeaWorld San Diego",
+     "q": "Orca Encounter, SeaWorld San Diego, San Diego, CA",
+     "lat": 32.763,
+     "lng": -117.225,
+     "eat": "גלידה בחלון ההשלמות.",
+     "why": "אחר כך האזור המערבי ו-Shipwreck Rapids אם יש זמן. כרישים נשמרים לסוף."
+    },
+    {
+     "t": "19:30",
+     "mode": "DRIVING",
+     "name": "Dockside 1953",
+     "addr": "Bahia Resort Hotel, San Diego",
+     "q": "Dockside 1953, Bahia Resort Hotel, San Diego, CA",
+     "lat": 32.7702,
+     "lng": -117.2405,
+     "eat": "ארוחת ערב על המים. מומלץ שולחן בחוץ.",
+     "why": "יוצאים מהפארק ב-16:15. ים, בריכה ומקלחות לפני הארוחה."
+    }
+   ]
+  },
+  {
+   "d": "20.8",
+   "code": "SD",
+   "title": "ZOO & BELMONT",
+   "hood": "Balboa Park → Mission Beach",
+   "stops": [
+    {
+     "t": "08:30",
+     "mode": "DRIVING",
+     "name": "San Diego Zoo",
+     "addr": "2920 Zoo Dr, San Diego",
+     "q": "San Diego Zoo, 2920 Zoo Dr, San Diego, CA",
+     "lat": 32.7353,
+     "lng": -117.149,
+     "eat": "ארוחת בוקר מהירה לפני היציאה.",
+     "why": "חניה בתשלום והליכה לשערים. Guided Bus Tour רק אם ההמתנה עד עשרים דקות."
+    },
+    {
+     "t": "10:00",
+     "mode": "WALKING",
+     "name": "Skyfari Aerial Tram",
+     "addr": "San Diego Zoo",
+     "q": "Skyfari, San Diego Zoo, San Diego, CA",
+     "lat": 32.736,
+     "lng": -117.151,
+     "eat": "עוד לא.",
+     "why": "עוברים לצד הצפוני מלמעלה. דובי הקוטב בונוס בלבד — אם יש עיכוב, מדלגים."
+    },
+    {
+     "t": "10:30",
+     "mode": "WALKING",
+     "name": "Panda Ridge",
+     "addr": "San Diego Zoo",
+     "q": "Panda Ridge, San Diego Zoo, San Diego, CA",
+     "lat": 32.737,
+     "lng": -117.15,
+     "eat": "עדיין לא.",
+     "why": "הפנדות הן החלק ששומרים עליו גם אם היום מתעכב."
+    },
+    {
+     "t": "11:00",
+     "mode": "WALKING",
+     "name": "Africa Rocks",
+     "addr": "San Diego Zoo",
+     "q": "Africa Rocks, San Diego Zoo, San Diego, CA",
+     "lat": 32.734,
+     "lng": -117.147,
+     "eat": "ארוחת צהריים בגן, לפי המסלול שבחרתם.",
+     "why": "המסלול המומלץ: פילים ← Africa Rocks ← קואלות. מגוון וזורם יותר מהגורילות."
+    },
+    {
+     "t": "18:00",
+     "mode": "DRIVING",
+     "name": "Belmont Park",
+     "addr": "3146 Mission Blvd, San Diego",
+     "q": "Belmont Park, 3146 Mission Blvd, San Diego, CA",
+     "lat": 32.7707,
+     "lng": -117.2523,
+     "eat": "עוד רגע — Draft ממש כאן.",
+     "why": "מתקנים, ארקייד ושקיעה על הרכבת העץ. הליכה מהמלון."
+    },
+    {
+     "t": "19:30",
+     "mode": "WALKING",
+     "name": "Draft Belmont Park",
+     "addr": "3105 Ocean Front Walk, San Diego",
+     "q": "Draft South Mission, Belmont Park, San Diego, CA",
+     "lat": 32.7705,
+     "lng": -117.253,
+     "eat": "בירה, פיצה או פיש טאקוס מול הים.",
+     "why": "בדרך כלל walk-in. אם מלא — יש מספיק חלופות במתחם."
+    }
+   ]
+  },
+  {
+   "d": "21.8",
+   "code": "LV",
+   "title": "ROAD TRIP",
+   "hood": "San Diego → Las Vegas על I-15",
+   "stops": [
+    {
+     "t": "09:40",
+     "mode": "DRIVING",
+     "name": "Cabazon Dinosaurs",
+     "addr": "50770 Seminole Dr, Cabazon",
+     "q": "Cabazon Dinosaurs, 50770 Seminole Dr, Cabazon, CA",
+     "lat": 33.9243,
+     "lng": -116.777,
+     "eat": "כלום. עצירת צילום.",
+     "why": "הדינוזאורים הענקיים מ-Pee-wee's Big Adventure. חמש עשרה עד עשרים דקות ויוצאים."
+    },
+    {
+     "t": "11:45",
+     "mode": "DRIVING",
+     "name": "Calico Ghost Town",
+     "addr": "36600 Ghost Town Rd, Yermo",
+     "q": "Calico Ghost Town, 36600 Ghost Town Rd, Yermo, CA",
+     "lat": 34.9483,
+     "lng": -116.864,
+     "eat": "שתייה קרה. חם.",
+     "why": "עיירת רפאים אמיתית מתקופת הכסף. הרחוב הראשי, החנויות והמכרה אם פתוח. קצר בכוונה."
+    },
+    {
+     "t": "12:35",
+     "mode": "DRIVING",
+     "name": "Eddie World",
+     "addr": "35634 Yermo Rd, Yermo",
+     "q": "Eddie World, 35634 Yermo Rd, Yermo, CA",
+     "lat": 34.901,
+     "lng": -116.828,
+     "eat": "ממתקים, ביף ג׳רקי ושתייה קרה להמשך הדרך.",
+     "why": "תחנת הדרכים הכי מטורפת ב-I-15. עשרים דקות מספיקות."
+    },
+    {
+     "t": "13:00",
+     "mode": "WALKING",
+     "name": "Peggy Sue's 50's Diner",
+     "addr": "35654 Yermo Rd, Yermo",
+     "q": "Peggy Sue's 50's Diner, 35654 Yermo Rd, Yermo, CA",
+     "lat": 34.9004,
+     "lng": -116.8271,
+     "eat": "בורגר, מילקשייק ופאי. הארוחה המרכזית של היום.",
+     "why": "דיינר משנות החמישים עם ג׳וקבוקס ופסלי שעווה. ממש ליד אדי וורלד."
+    },
+    {
+     "t": "14:45",
+     "mode": "DRIVING",
+     "name": "Alien Fresh Jerky",
+     "addr": "72242 Baker Blvd, Baker",
+     "q": "Alien Fresh Jerky, 72242 Baker Blvd, Baker, CA",
+     "lat": 35.268,
+     "lng": -116.073,
+     "eat": "ג׳רקי בטעמים שאסור לספר עליהם.",
+     "why": "בונוס. אם יש איחור — זו העצירה הראשונה שיורדת."
+    },
+    {
+     "t": "15:00",
+     "mode": "WALKING",
+     "name": "World's Tallest Thermometer",
+     "addr": "72157 Baker Blvd, Baker",
+     "q": "World's Tallest Thermometer, 72157 Baker Blvd, Baker, CA",
+     "lat": 35.2677,
+     "lng": -116.0725,
+     "eat": "כלום. רק מסתכלים כמה חם.",
+     "why": "134 רגל, כמו השיא שנמדד בעמק המוות. צילום מהיר בלבד."
+    },
+    {
+     "t": "16:45",
+     "mode": "DRIVING",
+     "name": "Vdara Hotel & Spa",
+     "addr": "2600 W Harmon Ave, Las Vegas",
+     "q": "Vdara Hotel & Spa, 2600 W Harmon Ave, Las Vegas, NV",
+     "lat": 36.1075,
+     "lng": -115.176,
+     "eat": "אין ארוחת בוקר במלון — לתכנן בהתאם.",
+     "why": "Valet, צ׳ק-אין ומשאירים את הרכב. חלון ההגעה 16:45–17:15. מנוחה עד 18:25."
+    },
+    {
+     "t": "18:35",
+     "mode": "WALKING",
+     "name": "Bellagio Conservatory",
+     "addr": "3600 S Las Vegas Blvd, Las Vegas",
+     "q": "Bellagio Conservatory & Botanical Gardens, Las Vegas, NV",
+     "lat": 36.1126,
+     "lng": -115.1767,
+     "eat": "עוד לא.",
+     "why": "הליכה מ-Vdara. הגן מתחלף לפי עונה — זה שווה את חמש עשרה הדקות."
+    },
+    {
+     "t": "19:00",
+     "mode": "WALKING",
+     "name": "Bellagio Fountains",
+     "addr": "3600 S Las Vegas Blvd, Las Vegas",
+     "q": "Fountains of Bellagio, Las Vegas, NV",
+     "lat": 36.1125,
+     "lng": -115.1742,
+     "eat": "עדיין לא.",
+     "why": "מופע המזרקות בכפוף ללוח של אותו יום. בודקים לפני שיוצאים."
+    },
+    {
+     "t": "20:00",
+     "mode": "WALKING",
+     "name": "Rainforest Cafe",
+     "addr": "MGM Grand, 3799 S Las Vegas Blvd",
+     "q": "Rainforest Cafe, MGM Grand, Las Vegas, NV",
+     "lat": 36.1023,
+     "lng": -115.1697,
+     "eat": "ארוחת ערב בג׳ונגל. הזמנה ל-20:00.",
+     "why": "הליכה לאורך הסטריפ מהמזרקות. ביום חם — Uber וקטעי הליכה קצרים."
+    }
+   ]
+  },
+  {
+   "d": "22.8",
+   "code": "LV",
+   "title": "AREA15 & AIR",
+   "hood": "Museum of Ice Cream → מסוק לילה",
+   "stops": [
+    {
+     "t": "11:25",
+     "mode": "DRIVING",
+     "name": "Museum of Ice Cream",
+     "addr": "3072 Rigel Ave, AREA15 Zone 2, Las Vegas",
+     "q": "Museum of Ice Cream Las Vegas, 3072 Rigel Ave, Las Vegas, NV",
+     "lat": 36.135,
+     "lng": -115.191,
+     "eat": "גלידה. הרבה. זה שם המקום.",
+     "why": "מחזירים את הרכב ל-Avis ב-ARIA ב-10:30 — עדיף שרק הנהג ילך. משם Uber."
+    },
+    {
+     "t": "12:00",
+     "mode": "WALKING",
+     "name": "AREA15",
+     "addr": "3215 S Rancho Dr, Las Vegas",
+     "q": "AREA15, 3215 S Rancho Dr, Las Vegas, NV",
+     "lat": 36.1362,
+     "lng": -115.1927,
+     "eat": "משהו קטן ב-Beast או בבר.",
+     "why": "הכרטיס תקף לכל היום, אבל לא חייבים למצות אותו על חשבון המנוחה."
+    },
+    {
+     "t": "17:45",
+     "mode": "DRIVING",
+     "name": "Proper Eats Food Hall",
+     "addr": "ARIA Resort, 3730 S Las Vegas Blvd",
+     "q": "Proper Eats Food Hall, ARIA Resort, Las Vegas, NV",
+     "lat": 36.1073,
+     "lng": -115.1765,
+     "eat": "ארוחה קלה — לא ממלאים לפני המסוק.",
+     "why": "אפשר גם Block 16. מקלחות והתארגנות עד 20:00."
+    },
+    {
+     "t": "20:50",
+     "mode": "DRIVING",
+     "name": "Maverick Helicopters",
+     "addr": "6075 S Las Vegas Blvd, Las Vegas",
+     "q": "Maverick Helicopters, 6075 S Las Vegas Blvd, Las Vegas, NV",
+     "lat": 36.079,
+     "lng": -115.172,
+     "eat": "כלום לפני הטיסה.",
+     "why": "לימוזינה אוספת מהלובי ב-20:15, נסיעה ישירה. דרכונים או תעודות זהות פיזיות חובה."
+    },
+    {
+     "t": "22:00",
+     "mode": "DRIVING",
+     "name": "Welcome to Fabulous Las Vegas Sign",
+     "addr": "5100 S Las Vegas Blvd",
+     "q": "Welcome to Fabulous Las Vegas Sign, Las Vegas, NV",
+     "lat": 36.082,
+     "lng": -115.1728,
+     "eat": "אחרי הטיסה — מה שבא.",
+     "why": "סיבוב לימוזינה בסטריפ וצילום בשלט. אין עצירות לפני המסוק — הכל אחריו."
+    }
+   ]
+  },
+  {
+   "d": "23.8",
+   "code": "LV",
+   "title": "STRIP MORNING",
+   "hood": "Mon Ami Gabi → Hell's Kitchen",
+   "stops": [
+    {
+     "t": "08:30",
+     "mode": "WALKING",
+     "name": "Mon Ami Gabi",
+     "addr": "Paris Las Vegas, 3655 S Las Vegas Blvd",
+     "q": "Mon Ami Gabi, Paris Las Vegas, Las Vegas, NV",
+     "lat": 36.1123,
+     "lng": -115.172,
+     "eat": "ארוחת בוקר על המרפסת מול המזרקות. הזמנה ל-08:30.",
+     "why": "יוצאים ברגל מ-Vdara ב-07:55. זה הבראנץ׳ הכי טוב בסטריפ, ובשעה הזאת עוד נעים בחוץ."
+    },
+    {
+     "t": "09:40",
+     "mode": "WALKING",
+     "name": "M&M'S World Las Vegas",
+     "addr": "3785 S Las Vegas Blvd, Las Vegas",
+     "q": "M&M'S World Las Vegas, 3785 S Las Vegas Blvd, Las Vegas, NV",
+     "lat": 36.1043,
+     "lng": -115.1717,
+     "eat": "מילוי שקית בצבעים שלא קיימים בארץ.",
+     "why": "ארבע קומות. הכי כיף לילדים בכל הסטריפ."
+    },
+    {
+     "t": "10:00",
+     "mode": "WALKING",
+     "name": "Coca-Cola Store Las Vegas",
+     "addr": "3785 S Las Vegas Blvd, Las Vegas",
+     "q": "Coca-Cola Store Las Vegas, 3785 S Las Vegas Blvd, Las Vegas, NV",
+     "lat": 36.104,
+     "lng": -115.1715,
+     "eat": "מגש הטעימות של קולה מכל העולם. הביטר איטלקי — בהצלחה.",
+     "why": "צמוד ל-M&M'S. אחרי זה Uber חזרה בגלל החום."
+    },
+    {
+     "t": "19:30",
+     "mode": "DRIVING",
+     "name": "Gordon Ramsay Hell's Kitchen",
+     "addr": "Caesars Palace, 3570 S Las Vegas Blvd",
+     "q": "Gordon Ramsay Hell's Kitchen, Caesars Palace, Las Vegas, NV",
+     "lat": 36.1162,
+     "lng": -115.1745,
+     "eat": "Beef Wellington. חובה. שני מבוגרים ב-Prix Fixe והילדים à la carte.",
+     "why": "יום התאוששות מכוון — כל הבוקר רגוע בשביל הערב הזה. הזמנה ל-19:30."
+    }
+   ]
+  },
+  {
+   "d": "24.8",
+   "code": "NYC",
+   "title": "NYC TOUCHDOWN",
+   "hood": "JFK → Midtown",
+   "stops": [
+    {
+     "t": "19:00",
+     "mode": "DRIVING",
+     "name": "John F. Kennedy International Airport",
+     "addr": "JFK Airport, Queens, NY",
+     "q": "John F. Kennedy International Airport, Queens, NY",
+     "lat": 40.6413,
+     "lng": -73.7781,
+     "eat": "כלום. שומרים ל-Shake Shack.",
+     "why": "טיסת American Airlines מלאס וגאס, 11:00–19:00. נחיתה, מזוודות והסעה."
+    },
+    {
+     "t": "21:30",
+     "mode": "DRIVING",
+     "name": "Residence Inn New York Manhattan/Times Square",
+     "addr": "1033 Avenue of the Americas, NY 10018",
+     "q": "Residence Inn New York Manhattan Times Square, 1033 Avenue of the Americas, New York, NY",
+     "lat": 40.7519,
+     "lng": -73.984,
+     "eat": "ארוחת בוקר כלולה מחר.",
+     "why": "שעת ההגעה היא חלון, לא הבטחה. לא לבנות על 21:00 מדויק."
+    },
+    {
+     "t": "21:45",
+     "mode": "WALKING",
+     "name": "Shake Shack Times Square",
+     "addr": "691 8th Ave, New York",
+     "q": "Shake Shack Theater District, 691 8th Ave, New York, NY",
+     "lat": 40.7574,
+     "lng": -73.989,
+     "eat": "ShackBurger, fries וקונקריט. הביס הראשון בניו יורק.",
+     "why": "אוכל מהיר, לא תוכנית מלאה. רק אם יש כוח."
+    },
+    {
+     "t": "22:15",
+     "mode": "WALKING",
+     "name": "Times Square",
+     "addr": "Times Square, New York",
+     "q": "Times Square, New York, NY",
+     "lat": 40.758,
+     "lng": -73.9855,
+     "eat": "אכלנו. עכשיו רק מסתכלים.",
+     "why": "סיבוב קצר באורות וזהו. מחר בבוקר SUMMIT."
+    }
+   ]
+  },
+  {
+   "d": "25.8",
+   "code": "NYC",
+   "title": "SUMMIT DAY",
+   "hood": "One Vanderbilt → Times Square",
+   "stops": [
+    {
+     "t": "09:30",
+     "mode": "WALKING",
+     "name": "SUMMIT One Vanderbilt",
+     "addr": "45 E 42nd St, New York",
+     "q": "SUMMIT One Vanderbilt, 45 E 42nd St, New York, NY",
+     "lat": 40.7527,
+     "lng": -73.9785,
+     "eat": "עוד לא. אחרי זה קפה בבריאנט פארק.",
+     "why": "כרטיסים ל-09:30. מכנסיים נוחים ומשקפי שמש — הרצפות והתקרות מראות, וזה מסנוור."
+    },
+    {
+     "t": "11:00",
+     "mode": "WALKING",
+     "name": "Grand Central Terminal",
+     "addr": "89 E 42nd St, New York",
+     "q": "Grand Central Terminal, 89 E 42nd St, New York, NY",
+     "lat": 40.7527,
+     "lng": -73.9772,
+     "eat": "עוד לא.",
+     "why": "האולם המרכזי, התקרה עם הכוכבים, ופינת הלחישות ליד Oyster Bar. רבע שעה מספיקה."
+    },
+    {
+     "t": "11:25",
+     "mode": "WALKING",
+     "name": "New York Public Library",
+     "addr": "476 5th Ave, New York",
+     "q": "New York Public Library Stephen A. Schwarzman Building, 476 5th Ave, New York, NY",
+     "lat": 40.7532,
+     "lng": -73.9822,
+     "eat": "עדיין לא.",
+     "why": "ביקור עצמאי. הרוז ריידינג רום והאריות בכניסה — פטיינס ופורטיטיוד."
+    },
+    {
+     "t": "12:05",
+     "mode": "WALKING",
+     "name": "Bryant Park",
+     "addr": "5th Ave & 42nd St, New York",
+     "q": "Bryant Park, New York, NY",
+     "lat": 40.7536,
+     "lng": -73.9832,
+     "eat": "ארוחת צהריים קלה מהדוכנים בפארק.",
+     "why": "ממש מאחורי הספרייה. אחרי זה חוזרים למלון למנוחה ארוכה עד 17:40."
+    },
+    {
+     "t": "18:05",
+     "mode": "WALKING",
+     "name": "Hard Rock Cafe New York",
+     "addr": "1501 Broadway, New York",
+     "q": "Hard Rock Cafe New York, 1501 Broadway, New York, NY",
+     "lat": 40.7566,
+     "lng": -73.9866,
+     "eat": "לא אוכלים כאן. Rock Shop בלבד.",
+     "why": "ביקור קצר במזכרות. אם עוד קיימת הזמנת אוכל — לבטל."
+    },
+    {
+     "t": "18:30",
+     "mode": "WALKING",
+     "name": "Times Square",
+     "addr": "Times Square, New York",
+     "q": "Times Square, New York, NY",
+     "lat": 40.758,
+     "lng": -73.9855,
+     "eat": "שומרים מקום ל-Sugar Factory.",
+     "why": "טיול באורות ובחנויות. חמישים דקות ואז הולכים לארוחה."
+    },
+    {
+     "t": "19:30",
+     "mode": "WALKING",
+     "name": "Sugar Factory Times Square",
+     "addr": "694 8th Ave, New York, NY 10036",
+     "q": "Sugar Factory American Brasserie, 694 8th Ave, New York, NY",
+     "lat": 40.7583,
+     "lng": -73.9887,
+     "eat": "הגובלט הדולק — אחד לשולחן, לא לכל אחד. המנות ענקיות.",
+     "why": "הזמנה מאושרת ל-19:30. זו ארוחת הערב המרכזית של היום."
+    }
+   ]
+  },
+  {
+   "d": "26.8",
+   "code": "NYC",
+   "title": "SHOPPING DAY",
+   "hood": "Jersey Gardens → Tony's Di Napoli",
+   "stops": [
+    {
+     "t": "10:00",
+     "mode": "DRIVING",
+     "name": "The Mills at Jersey Gardens",
+     "addr": "651 Kapkowski Rd, Elizabeth, NJ",
+     "q": "The Mills at Jersey Gardens, 651 Kapkowski Rd, Elizabeth, NJ",
+     "lat": 40.669,
+     "lng": -74.169,
+     "eat": "קפה בהגעה. ארוחת צהריים מהירה ב-13:00.",
+     "why": "נהג פרטי הלוך-חזור, יציאה ב-09:15, הגעה לפתיחה. ניו ג׳רזי — בלי מס על בגדים."
+    },
+    {
+     "t": "13:00",
+     "mode": "WALKING",
+     "name": "Food Court, Jersey Gardens",
+     "addr": "651 Kapkowski Rd, Elizabeth, NJ",
+     "q": "The Mills at Jersey Gardens Food Court, Elizabeth, NJ",
+     "lat": 40.6688,
+     "lng": -74.1688,
+     "eat": "ארוחת צהריים מהירה במתחם. חצי שעה, לא יותר.",
+     "why": "מתחילים מהחנויות החשובות. יום קניות נשאר יום קניות — לא מוסיפים אטרקציה."
+    },
+    {
+     "t": "17:30",
+     "mode": "DRIVING",
+     "name": "Residence Inn New York Manhattan/Times Square",
+     "addr": "1033 Avenue of the Americas",
+     "q": "Residence Inn New York Manhattan Times Square, New York, NY",
+     "lat": 40.7519,
+     "lng": -73.984,
+     "eat": "מנוחה ומדידות.",
+     "why": "יוצאים מהמול ב-16:00. אם הקניות מתארכות — מקצרים את המנוחה, לא את טוניס."
+    },
+    {
+     "t": "20:00",
+     "mode": "WALKING",
+     "name": "Tony's Di Napoli",
+     "addr": "147 W 43rd St, New York",
+     "q": "Tony's Di Napoli Times Square, 147 W 43rd St, New York, NY",
+     "lat": 40.7565,
+     "lng": -73.986,
+     "eat": "מנות משפחתיות — צ׳יקן פרמזן וריגטוני וודקה לשולחן. לחלוק לפי הרעב.",
+     "why": "יוצאים ברגל ב-19:40, צ׳ק-אין אצל המארחת ב-19:50. הזמנה ל-20:00."
+    }
+   ]
+  },
+  {
+   "d": "27.8",
+   "code": "NYC",
+   "title": "WATER & RAILS",
+   "hood": "Circle Line → High Line → Harry Potter",
+   "stops": [
+    {
+     "t": "09:45",
+     "mode": "DRIVING",
+     "name": "Pier 83 — Circle Line Sightseeing",
+     "addr": "W 42nd St & 12th Ave, New York",
+     "q": "Circle Line Sightseeing Cruises, Pier 83, New York, NY",
+     "lat": 40.7625,
+     "lng": -73.9995,
+     "eat": "ארוחת בוקר במלון לפני היציאה.",
+     "why": "Uber ב-09:20. השייט Liberty Midtown נמשך שעה ולא יורד באי החירות."
+    },
+    {
+     "t": "12:00",
+     "mode": "DRIVING",
+     "name": "Chelsea Market",
+     "addr": "75 9th Ave, New York",
+     "q": "Chelsea Market, 75 9th Ave, New York, NY",
+     "lat": 40.7424,
+     "lng": -74.0061,
+     "eat": "ארוחת צהריים בשוק — לוס טאקוס נמבר וואן, או לובסטר פלייס.",
+     "why": "יורדים מהסירה ב-11:30 ולוקחים Uber. שעה ועשר דקות לאכול ולהסתובב."
+    },
+    {
+     "t": "13:20",
+     "mode": "WALKING",
+     "name": "The High Line",
+     "addr": "Gansevoort St entrance, New York",
+     "q": "The High Line, Gansevoort St, New York, NY",
+     "lat": 40.7396,
+     "lng": -74.0082,
+     "eat": "קפה קר בדרך.",
+     "why": "מדרום לצפון על פסי הרכבת הישנים. יוצא ישר מ-Chelsea Market לכיוון Hudson Yards."
+    },
+    {
+     "t": "14:40",
+     "mode": "WALKING",
+     "name": "Hudson Yards & Vessel",
+     "addr": "20 Hudson Yards, New York",
+     "q": "The Vessel, Hudson Yards, New York, NY",
+     "lat": 40.7538,
+     "lng": -74.0021,
+     "eat": "קפה, גלידה ושירותים במזגן.",
+     "why": "את הווסל רואים מבחוץ. לא חוזרים למלון באמצע — המנוחה נעשית כאן."
+    },
+    {
+     "t": "16:00",
+     "mode": "DRIVING",
+     "name": "Madison Square Park",
+     "addr": "11 Madison Ave, New York",
+     "q": "Madison Square Park, New York, NY",
+     "lat": 40.7424,
+     "lng": -73.9878,
+     "eat": "אפשר Shake Shack המקורי אם יש חשק.",
+     "why": "עשר דקות: הפלטאיירון והפארק מבחוץ, ואז לחנות של הארי פוטר."
+    },
+    {
+     "t": "16:10",
+     "mode": "WALKING",
+     "name": "Harry Potter New York",
+     "addr": "935 Broadway, New York",
+     "q": "Harry Potter New York, 935 Broadway, New York, NY",
+     "lat": 40.7392,
+     "lng": -73.9895,
+     "eat": "באטרבירה. חובה.",
+     "why": "החנות הכי גדולה בעולם. שעתיים: חנות, צילומים ובאטרבירה."
+    },
+    {
+     "t": "19:00",
+     "mode": "WALKING",
+     "name": "Black Tap Craft Burgers",
+     "addr": "136 W 35th St, New York",
+     "q": "Black Tap Craft Burgers & Beer, 136 W 35th St, New York, NY",
+     "lat": 40.75,
+     "lng": -73.988,
+     "eat": "מזמינים אוכל קודם, ושני CrazyShakes לחלוקה רק לקראת הסוף.",
+     "why": "הזמנה ל-19:00 בסניף 35th Street. הליכה חזרה למלון בעשר דקות."
+    }
+   ]
+  },
+  {
+   "d": "28.8",
+   "code": "NYC",
+   "title": "BIKE DAY",
+   "hood": "Park Lane → Central Park על אופניים",
+   "stops": [
+    {
+     "t": "11:30",
+     "mode": "DRIVING",
+     "name": "Park Lane New York",
+     "addr": "36 Central Park South, New York",
+     "q": "Park Lane New York, 36 Central Park S, New York, NY",
+     "lat": 40.7654,
+     "lng": -73.976,
+     "eat": "עוד לא — צהריים ברוקפלר.",
+     "why": "צ׳ק-אאוט מהרזידנס ב-11:00, Uber XL עם המזוודות. משאירים אותן ומיד יוצאים."
+    },
+    {
+     "t": "12:00",
+     "mode": "WALKING",
+     "name": "Rockefeller Center",
+     "addr": "45 Rockefeller Plaza, New York",
+     "q": "Rockefeller Center, 45 Rockefeller Plaza, New York, NY",
+     "lat": 40.7587,
+     "lng": -73.9787,
+     "eat": "ארוחת צהריים במתחם. 45 דקות.",
+     "why": "הכיכר, האטלס ובניין ה-GE. יורדים לקומת המסעדות."
+    },
+    {
+     "t": "13:00",
+     "mode": "WALKING",
+     "name": "FAO Schwarz",
+     "addr": "30 Rockefeller Plaza, New York",
+     "q": "FAO Schwarz, 30 Rockefeller Plaza, New York, NY",
+     "lat": 40.759,
+     "lng": -73.9794,
+     "eat": "כלום. רק הפסנתר.",
+     "why": "הפסנתר הגדול מ-Big — עולים עליו. שעה ורבע."
+    },
+    {
+     "t": "14:35",
+     "mode": "WALKING",
+     "name": "Apple Fifth Avenue",
+     "addr": "767 5th Ave, New York",
+     "q": "Apple Fifth Avenue, 767 5th Ave, New York, NY",
+     "lat": 40.7636,
+     "lng": -73.9729,
+     "eat": "כלום.",
+     "why": "הליכה צפונה בשדרה החמישית. הקובייה פתוחה 24/7 — יורדים במדרגות הזכוכית."
+    },
+    {
+     "t": "17:15",
+     "mode": "WALKING",
+     "name": "Grand Army Plaza — השכרת אופניים",
+     "addr": "Grand Army Plaza, New York",
+     "q": "Grand Army Plaza, 5th Ave & 59th St, New York, NY",
+     "lat": 40.7645,
+     "lng": -73.974,
+     "eat": "עוד לא. אוכלים בפיקניק.",
+     "why": "ילדים מתחת ל-16 לא משתמשים ב-Citi Bike — מזמינים אופניים משפחתיים מראש מחברת השכרה רגילה."
+    },
+    {
+     "t": "17:30",
+     "mode": "BICYCLING",
+     "name": "Central Park Loop",
+     "addr": "Central Park Drive, New York",
+     "q": "Central Park Loop, East Drive, New York, NY",
+     "lat": 40.7736,
+     "lng": -73.9712,
+     "eat": "מים מהעגלה.",
+     "why": "רוכבים רק בכבישי האופניים המורשים, נגד כיוון השעון. שעה שלמה."
+    },
+    {
+     "t": "18:30",
+     "mode": "BICYCLING",
+     "name": "Sheep Meadow",
+     "addr": "Central Park, New York",
+     "q": "Sheep Meadow, Central Park, New York, NY",
+     "lat": 40.7714,
+     "lng": -73.9755,
+     "eat": "פיקניק על הדשא — אוכל שאספנו בדרך.",
+     "why": "מחזירים אופניים ב-18:15 ואוספים אוכל. שעה וחצי על המדשאה מול קו הרקיע."
+    }
+   ]
+  },
+  {
+   "d": "29.8",
+   "code": "NYC",
+   "title": "HEART OF THE PARK",
+   "hood": "Central Park → The Smith",
+   "stops": [
+    {
+     "t": "09:20",
+     "mode": "WALKING",
+     "name": "The Mall & Literary Walk",
+     "addr": "Central Park, New York",
+     "q": "The Mall, Central Park, New York, NY",
+     "lat": 40.7716,
+     "lng": -73.9722,
+     "eat": "עוד לא.",
+     "why": "יוצאים ברגל מ-Park Lane ב-09:00. השדרה עם עצי הבוקיצה — הפרומנדה הכי יפה בפארק."
+    },
+    {
+     "t": "09:30",
+     "mode": "WALKING",
+     "name": "Bethesda Terrace",
+     "addr": "Central Park, New York",
+     "q": "Bethesda Terrace, Central Park, New York, NY",
+     "lat": 40.7742,
+     "lng": -73.9709,
+     "eat": "עדיין לא.",
+     "why": "המזרקה, הטרסה והתקרה המרוצפת מתחתיה. משם ישר לסירות."
+    },
+    {
+     "t": "10:00",
+     "mode": "WALKING",
+     "name": "Central Park Boathouse",
+     "addr": "E 72nd St & Park Dr N, New York",
+     "q": "Loeb Boathouse, Central Park, New York, NY",
+     "lat": 40.7756,
+     "lng": -73.9683,
+     "eat": "כלום. חותרים.",
+     "why": "סירות משוטים לשעה. פועלות לפי מזג האוויר ועל בסיס מקום פנוי."
+    },
+    {
+     "t": "11:15",
+     "mode": "WALKING",
+     "name": "Belvedere Castle",
+     "addr": "Central Park, New York",
+     "q": "Belvedere Castle, Central Park, New York, NY",
+     "lat": 40.7797,
+     "lng": -73.9692,
+     "eat": "מים.",
+     "why": "יורדים מהסירה והולכים צפונה. הטירה, התצפית ו-Turtle Pond מלמעלה."
+    },
+    {
+     "t": "12:20",
+     "mode": "WALKING",
+     "name": "Strawberry Fields",
+     "addr": "Central Park West & 72nd St, New York",
+     "q": "Strawberry Fields, Central Park, New York, NY",
+     "lat": 40.7756,
+     "lng": -73.9755,
+     "eat": "עוד קצת סבלנות.",
+     "why": "הליכה לצד המערבי. פסיפס Imagine ומול זה בניין הדקוטה."
+    },
+    {
+     "t": "13:30",
+     "mode": "WALKING",
+     "name": "The Smith — Lincoln Square",
+     "addr": "1900 Broadway, New York",
+     "q": "The Smith Lincoln Square, 1900 Broadway, New York, NY",
+     "lat": 40.7719,
+     "lng": -73.9822,
+     "eat": "המק אנד צ׳יז עם הפירורים, וסטייק פריטס. הזמנה מאושרת ל-13:30, ארבעה סועדים.",
+     "why": "זה הסניף הנכון — מול לינקולן סנטר. אחרי זה חוזרים למלון לשלוש שעות מנוחה."
+    },
+    {
+     "t": "18:30",
+     "mode": "WALKING",
+     "name": "Columbus Circle",
+     "addr": "Columbus Circle, New York",
+     "q": "Columbus Circle, New York, NY",
+     "lat": 40.7681,
+     "lng": -73.9819,
+     "eat": "שומרים ל-Whole Foods.",
+     "why": "סיבוב קצר בטיים וורנר סנטר. הפינה הדרום-מערבית של הפארק."
+    },
+    {
+     "t": "19:00",
+     "mode": "WALKING",
+     "name": "Whole Foods Market Columbus Circle",
+     "addr": "10 Columbus Cir, New York",
+     "q": "Whole Foods Market Columbus Circle, 10 Columbus Cir, New York, NY",
+     "lat": 40.7683,
+     "lng": -73.9829,
+     "eat": "ערב חופשי מהדוכנים — כל אחד לוקח מה שבא לו.",
+     "why": "קליל וגמיש. אם יש יותר אנרגיה, בוחרים מסעדה אחרת במתחם."
+    }
+   ]
+  },
+  {
+   "d": "30.8",
+   "code": "NYC",
+   "title": "FIFTH AVENUE",
+   "hood": "Tiffany → Serendipity → הגן",
+   "stops": [
+    {
+     "t": "09:30",
+     "mode": "WALKING",
+     "name": "Tiffany & Co. — The Landmark",
+     "addr": "727 5th Ave, New York",
+     "q": "Tiffany & Co. The Landmark, 727 5th Ave, New York, NY",
+     "lat": 40.7629,
+     "lng": -73.9738,
+     "eat": "אפשר קפה ב-Blue Box Cafe בקומה העליונה.",
+     "why": "מתחילים את השדרה החמישית מלמעלה ויורדים דרומה. שעתיים ורבע לכל החנויות."
+    },
+    {
+     "t": "10:30",
+     "mode": "WALKING",
+     "name": "Nike NYC House of Innovation",
+     "addr": "650 5th Ave, New York",
+     "q": "Nike NYC House of Innovation 000, 650 5th Ave, New York, NY",
+     "lat": 40.7594,
+     "lng": -73.9761,
+     "eat": "עוד לא.",
+     "why": "שש קומות. אחרי זה עוד חנויות לפי החשק, ואז מונית קצרה או הליכה לסרנדיפיטי."
+    },
+    {
+     "t": "12:30",
+     "mode": "WALKING",
+     "name": "Serendipity 3",
+     "addr": "225 E 60th St, New York",
+     "q": "Serendipity 3, 225 E 60th St, New York, NY",
+     "lat": 40.7627,
+     "lng": -73.9649,
+     "eat": "Frrrozen Hot Chocolate. אחד לשניים, באמת. וסנדוויץ׳ לפני.",
+     "why": "הסניף המקורי. הזמנה ל-12:30. קיטש מוחלט — ומגיע לו."
+    },
+    {
+     "t": "14:30",
+     "mode": "WALKING",
+     "name": "Central Park Zoo",
+     "addr": "E 64th St & 5th Ave, New York",
+     "q": "Central Park Zoo, New York, NY",
+     "lat": 40.7678,
+     "lng": -73.9718,
+     "eat": "גלידה בגן.",
+     "why": "אופציונלי לפי האנרגיה. אחרי סי וורלד וגן החיות של סן דייגו — זה החלק הכי פחות חיוני במסלול."
+    },
+    {
+     "t": "19:00",
+     "mode": "WALKING",
+     "name": "Burger Joint",
+     "addr": "Thompson Central Park, 119 W 56th St, New York",
+     "q": "Burger Joint, Le Parker Meridien, 119 W 56th St, New York, NY",
+     "lat": 40.7638,
+     "lng": -73.9779,
+     "eat": "צ׳יזבורגר וצ׳יפס. אין תפריט אחר וזה כל הקסם.",
+     "why": "walk-in בלבד, מאחורי הווילון בלובי — להגיע יחסית מוקדם. סיום קז׳ואלי ורגוע לטיול."
+    }
+   ]
+  },
+  {
+   "d": "31.8",
+   "code": "NYC",
+   "title": "THE LAST BITE",
+   "hood": "Park Lane → JFK",
+   "stops": [
+    {
+     "t": "11:00",
+     "mode": "WALKING",
+     "name": "Park Lane New York",
+     "addr": "36 Central Park South, New York",
+     "q": "Park Lane New York, 36 Central Park S, New York, NY",
+     "lat": 40.7654,
+     "lng": -73.976,
+     "eat": "ארוחת בוקר אחרונה, אריזה ובדיקה של החדר.",
+     "why": "צ׳ק-אאוט עד 11:00 ושמירת מזוודות במלון. לא מתכננים אטרקציה מרוחקת בבוקר האחרון."
+    },
+    {
+     "t": "11:30",
+     "mode": "WALKING",
+     "name": "Central Park South",
+     "addr": "Central Park South, New York",
+     "q": "Central Park South, New York, NY",
+     "lat": 40.766,
+     "lng": -73.977,
+     "eat": "ארוחת צהריים קלה ליד המלון. הביס האחרון.",
+     "why": "זמן חופשי רגוע ליד המלון. שעתיים לנשום את העיר לפני הטיסה."
+    },
+    {
+     "t": "14:00",
+     "mode": "DRIVING",
+     "name": "John F. Kennedy International Airport",
+     "addr": "JFK Airport, Queens, NY",
+     "q": "John F. Kennedy International Airport, Queens, NY",
+     "lat": 40.6413,
+     "lng": -73.7781,
+     "eat": "אכלנו מספיק. Eat the damn thing — עשינו את זה.",
+     "why": "יוצאים מ-Park Lane ב-14:00, הגעה משוערת 15:00. טיסה ב-18:00 לברצלונה, קונקשן לישראל ב-1.9."
+    }
+   ]
+  }
+ ]
 };
 
 /* ============================================================
@@ -1079,7 +2396,7 @@ var $ = function(id){ return document.getElementById(id); };
 var S = {
   trip:null, dayIdx:0, stopIdx:0,
   pano:null, mini:null, dir:null, sph:null,
-  frames:[], fi:0, playing:false, timer:null, povRaf:0,
+  frames:[], fi:0, playing:false, timer:null, povRaf:0, svc:null, jumpSeq:0,
   heading:0, pitch:-6, mode:'WALKING',
   line:null, destMk:null, sfx:true, ac:null, ready:false
 };
@@ -1213,6 +2530,7 @@ function initGame(){
   S.ready = true;
   S.sph = google.maps.geometry.spherical;
   S.dir = new google.maps.DirectionsService();
+  S.svc = new google.maps.StreetViewService();
 
   var start = curStop();
   var p0 = new google.maps.LatLng(start.lat, start.lng);
@@ -1287,7 +2605,7 @@ function renderDayTabs(){
   var todayKey = now.getDate()+'.'+(now.getMonth()+1);
   S.trip.days.forEach(function(d,i){
     var today = isTripYear && d.d===todayKey;
-    h += '<button data-day="'+i+'" class="'+(today?'today':'')+'">'+
+    h += '<button data-day="'+i+'" data-city="'+esc(d.code)+'" class="'+(today?'today':'')+'">'+
          esc(d.d)+'<small>'+esc(d.code)+'</small></button>';
   });
   wrap.innerHTML=h;
@@ -1382,6 +2700,7 @@ function renderHUD(){
 /* ============================================================
    ROUTING + PLAYBACK
    ============================================================ */
+var MAX_FRAMES = 150;
 var routeCache = {};
 function routeKey(a,b,m){ return a+'|'+b+'|'+m; }
 
@@ -1442,6 +2761,25 @@ function panPovTo(target, dur){
   S.povRaf = requestAnimationFrame(step);
 }
 
+/* theme parks, piers and helipads rarely have a pano on the exact pin —
+   widen the search until Google finds real imagery nearby */
+function findPano(pos, cb){
+  if(!S.svc){ cb(null,null); return; }
+  var tries = [
+    {radius:120, source:google.maps.StreetViewSource.OUTDOOR},
+    {radius:400, source:google.maps.StreetViewSource.OUTDOOR},
+    {radius:1500}
+  ], i = 0;
+  (function next(){
+    if(i >= tries.length){ cb(null, null); return; }
+    var req = tries[i++]; req.location = pos;
+    S.svc.getPanorama(req, function(data, status){
+      if(status === 'OK' && data && data.location){ cb(data.location.pano, data.location.latLng); }
+      else next();
+    });
+  })();
+}
+
 function jumpToStop(j, silent){
   stopPlay();
   var day=curDay();
@@ -1452,15 +2790,23 @@ function jumpToStop(j, silent){
 
   S.pitch = -6;
   if(S.pano){
-    S.pano.setPosition(pos);
     S.pano.setZoom(0.85);
-    var h = nx ? S.sph.computeHeading(pos, new google.maps.LatLng(nx.lat, nx.lng)) : S.pano.getPov().heading;
-    S.heading = h;
-    S.pano.setPov({heading:h, pitch:-6});
-    $('radarRot').style.transform='rotate('+(-h)+'deg)';
     S.mini.setCenter(pos); S.mini.setZoom(16);
     S.destMk.setPosition(pos);
     S.line.setPath([]);
+    var seq = ++S.jumpSeq;
+    findPano(pos, function(panoId, at){
+      if(seq !== S.jumpSeq) return;          /* a newer jump won */
+      var here = at || pos;
+      if(panoId) S.pano.setPano(panoId); else S.pano.setPosition(pos);
+      var h = nx ? S.sph.computeHeading(here, new google.maps.LatLng(nx.lat, nx.lng))
+                 : S.pano.getPov().heading;
+      S.heading = h;
+      S.pano.setPov({heading:h, pitch:-6});
+      $('radarRot').style.transform='rotate('+(-h)+'deg)';
+      S.mini.setCenter(here);
+      if(!panoId && !silent) toast('אין Street View בנקודה הזאת — מציג את הקרוב ביותר');
+    });
   }
   setActor('idle'); speedlines(false); $('speedo').classList.remove('on');
   renderHUD();
@@ -1477,7 +2823,12 @@ function playRoute(){
   getRoute(from, to, to.mode).then(function(r){
     loader(true, 70);
     var pts = densePath(r);
-    S.frames = resample(pts, c.step);
+    /* San Diego to Las Vegas is 500km — sample coarser so a long leg
+       plays as a montage instead of running for an hour */
+    var metres = 0, legs = r.routes[0].legs, li;
+    for(li=0; li<legs.length; li++) metres += (legs[li].distance ? legs[li].distance.value : 0);
+    var step = Math.max(c.step, metres / MAX_FRAMES);
+    S.frames = resample(pts, step);
     S.fi = 0; S.playing = true; S.mode = to.mode; S.pitch = c.pitch;
     S.line.setPath(r.routes[0].overview_path);
     S.destMk.setPosition(r.routes[0].legs[0].end_location);
