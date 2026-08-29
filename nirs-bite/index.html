@@ -15,15 +15,21 @@
    NIR'S BITE — GTA-style street engine
    ============================================================ */
 :root{
-  --ink:#05060a;
-  --ink2:#0c0f16;
-  --neon:#ff2e88;
-  --lime:#c8ff2e;
-  --amber:#ffb300;
-  --gold:#ffd447;
-  --ice:#6fe3ff;
-  --white:#f6f7fb;
-  --radar:150px;
+  /* 1994. chrome, neon and a CRT. */
+  --ink:#07030f;
+  --ink2:#150a26;
+  --panel:#1c0d33;
+  --panel2:#2a1049;
+  --neon:#ff2d95;      /* hot magenta */
+  --cyan:#00e5ff;
+  --purple:#8b3dff;
+  --lime:#a3ff12;
+  --amber:#ff7a18;
+  --gold:#ffd400;
+  --ice:#00e5ff;
+  --white:#f2ecff;
+  --edge:#000;
+  --radar:210px;
   --safeT:env(safe-area-inset-top,0px);
   --safeB:env(safe-area-inset-bottom,0px);
 }
@@ -39,11 +45,13 @@ body{
   font-family:'Anton',Impact,sans-serif;
   letter-spacing:.5px;
   text-transform:uppercase;
-  background:linear-gradient(180deg,#fff6cf 0%,var(--gold) 42%,#ff9d00 78%,#ff6a00 100%);
+  background:linear-gradient(180deg,
+    #ffffff 0%, #e6f0ff 22%, #93a9c8 44%, #ffffff 50%,
+    var(--gold) 64%, var(--amber) 86%, #b8340a 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  -webkit-text-stroke:2px #14100a;
+  -webkit-text-stroke:2.5px var(--edge);
   paint-order:stroke fill;
-  filter:drop-shadow(0 4px 0 rgba(0,0,0,.55));
+  filter:drop-shadow(3px 3px 0 var(--neon)) drop-shadow(0 0 16px rgba(255,45,149,.45));
 }
 
 /* ---------- app shell ---------- */
@@ -51,7 +59,7 @@ body{
 
 /* ---------- street view stage ---------- */
 #stage{position:absolute;inset:0;z-index:1}
-#pano{position:absolute;inset:0;filter:saturate(1.18) contrast(1.06) brightness(1.01)}
+#pano{position:absolute;inset:0;filter:saturate(1.34) contrast(1.12) brightness(1.02) hue-rotate(-4deg)}
 #pano *{outline:none!important}
 /* Google's logo + Terms stay visible — that is a Maps licence requirement.
    we only lift our own HUD off the bottom strip so nothing covers them. */
@@ -61,13 +69,34 @@ body{
 #grade::before{
   content:'';position:absolute;inset:0;
   background:
-    radial-gradient(120% 80% at 50% 6%, rgba(255,196,110,.20), rgba(255,140,0,0) 52%),
-    linear-gradient(180deg, rgba(255,150,40,.08) 0%, rgba(0,0,0,0) 38%, rgba(10,20,44,.22) 100%);
+    radial-gradient(120% 80% at 50% 4%, rgba(255,190,90,.26), rgba(255,140,0,0) 50%),
+    linear-gradient(180deg, rgba(0,229,255,.09) 0%, rgba(0,0,0,0) 36%, rgba(123,47,247,.13) 100%);
   mix-blend-mode:soft-light;
 }
 #grade::after{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(118% 88% at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,.46) 100%);
+  background:radial-gradient(116% 86% at 50% 50%, rgba(0,0,0,0) 48%, rgba(10,0,24,.60) 100%);
+}
+/* the tube: scanlines, a drifting tracking band and a soft bloom */
+#crt{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:.42;
+  background:repeating-linear-gradient(0deg,
+    rgba(0,0,0,.30) 0px, rgba(0,0,0,.30) 1px,
+    rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px);
+  mix-blend-mode:multiply;
+}
+#crt::after{
+  content:'';position:absolute;left:0;right:0;height:14%;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,0) 0%, rgba(255,255,255,.07) 45%,
+    rgba(0,229,255,.06) 55%, rgba(255,255,255,0) 100%);
+  animation:vhs 7s linear infinite;mix-blend-mode:screen;
+}
+@keyframes vhs{0%{top:-16%}100%{top:104%}}
+#bloom{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:.55;
+  background:
+    radial-gradient(58% 34% at 50% 104%, rgba(255,45,149,.16), rgba(0,0,0,0) 72%),
+    radial-gradient(52% 30% at 50% -4%, rgba(0,229,255,.11), rgba(0,0,0,0) 72%);
+  mix-blend-mode:screen;
 }
 #grain{
   position:absolute;inset:-50%;z-index:3;pointer-events:none;opacity:.07;
@@ -176,11 +205,16 @@ body{
 #hud button,#hud .clk{pointer-events:auto}
 
 .plate{
-  background:linear-gradient(180deg,rgba(8,10,16,.92),rgba(8,10,16,.74));
-  border:2px solid rgba(255,255,255,.14);
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
-  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+  background:linear-gradient(180deg, rgba(42,16,73,.94), rgba(15,6,30,.9));
+  border:3px solid var(--edge);
+  border-radius:2px;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,45,149,.5),
+    inset 2px 2px 0 rgba(255,255,255,.16),
+    inset -2px -2px 0 rgba(0,0,0,.55),
+    0 6px 0 rgba(0,0,0,.5),
+    0 0 22px rgba(139,61,255,.28);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
 }
 
 /* top HUD row — flex, so mission + status can never overlap at any width */
@@ -193,7 +227,8 @@ body{
   padding:9px 14px 10px;max-width:min(46vw,360px);min-width:0;
   pointer-events:auto;
 }
-#mission .lbl{font-size:11px;letter-spacing:3px;color:var(--neon);font-weight:700}
+#mission .lbl{font-size:11px;letter-spacing:3px;color:var(--cyan);font-weight:700;
+  text-shadow:0 0 8px rgba(0,229,255,.7)}
 #mission .ttl{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,3.4vw,27px);line-height:1.05;
   color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.75);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -204,22 +239,25 @@ body{
 /* day + clock */
 #status{flex:0 0 auto;display:flex;gap:8px;align-items:stretch;pointer-events:auto}
 #status .cell{padding:8px 12px;text-align:center;min-width:64px}
-#status .k{font-size:10px;letter-spacing:2.4px;color:#7f8aa3}
-#status .v{font-family:'Anton',Impact,sans-serif;font-size:20px;line-height:1.05;color:var(--lime)}
-#status .v.gold{color:var(--gold)}
+#status .k{font-size:10px;letter-spacing:2.4px;color:#a98fd8}
+#status .v{font-family:'Anton',Impact,sans-serif;font-size:20px;line-height:1.05;color:var(--cyan);
+  text-shadow:0 0 10px rgba(0,229,255,.55),0 2px 0 rgba(0,0,0,.7)}
+#status .v.gold{color:var(--gold);text-shadow:0 0 10px rgba(255,212,0,.5),0 2px 0 rgba(0,0,0,.7)}
 #btnDays{
-  border:none;cursor:pointer;color:#fff;font-family:'Anton',Impact,sans-serif;font-size:18px;
-  padding:8px 14px;background:linear-gradient(180deg,var(--neon),#c4145f);
-  border-radius:12px;box-shadow:0 8px 20px rgba(255,46,136,.4), inset 0 1px 0 rgba(255,255,255,.35);
+  cursor:pointer;color:#fff;font-family:'Anton',Impact,sans-serif;font-size:18px;
+  padding:7px 14px;background:linear-gradient(180deg,#ff67b4,#b8005e);
+  border:3px solid var(--edge);border-radius:2px;text-shadow:0 2px 0 rgba(0,0,0,.5);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.4),
+    0 4px 0 rgba(0,0,0,.6), 0 0 18px rgba(255,45,149,.45);
 }
-#btnDays:active{transform:translateY(2px)}
+#btnDays:active{transform:translateY(3px)}
 
 /* progress pips, inside the mission plate */
 #pips{display:flex;gap:4px;margin-top:9px;max-width:100%}
-#pips i{flex:1 1 0;min-width:6px;max-width:26px;height:5px;border-radius:3px;
-  background:rgba(255,255,255,.22);box-shadow:0 1px 0 rgba(0,0,0,.6)}
-#pips i.done{background:var(--lime)}
-#pips i.now{background:var(--neon);box-shadow:0 0 12px var(--neon)}
+#pips i{flex:1 1 0;min-width:6px;max-width:26px;height:6px;border-radius:0;
+  background:rgba(255,255,255,.16);border:1.5px solid #000}
+#pips i.done{background:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,.7)}
+#pips i.now{background:var(--neon);box-shadow:0 0 14px var(--neon)}
 
 /* ---------- radar / minimap ---------- */
 #radarWrap{
@@ -229,46 +267,61 @@ body{
 #radarWrap.hidden{display:none}
 #radarRing{
   position:absolute;inset:0;border-radius:50%;
-  border:3px solid #000;
-  box-shadow:0 0 0 2px rgba(255,255,255,.28), 0 14px 34px rgba(0,0,0,.7);
-  overflow:hidden;background:#0b1020;
+  border:4px solid #000;
+  box-shadow:
+    0 0 0 3px var(--neon),
+    0 0 0 7px #000,
+    0 0 30px rgba(255,45,149,.55),
+    inset 0 0 34px rgba(139,61,255,.30);
+  overflow:hidden;background:#120726;
 }
+#radarRing::after{
+  content:'';position:absolute;inset:-25%;z-index:3;pointer-events:none;
+  background:conic-gradient(from 0deg, rgba(0,229,255,.22), rgba(0,229,255,.04) 26deg, rgba(0,229,255,0) 62deg);
+  animation:sweep 3.4s linear infinite;
+}
+@keyframes sweep{to{transform:rotate(360deg)}}
 #radarRot{position:absolute;inset:-32%;transform-origin:50% 50%;will-change:transform}
-#miniMap{position:absolute;inset:0}
+#miniMap{position:absolute;inset:0;overflow:hidden}
 #radarWrap .arrow{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
-  width:24px;height:24px;z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.8))
+  width:30px;height:30px;z-index:5;
+  filter:drop-shadow(0 0 8px rgba(255,45,149,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.9))
 }
 #radarWrap .cone{
   position:absolute;left:50%;top:50%;width:0;height:0;z-index:2;
   transform:translate(-50%,-100%);
-  border-left:36px solid transparent;border-right:36px solid transparent;
-  border-top:70px solid rgba(200,255,46,.22);
+  border-left:48px solid transparent;border-right:48px solid transparent;
+  border-top:96px solid rgba(0,229,255,.20);
   border-radius:50%;
 }
 #street{
-  position:absolute;left:0;bottom:-6px;width:calc(var(--radar) + 84px);
-  padding:5px 10px;border-radius:8px;font-size:12.5px;letter-spacing:.6px;
-  color:#dfe5f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  background:rgba(5,6,10,.9);border:1.5px solid rgba(255,255,255,.14);
+  position:absolute;left:0;bottom:-10px;width:calc(var(--radar) + 90px);
+  padding:6px 11px;border-radius:0;font-size:13px;letter-spacing:1.4px;
+  font-family:'Anton',Impact,sans-serif;text-transform:uppercase;
+  color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:linear-gradient(180deg,#2a1049,#12061f);border:3px solid #000;
+  text-shadow:0 0 10px rgba(0,229,255,.6);
+  box-shadow:inset 0 0 0 2px rgba(0,229,255,.35), 0 4px 0 rgba(0,0,0,.6);
 }
 
 /* ---------- objective card — bottom right ---------- */
 #objective{
-  position:absolute;right:12px;bottom:calc(34px + var(--safeB));
+  position:absolute;right:12px;bottom:calc(108px + var(--safeB));
   width:min(40vw,330px);padding:12px 14px 13px;
 }
 #objective .tag{
   display:inline-block;font-size:10.5px;letter-spacing:2.6px;font-weight:700;
-  color:#05060a;background:var(--lime);padding:2px 8px;border-radius:4px
+  color:#0a1400;background:var(--lime);padding:2px 8px;border-radius:0;
+  border:2px solid #000;box-shadow:0 0 12px rgba(163,255,18,.5)
 }
 #objective h3{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,2.5vw,21px);
   line-height:1.1;margin:7px 0 2px;color:#fff}
 #objective .addr{font-size:12px;color:#8d97ad}
 #objective .eat{
-  margin-top:9px;padding:8px 10px;border-radius:9px;
-  background:linear-gradient(180deg,rgba(255,180,0,.16),rgba(255,110,0,.06));
-  border:1.5px solid rgba(255,180,0,.35);
+  margin-top:9px;padding:8px 10px;border-radius:0;
+  background:linear-gradient(180deg,rgba(255,122,24,.20),rgba(255,45,149,.10));
+  border:2px solid rgba(255,212,0,.5);box-shadow:inset 0 0 14px rgba(255,122,24,.18);
   font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
   font-size:13px;line-height:1.5;color:#ffe6b0;font-weight:700;
 }
@@ -276,7 +329,7 @@ body{
   font-size:12.5px;line-height:1.55;color:#b9c1d2;max-height:5.2em;overflow:auto}
 #objective .dist{margin-top:9px;display:flex;gap:10px;font-size:12px;color:#7f8aa3;
   font-family:'Heebo',sans-serif;direction:rtl;flex-wrap:wrap}
-#objective .dist b{color:var(--ice);font-weight:700}
+#objective .dist b{color:var(--cyan);font-weight:700;text-shadow:0 0 8px rgba(0,229,255,.6)}
 
 /* ---------- bottom control bar ---------- */
 #bar{
@@ -284,20 +337,28 @@ body{
   display:flex;gap:8px;align-items:center;padding:8px;z-index:10;
 }
 #bar button{
-  border:none;cursor:pointer;border-radius:11px;padding:11px 15px;
-  font-family:'Anton',Impact,sans-serif;font-size:15px;letter-spacing:.6px;
-  color:#eaf0ff;background:linear-gradient(180deg,#1b2130,#10141d);
-  border:1.5px solid rgba(255,255,255,.16);
-  box-shadow:0 7px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
-  white-space:nowrap;
+  cursor:pointer;border-radius:2px;padding:10px 15px;
+  font-family:'Anton',Impact,sans-serif;font-size:15px;letter-spacing:.8px;
+  color:var(--white);background:linear-gradient(180deg,#3a1a63,#1b0b31);
+  border:3px solid var(--edge);
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.20),
+    inset -2px -2px 0 rgba(0,0,0,.6),
+    0 4px 0 rgba(0,0,0,.65);
+  white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.7);
 }
-#bar button:active{transform:translateY(2px)}
+#bar button:active{transform:translateY(3px);box-shadow:inset 2px 2px 0 rgba(0,0,0,.5)}
 #bar button.primary{
-  background:linear-gradient(180deg,#d8ff4a,#8fc700);color:#0a0f02;
-  border-color:rgba(255,255,255,.4);
-  box-shadow:0 8px 22px rgba(200,255,46,.35), inset 0 1px 0 rgba(255,255,255,.55);
+  background:linear-gradient(180deg,#c8ff4a,#5fa300);color:#0a1400;
+  text-shadow:0 1px 0 rgba(255,255,255,.5);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.55),inset -2px -2px 0 rgba(0,0,0,.35),
+    0 4px 0 rgba(0,0,0,.65), 0 0 20px rgba(163,255,18,.4);
 }
-#bar button.hot{background:linear-gradient(180deg,#ff5ea3,#c4145f);color:#fff}
+#bar button.hot{
+  background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.4),
+    0 4px 0 rgba(0,0,0,.65), 0 0 20px rgba(255,45,149,.45);
+}
 #bar button[disabled]{opacity:.35;pointer-events:none}
 
 /* speedometer */
@@ -306,8 +367,9 @@ body{
   padding:8px 14px;text-align:center;opacity:0;transition:opacity .35s;
 }
 #speedo.on{opacity:1}
-#speedo .n{font-family:'Anton',Impact,sans-serif;font-size:32px;line-height:.95;color:var(--gold)}
-#speedo .u{font-size:10px;letter-spacing:3px;color:#7f8aa3}
+#speedo .n{font-family:'Anton',Impact,sans-serif;font-size:32px;line-height:.95;color:var(--gold);
+  text-shadow:0 0 14px rgba(255,212,0,.6),0 2px 0 #000}
+#speedo .u{font-size:10px;letter-spacing:3px;color:#a98fd8}
 
 /* ---------- big centered event text ---------- */
 #bigtext{
@@ -316,11 +378,14 @@ body{
 }
 #bigtext.show{animation:bigPop 2.3s cubic-bezier(.2,.9,.25,1) forwards}
 #bigtext span{font-family:'Anton',Impact,sans-serif;font-size:clamp(38px,10vw,120px);
-  text-align:center;line-height:.92;
-  background:linear-gradient(180deg,#fff8d8,var(--gold) 45%,#ff8a00 85%);
+  text-align:center;line-height:.92;letter-spacing:2px;
+  background:linear-gradient(180deg,
+    #ffffff 0%, #dbe8ff 20%, #8fa6c6 42%, #ffffff 50%,
+    var(--gold) 64%, var(--amber) 86%, #a82f08 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  -webkit-text-stroke:3px #120e06;paint-order:stroke fill;
-  filter:drop-shadow(0 8px 0 rgba(0,0,0,.5));
+  -webkit-text-stroke:4px #000;paint-order:stroke fill;
+  filter:drop-shadow(5px 5px 0 var(--neon)) drop-shadow(-3px -3px 0 var(--cyan))
+         drop-shadow(0 0 30px rgba(255,45,149,.5));
 }
 @keyframes bigPop{
   0%{opacity:0;transform:scale(1.6) translateY(10px)}
@@ -359,63 +424,173 @@ body{
 }
 #passed.show{display:flex;animation:fadeIn .35s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-#passed .p1{font-family:'Anton',Impact,sans-serif;font-size:clamp(30px,7vw,74px);
-  color:#fff;text-shadow:0 5px 0 rgba(0,0,0,.7);letter-spacing:1px}
+#passed .p1{font-family:'Anton',Impact,sans-serif;font-size:clamp(30px,7vw,74px);letter-spacing:2px;
+  background:linear-gradient(180deg,#fff,#dbe8ff 30%,#8fa6c6 48%,#fff 54%,var(--gold) 72%,var(--amber) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:4px #000;paint-order:stroke fill;
+  filter:drop-shadow(4px 4px 0 var(--neon)) drop-shadow(0 0 26px rgba(255,45,149,.5))}
 #passed .p2{font-family:'Anton',Impact,sans-serif;font-size:clamp(20px,4.6vw,44px);
-  color:var(--lime);text-shadow:0 4px 0 rgba(0,0,0,.7)}
+  color:var(--cyan);text-shadow:0 4px 0 #000, 0 0 20px rgba(0,229,255,.6)}
 #passed .p3{font-family:'Heebo',sans-serif;direction:rtl;color:#ffe6b0;font-size:clamp(13px,2.6vw,18px);
   max-width:min(80vw,560px);text-align:center;line-height:1.6;margin-top:10px;font-weight:700}
 #passed button{
-  margin-top:20px;border:none;cursor:pointer;border-radius:12px;padding:13px 26px;
-  font-family:'Anton',Impact,sans-serif;font-size:19px;color:#0a0f02;
-  background:linear-gradient(180deg,#d8ff4a,#8fc700);
-  box-shadow:0 10px 26px rgba(200,255,46,.4);
+  margin-top:22px;cursor:pointer;border-radius:0;padding:13px 26px;
+  font-family:'Anton',Impact,sans-serif;font-size:19px;color:#0a1400;
+  background:linear-gradient(180deg,#c8ff4a,#5fa300);border:3px solid #000;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.5),0 5px 0 rgba(0,0,0,.6),0 0 26px rgba(163,255,18,.4);
 }
+#passed button:active{transform:translateY(3px)}
+
+/* ---------- free roam: walk the street yourself ---------- */
+#dpad{
+  position:absolute;left:14px;bottom:calc(56px + var(--radar) + var(--safeB));z-index:11;
+  display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:2px;
+}
+#dpad.on{display:grid}
+#dpad button{
+  cursor:pointer;border:3px solid var(--edge);border-radius:2px;
+  background:linear-gradient(180deg,#3a1a63,#1b0b31);color:var(--cyan);
+  font-size:19px;line-height:1;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.2),inset -2px -2px 0 rgba(0,0,0,.6),0 4px 0 rgba(0,0,0,.6);
+  touch-action:none;user-select:none;
+}
+#dpad button:active,#dpad button.hit{
+  transform:translateY(3px);background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff;
+  box-shadow:inset 2px 2px 0 rgba(0,0,0,.5);
+}
+#dpad .up{grid-area:1/2}#dpad .left{grid-area:2/1}
+#dpad .mid{grid-area:2/2;pointer-events:none;border-color:transparent;background:none;box-shadow:none}
+#dpad .right{grid-area:2/3}#dpad .down{grid-area:3/2}
+#dpad .mid i{display:block;width:10px;height:10px;background:var(--neon);margin:15px auto;
+  box-shadow:0 0 12px var(--neon)}
+
+/* ---------- ask Nir where to go ---------- */
+#search{
+  position:absolute;left:50%;top:calc(14px + var(--safeT));transform:translate(-50%,-160%);
+  z-index:22;display:flex;gap:0;width:min(92vw,560px);transition:transform .32s cubic-bezier(.2,.9,.25,1);
+}
+#search.on{transform:translate(-50%,0)}
+#search input{
+  flex:1;min-width:0;background:linear-gradient(180deg,#1c0d33,#0e0520);
+  border:3px solid var(--edge);border-right:none;border-radius:0;
+  padding:12px 14px;color:var(--white);font-family:'Heebo',sans-serif;font-size:14px;
+  direction:rtl;text-align:right;
+  box-shadow:inset 0 0 0 2px rgba(0,229,255,.3), inset 2px 2px 0 rgba(0,0,0,.5);
+}
+#search input::placeholder{color:#8a76b8}
+#search input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--cyan), inset 2px 2px 0 rgba(0,0,0,.5)}
+#search button{
+  cursor:pointer;border:3px solid var(--edge);border-radius:0;padding:12px 18px;
+  font-family:'Anton',Impact,sans-serif;font-size:16px;color:#0a1400;
+  background:linear-gradient(180deg,#c8ff4a,#5fa300);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.5),inset -2px -2px 0 rgba(0,0,0,.35);
+}
+#search button:active{transform:translateY(2px)}
+
+/* Nir's verdict on a place you typed */
+#verdict{
+  position:absolute;left:50%;top:calc(72px + var(--safeT));transform:translate(-50%,-8px);
+  z-index:21;width:min(92vw,560px);padding:14px 16px 15px;display:none;
+}
+#verdict.on{display:block;animation:vIn .32s cubic-bezier(.2,.9,.25,1)}
+@keyframes vIn{from{opacity:0;transform:translate(-50%,-22px)}to{opacity:1;transform:translate(-50%,-8px)}}
+#verdict .who{font-size:10.5px;letter-spacing:3px;color:var(--cyan);font-weight:700}
+#verdict h4{font-family:'Anton',Impact,sans-serif;font-size:21px;color:#fff;margin:5px 0 2px;
+  text-shadow:0 2px 0 rgba(0,0,0,.7)}
+#verdict .meta{font-size:12px;color:#a98fd8;direction:ltr;text-align:left}
+#verdict .say{margin-top:9px;font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;
+  text-align:start;font-size:13.5px;line-height:1.6;color:#ffe6b0;font-weight:700}
+#verdict .row{margin-top:11px;display:flex;gap:7px;flex-wrap:wrap;direction:rtl}
+#verdict .row button{
+  cursor:pointer;border:3px solid var(--edge);border-radius:0;padding:8px 13px;
+  font-family:'Anton',Impact,sans-serif;font-size:14px;color:var(--white);
+  background:linear-gradient(180deg,#3a1a63,#1b0b31);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18),0 3px 0 rgba(0,0,0,.6);
+}
+#verdict .row button.go{background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff}
+#verdict .row button:active{transform:translateY(2px)}
+
+/* ---------- the map, full size ---------- */
+#mapview{
+  position:absolute;inset:0;z-index:44;display:none;flex-direction:column;
+  background:linear-gradient(180deg,#0e0520,#07030f);
+}
+#mapview.on{display:flex}
+#mapview header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:calc(12px + var(--safeT)) 16px 12px 22px;border-bottom:3px solid #000;
+  background:linear-gradient(180deg,#2a1049,#150826);
+}
+#mapview header .t{font-family:'Anton',Impact,sans-serif;font-size:clamp(20px,4vw,34px)}
+#mapview header .sub{font-family:'Heebo',sans-serif;font-size:12px;color:#a98fd8;direction:rtl}
+#mapview header button{
+  cursor:pointer;border:3px solid #000;border-radius:0;width:42px;height:42px;font-size:19px;
+  color:#fff;background:linear-gradient(180deg,#ff67b4,#b8005e);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.35),0 3px 0 rgba(0,0,0,.6);
+}
+#bigMap{flex:1;min-height:0;position:relative}
+#mapview .legend{
+  display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+  padding:10px 14px calc(12px + var(--safeB));border-top:3px solid #000;
+  background:linear-gradient(180deg,#150826,#0b0418);
+  font-family:'Heebo',sans-serif;font-size:11.5px;color:#a98fd8;direction:rtl;
+}
+#mapview .legend b{color:var(--cyan);font-weight:700}
+#mapview .legend i{display:inline-block;width:11px;height:11px;border:2px solid #000;margin-left:5px;
+  vertical-align:-1px}
 
 /* ---------- days & stops drawer ---------- */
 #drawer{
   position:absolute;top:0;right:0;bottom:0;z-index:40;
   width:min(92vw,430px);transform:translateX(105%);transition:transform .38s cubic-bezier(.2,.9,.25,1);
-  background:linear-gradient(180deg,#0a0d14,#05060a);
-  border-left:2px solid rgba(255,255,255,.12);
-  box-shadow:-24px 0 60px rgba(0,0,0,.7);
+  background:linear-gradient(180deg,#180a2c,#08030f);
+  border-left:4px solid #000;
+  box-shadow:-24px 0 60px rgba(0,0,0,.8), inset 4px 0 0 var(--neon);
   display:flex;flex-direction:column;direction:rtl;
 }
 #drawer.open{transform:translateX(0)}
-#drawer header{padding:calc(16px + var(--safeT)) 16px 12px;border-bottom:1.5px solid rgba(255,255,255,.1);
+#drawer header{padding:calc(16px + var(--safeT)) 16px 12px;border-bottom:3px solid #000;
+  background:linear-gradient(180deg,#2a1049,#150826);
   display:flex;justify-content:space-between;align-items:center;gap:10px}
 #drawer header .t{font-family:'Anton',Impact,sans-serif;font-size:24px;color:#fff}
-#drawer header button{background:none;border:1.5px solid rgba(255,255,255,.2);color:#fff;
-  border-radius:9px;width:36px;height:36px;font-size:19px;cursor:pointer}
-#dayTabs{display:flex;gap:7px;overflow-x:auto;padding:12px 16px;border-bottom:1.5px solid rgba(255,255,255,.08);scrollbar-width:none}
+#drawer header button{color:#fff;border:3px solid #000;border-radius:0;
+  background:linear-gradient(180deg,#3a1a63,#1b0b31);
+  width:38px;height:38px;font-size:18px;cursor:pointer;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18),0 3px 0 rgba(0,0,0,.6)}
+#drawer header button:active{transform:translateY(2px)}
+#dayTabs{display:flex;gap:7px;overflow-x:auto;padding:12px 16px;border-bottom:3px solid #000;scrollbar-width:none}
 #dayTabs::-webkit-scrollbar{display:none}
 #dayTabs button{
-  flex:0 0 auto;border:1.5px solid rgba(255,255,255,.16);background:#111725;color:#c3cbdc;
-  border-radius:10px;padding:8px 12px;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;font-size:13px;
+  flex:0 0 auto;border:3px solid #000;background:linear-gradient(180deg,#2a1049,#160828);color:#d9c9ff;
+  border-radius:0;padding:7px 11px;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;font-size:13px;
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.14);
   display:flex;flex-direction:column;align-items:center;gap:1px;min-width:62px;
 }
-#dayTabs button small{font-size:10px;color:#7f8aa3;font-weight:400}
+#dayTabs button small{font-size:10px;color:#9b83cf;font-weight:400;letter-spacing:1px}
 #dayTabs button{border-top-width:3px}
 #dayTabs button[data-city="ANA"]{border-top-color:#b39dff}
 #dayTabs button[data-city="LA"]{border-top-color:#ffb300}
 #dayTabs button[data-city="SD"]{border-top-color:#6fe3ff}
 #dayTabs button[data-city="LV"]{border-top-color:#c8ff2e}
 #dayTabs button[data-city="NYC"]{border-top-color:#ff2e88}
-#dayTabs button.active{background:linear-gradient(180deg,var(--neon),#c4145f);color:#fff;border-color:rgba(255,255,255,.4)}
+#dayTabs button.active{background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff;
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.4), 0 0 16px rgba(255,45,149,.5)}
 #dayTabs button.active small{color:#ffd9ec}
-#dayTabs button.today{border-color:var(--lime)}
+#dayTabs button.today{outline:2px solid var(--lime);outline-offset:-5px}
 #stopList{flex:1;overflow-y:auto;padding:12px 14px calc(20px + var(--safeB));display:flex;flex-direction:column;gap:10px}
 .stopCard{
   flex:0 0 auto;
-  border:1.5px solid rgba(255,255,255,.12);border-radius:13px;padding:12px 13px;
-  background:linear-gradient(180deg,#101724,#0a0e17);cursor:pointer;position:relative;overflow:hidden;
+  border:3px solid #000;border-radius:0;padding:12px 13px;
+  background:linear-gradient(180deg,#22103c,#100620);cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.10), 0 4px 0 rgba(0,0,0,.5);
 }
 .stopCard:active{transform:scale(.99)}
-.stopCard.active{border-color:var(--lime);box-shadow:0 0 0 1.5px rgba(200,255,46,.4) inset, 0 10px 26px rgba(0,0,0,.5)}
+.stopCard.active{box-shadow:inset 0 0 0 3px var(--lime), 0 4px 0 rgba(0,0,0,.5), 0 0 22px rgba(163,255,18,.35)}
 .stopCard .row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.stopCard .time{font-family:'Anton',Impact,sans-serif;font-size:17px;color:var(--gold);direction:ltr}
-.stopCard .mode{font-size:10.5px;letter-spacing:1.6px;color:#0a0f02;background:var(--ice);
-  padding:2px 7px;border-radius:4px;font-weight:700;direction:ltr}
+.stopCard .time{font-family:'Anton',Impact,sans-serif;font-size:17px;color:var(--gold);direction:ltr;
+  text-shadow:0 0 10px rgba(255,212,0,.45)}
+.stopCard .mode{font-size:10.5px;letter-spacing:1.6px;color:#0a0f02;background:var(--cyan);
+  padding:2px 7px;border-radius:0;border:2px solid #000;font-weight:700;direction:ltr}
 .stopCard .mode.w{background:var(--lime)}
 .stopCard .mode.b{background:#7cf2c0}
 .stopCard .mode.d{background:var(--amber)}
@@ -431,7 +606,8 @@ body{
 }
 .stopCard .go a{
   font-family:'Heebo',sans-serif;font-size:11.5px;font-weight:700;text-decoration:none;
-  color:#cfd7e6;border:1.5px solid rgba(255,255,255,.18);border-radius:8px;padding:5px 9px;
+  color:#d9c9ff;border:2px solid #000;border-radius:0;padding:5px 9px;
+  background:linear-gradient(180deg,#33165a,#1a0a2e);
 }
 .stopCard .go a:active{background:rgba(255,255,255,.1)}
 
@@ -440,46 +616,67 @@ body{
   position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:14px;padding:26px;
   background:
-    radial-gradient(70% 55% at 50% 22%, rgba(255,150,0,.20), rgba(0,0,0,0) 62%),
-    linear-gradient(180deg,#0a0c12,#05060a 60%,#0a0610);
+    radial-gradient(80% 55% at 50% 18%, rgba(255,45,149,.28), rgba(0,0,0,0) 62%),
+    radial-gradient(70% 50% at 50% 96%, rgba(0,229,255,.20), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg,#150826,#07030f 55%,#1a0630);
   text-align:center;
+}
+/* the 90s horizon grid */
+#boot::before{
+  content:'';position:absolute;left:-20%;right:-20%;bottom:0;height:42%;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,45,149,.30) 0 2px, rgba(0,0,0,0) 2px 68px),
+    repeating-linear-gradient(0deg,  rgba(0,229,255,.26) 0 2px, rgba(0,0,0,0) 2px 46px);
+  transform:perspective(320px) rotateX(68deg);transform-origin:50% 100%;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 60%);
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 60%);
+  pointer-events:none;
 }
 #boot.gone{display:none}
 #boot .logo{font-family:'Anton',Impact,sans-serif;font-size:clamp(46px,13vw,132px);line-height:.86;
-  background:linear-gradient(180deg,#fff8d8,var(--gold) 42%,#ff8a00 78%,#ff5100 100%);
+  background:linear-gradient(180deg,
+    #ffffff 0%, #e9f2ff 20%, #93a9c8 42%, #ffffff 50%,
+    var(--gold) 64%, var(--amber) 86%, #a82f08 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  -webkit-text-stroke:3px #14100a;paint-order:stroke fill;
-  filter:drop-shadow(0 10px 0 rgba(0,0,0,.55));
-  transform:skewX(-6deg);
+  -webkit-text-stroke:4px #000;paint-order:stroke fill;
+  filter:drop-shadow(6px 6px 0 var(--neon)) drop-shadow(-4px -4px 0 var(--cyan))
+         drop-shadow(0 0 40px rgba(255,45,149,.55));
+  transform:skewX(-7deg);position:relative;
 }
 #boot .slogan{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,3.6vw,30px);
-  letter-spacing:6px;color:var(--neon);text-shadow:0 3px 0 rgba(0,0,0,.7)}
-#boot .sub{font-family:'Heebo',sans-serif;direction:rtl;color:#9aa4ba;font-size:14px;line-height:1.7;
-  max-width:min(88vw,540px);margin-top:2px}
+  letter-spacing:8px;color:var(--cyan);position:relative;
+  text-shadow:0 0 18px rgba(0,229,255,.8), 3px 3px 0 #000, -2px 0 0 var(--neon)}
+#boot .sub{font-family:'Heebo',sans-serif;direction:rtl;color:#c3aef0;font-size:14px;line-height:1.7;
+  max-width:min(88vw,540px);margin-top:2px;position:relative}
 #boot .keybox{display:flex;gap:8px;width:min(92vw,520px);margin-top:8px}
+#boot .keybox{position:relative}
 #boot input{
-  flex:1;background:#0e131d;border:1.5px solid rgba(255,255,255,.2);border-radius:11px;
+  flex:1;min-width:0;background:linear-gradient(180deg,#1c0d33,#0b0418);
+  border:3px solid #000;border-radius:0;
   padding:13px 14px;color:#fff;font-size:14px;font-family:'Barlow Condensed',monospace;direction:ltr;
+  box-shadow:inset 0 0 0 2px rgba(0,229,255,.3);
 }
-#boot input:focus{outline:none;border-color:var(--lime)}
+#boot input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--cyan)}
 #boot .go{
-  border:none;cursor:pointer;border-radius:11px;padding:13px 22px;
-  font-family:'Anton',Impact,sans-serif;font-size:18px;color:#0a0f02;
-  background:linear-gradient(180deg,#d8ff4a,#8fc700);box-shadow:0 9px 24px rgba(200,255,46,.35);
+  cursor:pointer;border-radius:0;padding:13px 22px;border:3px solid #000;
+  font-family:'Anton',Impact,sans-serif;font-size:18px;color:#0a1400;
+  background:linear-gradient(180deg,#c8ff4a,#5fa300);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.5),0 5px 0 rgba(0,0,0,.6),0 0 24px rgba(163,255,18,.4);
 }
+#boot .go:active{transform:translateY(3px)}
 #boot .skip{
-  background:none;border:none;color:#6d7690;text-decoration:underline;cursor:pointer;
-  font-family:'Heebo',sans-serif;font-size:13px;margin-top:4px;
+  background:none;border:none;color:#9b83cf;text-decoration:underline;cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:13px;margin-top:4px;position:relative;
 }
-#boot .hint{font-family:'Heebo',sans-serif;direction:rtl;font-size:11.5px;color:#5f6880;
-  max-width:min(90vw,520px);line-height:1.6}
+#boot .hint{font-family:'Heebo',sans-serif;direction:rtl;font-size:11.5px;color:#7c68a8;
+  max-width:min(90vw,520px);line-height:1.6;position:relative}
 #boot .err{color:#ff7b9c;font-family:'Heebo',sans-serif;font-size:13px;min-height:18px}
 
 /* loading bar */
 #loader{
   position:absolute;left:0;top:0;height:3px;width:0%;z-index:70;
-  background:linear-gradient(90deg,var(--lime),var(--gold),var(--neon));
-  box-shadow:0 0 14px rgba(255,180,0,.7);transition:width .35s;opacity:0;
+  height:4px;background:linear-gradient(90deg,var(--cyan),var(--lime),var(--gold),var(--neon));
+  box-shadow:0 0 16px rgba(255,45,149,.8);transition:width .35s;opacity:0;
 }
 #loader.on{opacity:1}
 
@@ -487,7 +684,8 @@ body{
 #toast{
   position:absolute;left:50%;top:calc(14px + var(--safeT));transform:translate(-50%,-140%);
   z-index:55;padding:10px 16px;border-radius:11px;
-  background:rgba(8,10,16,.95);border:1.5px solid rgba(255,255,255,.18);
+  background:linear-gradient(180deg,#2a1049,#12061f);border:3px solid #000;
+  box-shadow:inset 0 0 0 2px rgba(0,229,255,.35), 0 5px 0 rgba(0,0,0,.6);
   font-family:'Heebo',sans-serif;direction:rtl;font-size:13px;color:#e6ecf9;font-weight:700;
   transition:transform .35s cubic-bezier(.2,.9,.25,1);max-width:88vw;text-align:center;
 }
@@ -536,6 +734,11 @@ body{
   #btnDays{padding:6px 10px;font-size:15px}
   #bar #btnMap .bl{display:none}
   #objective .eat{overflow-wrap:anywhere}
+  #dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:2px;
+    left:auto;right:10px;bottom:calc(96px + var(--safeB))}
+  #dpad.on ~ #objective, body.roam #objective{display:none}
+  #verdict{top:calc(66px + var(--safeT));padding:11px 12px 12px}
+  #verdict h4{font-size:18px}
 }
 @media (max-width:430px){
   :root{--radar:92px}
@@ -563,6 +766,8 @@ body{
     <div id="pano"></div>
     <div id="grade"></div>
     <div id="grain"></div>
+    <div id="bloom"></div>
+    <div id="crt"></div>
     <div id="speedlines"></div>
     <div id="shadow"></div>
     <div id="actor" data-state="idle"></div>
@@ -619,7 +824,17 @@ body{
         <span>מרחק <b id="oDist">—</b></span>
         <span>זמן <b id="oEta">—</b></span>
         <span id="oMode">—</span>
+        <a id="oDir" href="#" target="_blank" rel="noopener"
+           style="color:var(--cyan);text-decoration:underline">🧭 Directions</a>
       </div>
+    </div>
+
+    <div id="dpad">
+      <button class="up"    data-k="up"    aria-label="קדימה">▲</button>
+      <button class="left"  data-k="left"  aria-label="שמאלה">◀</button>
+      <div class="mid"><i></i></div>
+      <button class="right" data-k="right" aria-label="ימינה">▶</button>
+      <button class="down"  data-k="down"  aria-label="אחורה">▼</button>
     </div>
 
     <div id="bar" class="plate">
@@ -627,8 +842,45 @@ body{
       <button id="btnPlay" class="primary">▶ <span class="bl">PLAY ROUTE</span></button>
       <button id="btnSkip" class="hot">SKIP →</button>
       <button id="btnNext" title="תחנה הבאה">▶</button>
-      <button id="btnMap">🗺 <span class="bl">DIRECTIONS</span></button>
+      <button id="btnRoam" title="ללכת לבד בחיצים">🕹 <span class="bl">ROAM</span></button>
+      <button id="btnFind" title="לשאול את ניר על מקום">🔍</button>
+      <button id="btnMap" title="מפה מלאה">🗺 <span class="bl">MAP</span></button>
       <button id="btnSfx" title="סאונד">🔊</button>
+    </div>
+  </div>
+
+  <div id="search">
+    <input id="qInput" type="text" autocomplete="off" spellcheck="false"
+           placeholder="כתבי מקום — ניר ילך לשם ויגיד לך מה להזמין">
+    <button id="qGo">GO</button>
+  </div>
+
+  <div id="verdict" class="plate">
+    <div class="who">NIR SAYS</div>
+    <h4 id="vName">—</h4>
+    <div class="meta" id="vMeta">—</div>
+    <div class="say" id="vSay">—</div>
+    <div class="row">
+      <button class="go" id="vGo">ניר יוצא לשם →</button>
+      <button id="vDir">🧭 Directions</button>
+      <button id="vClose">סגור</button>
+    </div>
+  </div>
+
+  <div id="mapview">
+    <header>
+      <div>
+        <div class="t gta">CITY MAP</div>
+        <div class="sub" id="mvSub">—</div>
+      </div>
+      <button id="btnCloseMap" aria-label="סגור">✕</button>
+    </header>
+    <div id="bigMap"></div>
+    <div class="legend">
+      <span><i style="background:#a3ff12"></i>תחנה</span>
+      <span><i style="background:#ff2d95"></i>איפה שאתם עכשיו</span>
+      <span><i style="background:#00e5ff"></i>המסלול</span>
+      <span><b>לחיצה על תחנה</b> קופצת אליה ברחוב</span>
     </div>
   </div>
 
@@ -2397,6 +2649,7 @@ var S = {
   trip:null, dayIdx:0, stopIdx:0,
   pano:null, mini:null, dir:null, sph:null,
   frames:[], fi:0, playing:false, timer:null, povRaf:0, svc:null, jumpSeq:0,
+  roam:false, places:null, found:null, bigMap:null, bigMarks:[], onArrive:null, lastStep:0, here:null,
   heading:0, pitch:-6, mode:'WALKING',
   line:null, destMk:null, sfx:true, ac:null, ready:false
 };
@@ -2495,22 +2748,31 @@ function buildSpeedlines(){
 /* ============================================================
    MAPS BOOTSTRAP
    ============================================================ */
+/* neon noir: the streets are the point, so they glow and everything else recedes */
 var MAP_STYLE = [
-  {elementType:'geometry',stylers:[{color:'#0f1420'}]},
+  {elementType:'geometry',stylers:[{color:'#120726'}]},
   {elementType:'labels.icon',stylers:[{visibility:'off'}]},
-  {elementType:'labels.text.fill',stylers:[{color:'#8a94a8'}]},
-  {elementType:'labels.text.stroke',stylers:[{color:'#05060a'}]},
-  {featureType:'administrative',elementType:'geometry',stylers:[{color:'#2a3244'}]},
+  {elementType:'labels.text.fill',stylers:[{color:'#c9b0ff'}]},
+  {elementType:'labels.text.stroke',stylers:[{color:'#05010d'},{weight:4}]},
+  {featureType:'administrative',elementType:'geometry',stylers:[{color:'#3d2160'}]},
   {featureType:'poi',stylers:[{visibility:'off'}]},
-  {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#16301f'},{visibility:'on'}]},
-  {featureType:'road',elementType:'geometry',stylers:[{color:'#28303f'}]},
-  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#0b0f18'}]},
-  {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#39445a'}]},
-  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#5a4a2a'}]},
-  {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#12161f'}]},
+  {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#0d2b22'},{visibility:'on'}]},
+  {featureType:'road',elementType:'geometry',stylers:[{color:'#4a2277'}]},
+  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#05010d'}]},
+  {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#7a2fb8'}]},
+  {featureType:'road.arterial',elementType:'geometry.stroke',stylers:[{color:'#05010d'}]},
+  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#ff2d95'}]},
+  {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#05010d'},{weight:2}]},
+  {featureType:'road.highway.controlled_access',elementType:'geometry',stylers:[{color:'#ff5eb0'}]},
   {featureType:'transit',stylers:[{visibility:'off'}]},
-  {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1a33'}]}
+  {featureType:'water',elementType:'geometry',stylers:[{color:'#08132e'}]}
 ];
+/* the big map wants its street names readable */
+var MAP_STYLE_BIG = MAP_STYLE.concat([
+  {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#e7d9ff'}]},
+  {featureType:'road.local',elementType:'geometry',stylers:[{color:'#5a2a8c'}]},
+  {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#4fa8ff'}]}
+]);
 
 function loadMaps(key){
   return new Promise(function(res, rej){
@@ -2518,7 +2780,7 @@ function loadMaps(key){
     window.gm_authFailure = function(){ rej(new Error('AUTH')); };
     var s=document.createElement('script');
     s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+
-          '&libraries=geometry&v=weekly&language=en&region=US&callback=__nirsBiteReady';
+          '&libraries=geometry,places&v=weekly&language=en&region=US&callback=__nirsBiteReady';
     s.async=true; s.defer=true;
     s.onerror=function(){ rej(new Error('NET')); };
     document.head.appendChild(s);
@@ -2562,19 +2824,19 @@ function initGame(){
   S.destMk = new google.maps.Marker({
     map: S.mini, position: p0, zIndex: 5,
     icon: {
-      path: google.maps.SymbolPath.CIRCLE, scale: 7,
-      fillColor:'#ffb300', fillOpacity:1, strokeColor:'#05060a', strokeWeight:3
+      path: google.maps.SymbolPath.CIRCLE, scale: 8,
+      fillColor:'#ffd400', fillOpacity:1, strokeColor:'#05010d', strokeWeight:3
     }
   });
   S.line = new google.maps.Polyline({
-    map: S.mini, path: [], strokeColor:'#c8ff2e', strokeOpacity:.95, strokeWeight:5, zIndex:3
+    map: S.mini, path: [], strokeColor:'#00e5ff', strokeOpacity:1, strokeWeight:6, zIndex:3
   });
 
   S.pano.addListener('pano_changed', function(){
     var loc = S.pano.getLocation();
     if(loc){
-      $('street').textContent = loc.description || loc.shortDescription || 'NEW YORK CITY';
-      if(loc.latLng){ S.mini.setCenter(loc.latLng); }
+      $('street').textContent = loc.description || loc.shortDescription || 'ON THE STREET';
+      if(loc.latLng){ S.here = loc.latLng; S.mini.setCenter(loc.latLng); }
     }
   });
   S.pano.addListener('pov_changed', function(){
@@ -2677,6 +2939,8 @@ function renderHUD(){
     $('oEat').textContent='🍽 '+nx.eat;
     $('oWhy').textContent=nx.why;
     $('oMode').textContent=c.label;
+    $('oDir').href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(s.q)+
+                   '&destination='+encodeURIComponent(nx.q)+'&travelmode='+c.gmode;
     $('btnPlay').disabled=false; $('btnSkip').disabled=false; $('btnNext').disabled=false;
     $('btnPlay').innerHTML=PLAY_HTML;
   }else{
@@ -2687,6 +2951,7 @@ function renderHUD(){
     $('oWhy').textContent=s.why;
     $('oMode').textContent='—';
     $('oDist').textContent='—'; $('oEta').textContent='—';
+    $('oDir').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.q);
     $('btnPlay').disabled=true; $('btnSkip').disabled=true; $('btnNext').disabled=true;
   }
   $('btnPrev').disabled = S.stopIdx===0;
@@ -2704,19 +2969,21 @@ var MAX_FRAMES = 150;
 var routeCache = {};
 function routeKey(a,b,m){ return a+'|'+b+'|'+m; }
 
+function routeRaw(origin, destination, mode){
+  var tm = (mode==='TRANSIT') ? 'WALKING' : mode;
+  return new Promise(function(res, rej){
+    S.dir.route({origin:origin, destination:destination, travelMode: google.maps.TravelMode[tm]},
+      function(r, status){
+        if(status === 'OK' && r && r.routes && r.routes.length) res(r);
+        else rej(new Error(status||'ROUTE_FAIL'));
+      });
+  });
+}
 function getRoute(from, to, mode){
   var tm = (mode==='TRANSIT') ? 'WALKING' : mode;
   var k = routeKey(from.q, to.q, tm);
   if(routeCache[k]) return Promise.resolve(routeCache[k]);
-  return new Promise(function(res, rej){
-    S.dir.route({
-      origin: from.q, destination: to.q,
-      travelMode: google.maps.TravelMode[tm]
-    }, function(r, status){
-      if(status === 'OK' && r && r.routes && r.routes.length){ routeCache[k]=r; res(r); }
-      else rej(new Error(status||'ROUTE_FAIL'));
-    });
-  });
+  return routeRaw(from.q, to.q, mode).then(function(r){ routeCache[k]=r; return r; });
 }
 
 function densePath(result){
@@ -2821,27 +3088,8 @@ function playRoute(){
   $('btnPlay').innerHTML='⏸ <span class="bl">STOP</span>';
 
   getRoute(from, to, to.mode).then(function(r){
-    loader(true, 70);
-    var pts = densePath(r);
-    /* San Diego to Las Vegas is 500km — sample coarser so a long leg
-       plays as a montage instead of running for an hour */
-    var metres = 0, legs = r.routes[0].legs, li;
-    for(li=0; li<legs.length; li++) metres += (legs[li].distance ? legs[li].distance.value : 0);
-    var step = Math.max(c.step, metres / MAX_FRAMES);
-    S.frames = resample(pts, step);
-    S.fi = 0; S.playing = true; S.mode = to.mode; S.pitch = c.pitch;
-    S.line.setPath(r.routes[0].overview_path);
-    S.destMk.setPosition(r.routes[0].legs[0].end_location);
-    S.pano.setZoom(c.zoom);
-    setActor(c.state, c.cyc);
-    speedlines(c.state!=='walk');
-    if(c.state!=='walk'){ $('speedo').classList.add('on'); }
-    S.mini.setZoom(c.state==='car' ? 15 : 16);
-    loader(false);
-    big(c.state==='car' ? 'DRIVE' : (c.state==='bike' ? 'RIDE' : 'GO'));
-    lower(c.en + ' · ' + to.t, to.name, '🍽 ' + to.eat);
-    sfxStart();
-    tick();
+    startLeg(r, to.mode, function(){ arrive(); });
+    lower(cfg(to.mode).en + ' · ' + to.t, to.name, '🍽 ' + to.eat);
   }).catch(function(err){
     loader(false); S.playing=false; $('btnPlay').innerHTML=PLAY_HTML;
     toast('לא הצלחתי לחשב מסלול (' + (err.message||'') + '). קופץ ישר לתחנה.');
@@ -2849,10 +3097,35 @@ function playRoute(){
   });
 }
 
+/* drives both the itinerary legs and anything you typed into the search */
+function startLeg(r, mode, onArrive){
+  var c = cfg(mode);
+  var pts = densePath(r);
+  /* San Diego to Las Vegas is 500km — sample coarser so a long leg
+     plays as a montage instead of running for an hour */
+  var metres = 0, legs = r.routes[0].legs, li;
+  for(li=0; li<legs.length; li++) metres += (legs[li].distance ? legs[li].distance.value : 0);
+  var step = Math.max(c.step, metres / MAX_FRAMES);
+  S.frames = resample(pts, step);
+  S.fi = 0; S.playing = true; S.mode = mode; S.pitch = c.pitch;
+  S.onArrive = onArrive;
+  S.line.setPath(r.routes[0].overview_path);
+  S.destMk.setPosition(r.routes[0].legs[0].end_location);
+  S.pano.setZoom(c.zoom);
+  setActor(c.state, c.cyc);
+  speedlines(c.state!=='walk');
+  $('speedo').classList.toggle('on', c.state!=='walk');
+  S.mini.setZoom(c.state==='car' ? 15 : 16);
+  loader(false);
+  big(c.state==='car' ? 'DRIVE' : (c.state==='bike' ? 'RIDE' : 'GO'));
+  sfxStart();
+  tick();
+}
+
 function tick(){
   if(!S.playing) return;
   var n = S.frames.length;
-  if(S.fi >= n){ arrive(); return; }
+  if(S.fi >= n){ var f = S.onArrive || arrive; S.onArrive = null; f(); return; }
   var c = cfg(S.mode);
   var p = S.frames[S.fi];
   var q = S.frames[Math.min(S.fi+1, n-1)];
@@ -2901,6 +3174,334 @@ function arrive(){
 }
 
 /* ============================================================
+   FREE ROAM — walk the street yourself
+   ============================================================ */
+function setRoam(on){
+  S.roam = !!on;
+  $('dpad').classList.toggle('on', S.roam);
+  document.body.classList.toggle('roam', S.roam);
+  $('btnRoam').classList.toggle('primary', S.roam);
+  if(S.roam){
+    stopPlay();
+    setActor('idle');
+    toast('ROAM — חיצים במקלדת או ה-D-pad. ניר הולך לאן שתגידי.', 3400);
+  }
+}
+
+/* Street View hands us the junctions leaving this panorama;
+   pick the one that best matches where the camera is looking */
+function findLink(dir){
+  if(!S.pano) return null;
+  var links = S.pano.getLinks() || [];
+  if(!links.length) return null;
+  var want = normAng(S.pano.getPov().heading + (dir > 0 ? 0 : 180));
+  var best = null, bd = 181, i, d;
+  for(i=0;i<links.length;i++){
+    d = Math.abs(normAng(links[i].heading - want));
+    if(d < bd){ bd = d; best = links[i]; }
+  }
+  return (best && bd <= 72) ? best : null;
+}
+
+function stepStreet(dir){
+  if(!S.pano || S.playing) return;
+  var now = Date.now();
+  if(now - (S.lastStep||0) < 230) return;
+  S.lastStep = now;
+  var l = findLink(dir);
+  if(!l){ toast('אין המשך לכיוון הזה — תסתובבי'); return; }
+  setActor('walk', '.5s');
+  S.pano.setPano(l.pano);
+  if(dir > 0) S.pano.setPov({heading: l.heading, pitch: S.pitch});
+  sfxStep();
+  clearTimeout(S.walkStop);
+  S.walkStop = setTimeout(function(){ if(!S.playing) setActor('idle'); }, 720);
+}
+
+function turn(deg){
+  if(!S.pano || S.playing) return;
+  var pov = S.pano.getPov();
+  S.pano.setPov({heading: pov.heading + deg, pitch: pov.pitch});
+}
+
+function wireDpad(){
+  var pad = $('dpad');
+  Array.prototype.forEach.call(pad.querySelectorAll('button'), function(b){
+    var k = b.dataset.k, t = null;
+    function act(){
+      if(k==='up') stepStreet(1);
+      else if(k==='down') stepStreet(-1);
+      else if(k==='left') turn(-14);
+      else turn(14);
+    }
+    function down(e){
+      e.preventDefault(); b.classList.add('hit'); act();
+      clearInterval(t);
+      t = setInterval(act, (k==='up'||k==='down') ? 260 : 70);
+    }
+    function up(){ b.classList.remove('hit'); clearInterval(t); }
+    b.addEventListener('pointerdown', down);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointerleave', up);
+    b.addEventListener('pointercancel', up);
+  });
+}
+
+/* ============================================================
+   ASK NIR — type a place, he walks there and tells you what to order
+   ============================================================ */
+var CUISINE = [
+  {k:['pizza','pizzeria','slice','napoli','napoletana'], say:'פרוסה אחת, מקפלים לאורך, אוכלים בעמידה.'},
+  {k:['taco','taqueria','burrito','mexic'],              say:'שלושה טאקוס על טורטיית תירס. ברוטב הירוק מתחילים בטיפה.'},
+  {k:['burger','shack','patty','smash'],                 say:'צ׳יזבורגר, מדיום. בלי לשאול שאלות.'},
+  {k:['sushi','omakase','nigiri','izakaya'],             say:'אומקסה אם יש. אם אין — ניגירי, לא רולים.'},
+  {k:['bagel','appetizing','lox'],                       say:'Everything, קרם צ׳יז ולוקס. ולא לבקש טוסט.'},
+  {k:['steak','luger','chophouse','churrasc','asado'],   say:'מדיום רייר, לשולחן, לחלוק. וסלט עגבניות בצל.'},
+  {k:['deli','pastrami','katz','sarge','delicatessen'],  say:'פסטרמי על לחם שיפון, חרדל, חמוץ. hand-carved.'},
+  {k:['ramen','noodle','udon','soba','pho'],             say:'טונקוצו, וביצה נוספת. תמיד ביצה נוספת.'},
+  {k:['falafel','shawarma','hummus','kebab','mediterran'],say:'בפיתה, חריף, עם עמבה. לא בצלחת.'},
+  {k:['ice cream','gelato','creamery','frozen','custard'],say:'שני טעמים, בגביע. הקונוס נשבר.'},
+  {k:['coffee','espresso','cafe','café','roaster','brew'],say:'אספרסו כפול ומאפה. לא לשבת יותר מדי.'},
+  {k:['bbq','barbecue','brisket','smokehouse'],          say:'בריסקט שמן, לא רזה. ומי שמבקש רזה — טועה.'},
+  {k:['dumpling','dim sum','bao','wonton','xiao'],       say:'סבב אחד מטוגן, סבב אחד מאודה. ובלי למהר.'},
+  {k:['donut','doughnut','bakery','patisserie','pastry'],say:'אחד קלאסי, אחד מטורף. תמיד שניים.'},
+  {k:['lobster','oyster','seafood','clam','crab','fish'],say:'תריסר צדפות ולובסטר רול. חם, לא קר.'},
+  {k:['diner','breakfast','brunch','pancake','waffle'],  say:'פנקייקס ובייקון, וקפה שממשיכים למלא.'},
+  {k:['chocolate','candy','sugar','sweet','dessert'],    say:'אחד לשולחן. באמת אחד — אני מכיר אתכם.'},
+  {k:['thai','curry','indian','viet','korean','bbq kore'],say:'הכי חריף שהם מוכנים להביא לתייר. ואז עוד קצת.'},
+  {k:['bar','pub','brewery','cocktail','wine'],          say:'משהו אחד טוב, לא שלושה בינוניים.'}
+];
+var PLACE_KIND = [
+  {t:['museum','art_gallery'],                say:'שעה וחצי, לא יותר. ואז אוכל.'},
+  {t:['park','campground','natural_feature'], say:'מים וספסל. הרגליים יודו לכם אחר כך.'},
+  {t:['amusement_park','zoo','aquarium'],     say:'להגיע בפתיחה, לצאת לפני שנשברים. יש עוד ימים.'},
+  {t:['shopping_mall','clothing_store','store','department_store'], say:'רק מה שלא קיים בארץ. השאר מיותר.'},
+  {t:['tourist_attraction','point_of_interest'], say:'תמונה אחת טובה, ואז ממשיכים.'},
+  {t:['lodging'],                             say:'זה מלון. אם אתם רעבים — תשאלו אותי על משהו אחר.'},
+  {t:['airport','transit_station'],           say:'להגיע מוקדם. תמיד. בלי ויכוח.'}
+];
+var FOOD_TYPES = ['restaurant','food','cafe','bakery','bar','meal_takeaway','meal_delivery','ice_cream_shop'];
+
+function isFood(types, name){
+  var i;
+  for(i=0;i<(types||[]).length;i++) if(FOOD_TYPES.indexOf(types[i]) >= 0) return true;
+  return /pizza|taco|burger|sushi|bagel|steak|deli|ramen|noodle|falafel|coffee|cafe|bbq|dumpling|donut|bakery|lobster|oyster|diner|grill|kitchen|eat|food/i.test(name||'');
+}
+
+/* Nir's line: what kind of place it is, what people think of it,
+   and — best case — whether it is one of his own stops */
+function nirSays(place){
+  var name = (place.name||'') + ' ' + (place.addr||'');
+  var low = name.toLowerCase(), out = [], i, j;
+
+  if(place.mine){
+    return 'רגע — זה ' + place.mine.st.name + ', ' + place.mine.d.d + ' במסלול שלנו. ' +
+           place.mine.st.eat + ' ' + place.mine.st.why;
+  }
+
+  var food = isFood(place.types, name);
+  if(food){
+    for(i=0;i<CUISINE.length;i++){
+      for(j=0;j<CUISINE[i].k.length;j++){
+        if(low.indexOf(CUISINE[i].k[j]) >= 0){ out.push(CUISINE[i].say); i = CUISINE.length; break; }
+      }
+    }
+    if(!out.length) out.push('מה שהמקום הזה מפורסם בו. תשאלו את המלצר מה הוא מזמין — ותזמינו את זה.');
+  }else{
+    for(i=0;i<PLACE_KIND.length;i++){
+      for(j=0;j<PLACE_KIND[i].t.length;j++){
+        if((place.types||[]).indexOf(PLACE_KIND[i].t[j]) >= 0){ out.push(PLACE_KIND[i].say); i = PLACE_KIND.length; break; }
+      }
+    }
+    if(!out.length) out.push('נראה מעניין. תלכו, תראו, ותגידו לי אם שווה.');
+  }
+
+  if(place.rating){
+    if(place.rating >= 4.6)      out.push('דירוג ' + place.rating.toFixed(1) + ' — זה הדבר האמיתי.');
+    else if(place.rating >= 4.2) out.push('דירוג ' + place.rating.toFixed(1) + ' — טוב. לא יעביר אתכם שינוי חיים, אבל טוב.');
+    else if(place.rating >= 3.8) out.push('דירוג ' + place.rating.toFixed(1) + ' — בסדר. אם אתם רעבים ואתם שם.');
+    else                          out.push('דירוג ' + place.rating.toFixed(1) + ' — אני לא הייתי. בואו נמצא משהו אחר.');
+  }
+  if(place.price >= 4)      out.push('יקר. תזמינו מנה אחת ותחלקו.');
+  else if(place.price === 1) out.push('זול, וזה בדרך כלל סימן טוב.');
+
+  var hr = new Date().getHours();
+  if(food && hr < 11)      out.push('עכשיו בוקר — אז קפה קודם.');
+  else if(food && hr >= 22) out.push('מאוחר. תבדקו שהמטבח עוד פתוח.');
+
+  return out.join(' ');
+}
+
+function nearestTripStop(latLng){
+  if(!S.sph) return null;
+  var best = null, bd = 1e9;
+  S.trip.days.forEach(function(d){
+    d.stops.forEach(function(st){
+      var dist = S.sph.computeDistanceBetween(latLng, new google.maps.LatLng(st.lat, st.lng));
+      if(dist < bd){ bd = dist; best = {d:d, st:st, dist:dist}; }
+    });
+  });
+  return (best && best.dist < 400) ? best : null;
+}
+
+function hereNow(){
+  return S.here || (S.pano && S.pano.getPosition()) ||
+         new google.maps.LatLng(curStop().lat, curStop().lng);
+}
+
+function askNir(q){
+  q = (q||'').trim();
+  if(!q){ toast('כתבי שם של מקום'); return; }
+  var origin = hereNow();
+  loader(true, 25);
+
+  function finish(place){
+    loader(false);
+    if(!place){ toast('לא מצאתי את המקום הזה. נסי שם מלא יותר, או להוסיף עיר.'); return; }
+    place.mine = nearestTripStop(place.pos);
+    place.km = S.sph.computeDistanceBetween(origin, place.pos) / 1000;
+    S.found = place;
+    showVerdict(place);
+  }
+
+  if(google.maps.places && google.maps.places.PlacesService){
+    if(!S.places) S.places = new google.maps.places.PlacesService(S.mini);
+    S.places.findPlaceFromQuery({
+      query: q,
+      fields: ['name','geometry','formatted_address','types','rating','price_level','user_ratings_total'],
+      locationBias: {center: origin, radius: 40000}
+    }, function(res, st){
+      if(st === 'OK' && res && res.length){
+        var r = res[0];
+        finish({
+          name: r.name || q,
+          addr: r.formatted_address || '',
+          pos:  r.geometry && r.geometry.location,
+          types: r.types || [],
+          rating: r.rating || 0,
+          price: (typeof r.price_level === 'number') ? r.price_level : 0,
+          votes: r.user_ratings_total || 0
+        });
+      } else viaDirections(q, origin, finish);
+    });
+  } else viaDirections(q, origin, finish);
+}
+
+/* no Places API on the key? Directions geocodes the string for us anyway */
+function viaDirections(q, origin, finish){
+  routeRaw(origin, q, 'WALKING').then(function(r){
+    var leg = r.routes[0].legs[0];
+    finish({
+      name: (leg.end_address||q).split(',')[0],
+      addr: leg.end_address || '',
+      pos: leg.end_location,
+      types: [], rating: 0, price: 0, votes: 0
+    });
+  }).catch(function(){ finish(null); });
+}
+
+function showVerdict(place){
+  $('vName').textContent = place.name;
+  var meta = [];
+  if(place.addr) meta.push(place.addr);
+  if(place.rating) meta.push('★ ' + place.rating.toFixed(1) + (place.votes ? ' (' + place.votes + ')' : ''));
+  if(place.price) meta.push(new Array(place.price+1).join('$'));
+  meta.push(place.km < 1 ? Math.round(place.km*1000) + ' m' : place.km.toFixed(1) + ' km');
+  $('vMeta').textContent = meta.join('  ·  ');
+  $('vSay').textContent = nirSays(place);
+  $('verdict').classList.add('on');
+  $('search').classList.remove('on');
+  beep(880, .1, 'square');
+}
+
+function goToFound(){
+  var place = S.found;
+  if(!place) return;
+  $('verdict').classList.remove('on');
+  var mode = place.km > 2.2 ? 'DRIVING' : (place.km > 0.9 ? 'BICYCLING' : 'WALKING');
+  var c = cfg(mode);
+  loader(true, 30);
+  routeRaw(hereNow(), place.pos, mode).then(function(r){
+    startLeg(r, mode, function(){ arriveFound(place); });
+    lower(c.en + ' · FREE ROAM', place.name, '🍽 ' + nirSays(place));
+  }).catch(function(){
+    loader(false);
+    toast('לא הצלחתי לחשב מסלול לשם. מקפיץ אותך ישר.');
+    arriveFound(place);
+  });
+}
+
+function arriveFound(place){
+  stopPlay();
+  var seq = ++S.jumpSeq;
+  findPano(place.pos, function(id, at){
+    if(seq !== S.jumpSeq) return;
+    if(id) S.pano.setPano(id); else S.pano.setPosition(place.pos);
+    S.pano.setZoom(0.85);
+    S.mini.setCenter(at || place.pos);
+    S.destMk.setPosition(place.pos);
+  });
+  S.pitch = -6;
+  setActor('idle');
+  shake(); sfxPassed();
+  $('passedSub').textContent = place.name.toUpperCase();
+  $('passedEat').textContent = nirSays(place);
+  $('passed').classList.add('show');
+}
+
+/* ============================================================
+   THE MAP, FULL SIZE
+   ============================================================ */
+function openMap(){
+  if(!S.mini){ toast('המפה זמינה אחרי שנטען Google Maps'); return; }
+  $('mapview').classList.add('on');
+  if(!S.bigMap){
+    S.bigMap = new google.maps.Map($('bigMap'), {
+      zoom: 14, center: hereNow(), styles: MAP_STYLE_BIG,
+      disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy',
+      clickableIcons: false, backgroundColor: '#120726'
+    });
+    S.bigLine = new google.maps.Polyline({
+      map: S.bigMap, path: [], strokeColor:'#00e5ff', strokeOpacity:.95, strokeWeight:5, zIndex:2
+    });
+    S.bigMe = new google.maps.Marker({
+      map: S.bigMap, zIndex: 99,
+      icon: {path: google.maps.SymbolPath.CIRCLE, scale: 9,
+             fillColor:'#ff2d95', fillOpacity:1, strokeColor:'#000', strokeWeight:3}
+    });
+  }
+  drawDayOnMap();
+  google.maps.event.trigger(S.bigMap, 'resize');
+}
+function closeMap(){ $('mapview').classList.remove('on'); }
+
+function drawDayOnMap(){
+  (S.bigMarks||[]).forEach(function(m){ m.setMap(null); });
+  S.bigMarks = [];
+  var day = curDay(), b = new google.maps.LatLngBounds(), path = [];
+  day.stops.forEach(function(st, j){
+    var pos = new google.maps.LatLng(st.lat, st.lng);
+    b.extend(pos); path.push(pos);
+    var m = new google.maps.Marker({
+      map: S.bigMap, position: pos, zIndex: 10 + j,
+      title: st.t + ' · ' + st.name,
+      label: {text: String(j+1), color:'#0a1400', fontFamily:'Anton, Impact, sans-serif',
+              fontSize:'14px', fontWeight:'400'},
+      icon: {path: google.maps.SymbolPath.CIRCLE, scale: 15,
+             fillColor: (j === S.stopIdx ? '#ff2d95' : '#a3ff12'), fillOpacity: 1,
+             strokeColor: '#000', strokeWeight: 3}
+    });
+    m.addListener('click', function(){ jumpToStop(j); closeMap(); });
+    S.bigMarks.push(m);
+  });
+  S.bigLine.setPath(path);
+  var p = S.pano && S.pano.getPosition();
+  if(p){ S.bigMe.setPosition(p); b.extend(p); }
+  if(!b.isEmpty()) S.bigMap.fitBounds(b, 60);
+  $('mvSub').textContent = day.d + ' · ' + day.title + ' · ' + day.stops.length + ' תחנות';
+}
+
+/* ============================================================
    DRAWER + CONTROLS
    ============================================================ */
 function openDrawer(){ $('drawer').classList.add('open'); }
@@ -2915,13 +3516,30 @@ function wire(){
   $('btnNext').onclick = function(){ jumpToStop(S.stopIdx+1); };
   $('btnPrev').onclick = function(){ jumpToStop(S.stopIdx-1); };
 
-  $('btnMap').onclick = function(){
-    var to = nextStop() || curStop(), from = curStop();
-    var c = cfg(to.mode);
-    var url='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from.q)+
-            '&destination='+encodeURIComponent(to.q)+'&travelmode='+c.gmode;
-    window.open(url,'_blank','noopener');
+  $('btnMap').onclick   = openMap;
+  $('btnCloseMap').onclick = closeMap;
+  $('btnRoam').onclick  = function(){ setRoam(!S.roam); };
+  $('btnFind').onclick  = function(){
+    var on = !$('search').classList.contains('on');
+    $('search').classList.toggle('on', on);
+    $('verdict').classList.remove('on');
+    if(on) setTimeout(function(){ $('qInput').focus(); }, 260);
   };
+  $('qGo').onclick = function(){ askNir($('qInput').value); };
+  $('qInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); askNir($('qInput').value); }
+    if(e.key === 'Escape'){ $('search').classList.remove('on'); $('qInput').blur(); }
+  });
+  $('vGo').onclick    = goToFound;
+  $('vClose').onclick = function(){ $('verdict').classList.remove('on'); };
+  $('vDir').onclick   = function(){
+    if(!S.found) return;
+    var c = cfg(S.found.km > 2.2 ? 'DRIVING' : 'WALKING');
+    window.open('https://www.google.com/maps/dir/?api=1&destination=' +
+      encodeURIComponent(S.found.name + ' ' + (S.found.addr||'')) +
+      '&travelmode=' + c.gmode, '_blank', 'noopener');
+  };
+  wireDpad();
 
   $('btnSfx').onclick = function(){
     S.sfx=!S.sfx;
@@ -2938,11 +3556,27 @@ function wire(){
 
   document.addEventListener('keydown', function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
-    if(e.code==='Space'){ e.preventDefault(); $('btnPlay').click(); }
-    if(e.code==='ArrowRight'){ jumpToStop(S.stopIdx+1); }
-    if(e.code==='ArrowLeft'){ jumpToStop(S.stopIdx-1); }
-    if(e.code==='KeyM'){ $('btnDays').click(); }
-    if(e.code==='Escape'){ closeDrawer(); $('passed').classList.remove('show'); }
+    switch(e.code){
+      /* walk the street */
+      case 'ArrowUp': case 'KeyW':    e.preventDefault(); stepStreet(1);  break;
+      case 'ArrowDown': case 'KeyS':  e.preventDefault(); stepStreet(-1); break;
+      case 'ArrowLeft': case 'KeyA':  e.preventDefault(); turn(-14);      break;
+      case 'ArrowRight': case 'KeyD': e.preventDefault(); turn(14);       break;
+      /* the rest of the game */
+      case 'Space':        e.preventDefault(); $('btnPlay').click(); break;
+      case 'BracketLeft':  jumpToStop(S.stopIdx-1); break;
+      case 'BracketRight': jumpToStop(S.stopIdx+1); break;
+      case 'KeyM':         $('mapview').classList.contains('on') ? closeMap() : openMap(); break;
+      case 'KeyR':         setRoam(!S.roam); break;
+      case 'KeyF': case 'Slash': e.preventDefault(); $('btnFind').click(); break;
+      case 'Tab':          e.preventDefault(); $('btnDays').click(); break;
+      case 'Escape':
+        closeDrawer(); closeMap();
+        $('passed').classList.remove('show');
+        $('search').classList.remove('on');
+        $('verdict').classList.remove('on');
+        break;
+    }
   });
 
   /* import / reset in the drawer header */
