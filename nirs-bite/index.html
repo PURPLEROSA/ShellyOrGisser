@@ -51,7 +51,7 @@ body{
 
 /* ---------- street view stage ---------- */
 #stage{position:absolute;inset:0;z-index:1}
-#pano{position:absolute;inset:0;filter:saturate(1.3) contrast(1.1) brightness(.97)}
+#pano{position:absolute;inset:0;filter:saturate(1.18) contrast(1.06) brightness(1.01)}
 #pano *{outline:none!important}
 /* Google's logo + Terms stay visible — that is a Maps licence requirement.
    we only lift our own HUD off the bottom strip so nothing covers them. */
@@ -61,16 +61,16 @@ body{
 #grade::before{
   content:'';position:absolute;inset:0;
   background:
-    radial-gradient(120% 90% at 50% 8%, rgba(255,178,60,.30), rgba(255,120,0,0) 55%),
-    linear-gradient(180deg, rgba(255,132,0,.16) 0%, rgba(0,0,0,0) 35%, rgba(6,12,30,.34) 100%);
-  mix-blend-mode:overlay;
+    radial-gradient(120% 80% at 50% 6%, rgba(255,196,110,.20), rgba(255,140,0,0) 52%),
+    linear-gradient(180deg, rgba(255,150,40,.08) 0%, rgba(0,0,0,0) 38%, rgba(10,20,44,.22) 100%);
+  mix-blend-mode:soft-light;
 }
 #grade::after{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(112% 82% at 50% 52%, rgba(0,0,0,0) 46%, rgba(0,0,0,.62) 100%);
+  background:radial-gradient(118% 88% at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,.46) 100%);
 }
 #grain{
-  position:absolute;inset:-50%;z-index:3;pointer-events:none;opacity:.16;
+  position:absolute;inset:-50%;z-index:3;pointer-events:none;opacity:.07;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.6'/></svg>");
   animation:grainShift .8s steps(4) infinite;
 }
@@ -106,16 +106,20 @@ body{
    NIR — the character
    ============================================================ */
 #actor{
-  position:absolute;left:50%;bottom:calc(11% + var(--safeB));
+  position:absolute;left:50%;bottom:calc(14% + var(--safeB));
   z-index:5;pointer-events:none;
-  transform:translateX(-50%);
   width:min(20vh,175px);
-  transition:width .5s cubic-bezier(.2,.9,.25,1), bottom .5s;
+  transform:translateX(-50%);
+  transform-origin:50% 100%;
+  transition:transform .45s cubic-bezier(.2,.9,.25,1), bottom .45s;
 }
-#actor.veh-bike{width:min(24vh,215px);bottom:calc(9% + var(--safeB))}
-#actor.veh-car{width:min(34vh,300px);bottom:calc(5% + var(--safeB))}
+#actor.veh-bike{transform:translateX(-50%) scale(1.24);bottom:calc(12% + var(--safeB))}
+#actor.veh-car{transform:translateX(-50%) scale(1.9);bottom:calc(15% + var(--safeB))}
 #actor svg{width:100%;height:auto;display:none;
-  filter:drop-shadow(0 18px 22px rgba(0,0,0,.6)) drop-shadow(0 0 1px rgba(0,0,0,.9))}
+  filter:
+    drop-shadow(-2px -2px 0 rgba(255,236,196,.5))
+    drop-shadow(0 16px 20px rgba(0,0,0,.55))
+    drop-shadow(0 0 1px rgba(0,0,0,.85));}
 #actor[data-state="walk"] .rig-walk,
 #actor[data-state="idle"] .rig-walk,
 #actor[data-state="bike"] .rig-bike,
@@ -123,10 +127,10 @@ body{
 
 /* ground shadow */
 #shadow{
-  position:absolute;left:50%;bottom:calc(10.4% + var(--safeB));z-index:4;
+  position:absolute;left:50%;bottom:calc(13.4% + var(--safeB));z-index:4;
   width:min(14vh,118px);height:min(3.6vh,26px);
   transform:translateX(-50%);
-  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.62), rgba(0,0,0,0) 72%);
+  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.72), rgba(0,0,0,0) 68%);
   pointer-events:none;
   animation:shadowPulse .62s ease-in-out infinite;
 }
@@ -144,8 +148,8 @@ body{
 #actor[data-state="walk"] #armR{animation:swingA calc(var(--cyc,.62s)) ease-in-out infinite}
 #actor[data-state="walk"] #body-walk{animation:bob calc(var(--cyc,.62s)/2) ease-in-out infinite}
 #actor[data-state="idle"] #body-walk{animation:breathe 3.4s ease-in-out infinite}
-@keyframes swingA{0%,100%{transform:rotate(26deg)}50%{transform:rotate(-26deg)}}
-@keyframes swingB{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(26deg)}}
+@keyframes swingA{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}
+@keyframes swingB{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-2.6%) rotate(1.2deg)}}
 @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1%)}}
 /* pedal cycle */
@@ -298,7 +302,7 @@ body{
 
 /* speedometer */
 #speedo{
-  position:absolute;right:12px;bottom:calc(220px + var(--safeB));
+  position:absolute;right:12px;top:calc(108px + var(--safeT));
   padding:8px 14px;text-align:center;opacity:0;transition:opacity .35s;
 }
 #speedo.on{opacity:1}
@@ -324,6 +328,27 @@ body{
   74%{opacity:1;transform:scale(1.02)}
   100%{opacity:0;transform:scale(1.12)}
 }
+
+/* ---------- cinematic lower-third when a leg starts ---------- */
+#lower{
+  position:absolute;left:0;bottom:calc(206px + var(--safeB));z-index:19;
+  padding:13px 40px 14px 20px;max-width:min(72vw,620px);
+  background:linear-gradient(90deg,rgba(5,6,10,.95) 0%,rgba(5,6,10,.78) 72%,rgba(5,6,10,0) 100%);
+  border-left:5px solid var(--lime);
+  transform:translateX(-112%);opacity:0;pointer-events:none;
+}
+#lower.show{animation:lowerIn 3.6s cubic-bezier(.2,.9,.25,1) forwards}
+@keyframes lowerIn{
+  0%{transform:translateX(-112%);opacity:0}
+  8%{transform:translateX(0);opacity:1}
+  82%{transform:translateX(0);opacity:1}
+  100%{transform:translateX(-6%);opacity:0}
+}
+#lower .k{font-size:11px;letter-spacing:4px;color:var(--lime);font-weight:700}
+#lower .t{font-family:'Anton',Impact,sans-serif;font-size:clamp(20px,4.4vw,42px);line-height:1.02;
+  color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.7);margin-top:3px}
+#lower .s{font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:13.5px;line-height:1.45;color:#ffdf9e;margin-top:6px;font-weight:700}
 
 /* ---------- MISSION PASSED overlay ---------- */
 #passed{
@@ -489,10 +514,12 @@ body{
   #bar::-webkit-scrollbar{display:none}
   #bar button{padding:10px 12px;font-size:13.5px}
   #speedo{bottom:auto;top:calc(112px + var(--safeT));right:12px;padding:6px 11px}
+  #lower{top:calc(122px + var(--safeT));bottom:auto;max-width:84vw;padding:10px 30px 11px 14px}
+  #lower .s{font-size:12px}
   #speedo .n{font-size:24px}
   #actor{width:min(15vh,120px);bottom:calc(30% + var(--safeB))}
-  #actor.veh-bike{width:min(18vh,145px);bottom:calc(29% + var(--safeB))}
-  #actor.veh-car{width:min(26vh,205px);bottom:calc(27% + var(--safeB))}
+  #actor.veh-bike{bottom:calc(29% + var(--safeB))}
+  #actor.veh-car{bottom:calc(27% + var(--safeB))}
   #shadow{bottom:calc(29.4% + var(--safeB));width:min(10vh,82px);height:min(2.6vh,20px)}
   #pips i{width:18px;height:4px}
   #status{gap:5px}
@@ -600,6 +627,12 @@ body{
 
   <div id="bigtext"><span id="bigtextSpan">MISSION START</span></div>
 
+  <div id="lower">
+    <div class="k" id="lowK">OBJECTIVE</div>
+    <div class="t" id="lowT">—</div>
+    <div class="s" id="lowS">—</div>
+  </div>
+
   <!-- ============ MISSION PASSED ============ -->
   <div id="passed">
     <div class="p1">MISSION PASSED</div>
@@ -663,17 +696,26 @@ body{
 
 /* ---------- palette for the character ---------- */
 var C = {
-  skin:'#d8a273', skinD:'#bd875a', skinDD:'#a06f47',
-  shirt:'#1f66db', shirtD:'#164da9', shirtL:'#3a83f0',
-  denim:'#3f6ea8', denimD:'#2d5280', stitch:'#e9c98c',
-  shoe:'#9aa4af', shoeD:'#78838f', sole:'#f3f4f6', stripe:'#ffffff',
-  cap:'#141c2e', capL:'#222f4c', hair:'#2b2018',
+  skin:'#e3b489', skinD:'#c9976a', skinDD:'#ab7a4e',
+  shirt:'#1b5fd0', shirtD:'#12469f', shirtL:'#4f8ce8', seam:'#79aaf0',
+  denim:'#3f6191', denimD:'#2f4b73', denimL:'#5b80b0', stitch:'#d9c08c',
+  shoe:'#a3acb6', shoeD:'#7b8590', sole:'#f4f5f7', stripe:'#ffffff',
+  capDark:'#241f19', capTan:'#b09769', capGold:'#e9c75c',
+  hair:'#7a6247', hairD:'#5f4c37',
   car:'#d81f2a', carD:'#96121b', carL:'#ff4d57', glass:'#0d1626'
 };
 
-/* ---------- SVG rigs: Nir, back view, GTA camera ---------- */
+/* the damier check on his Las Vegas trucker — one pattern per rig, unique ids */
+function defs(k){
+  return '<defs><pattern id="dm'+k+'" width="14" height="14" patternUnits="userSpaceOnUse">'+
+    '<rect width="14" height="14" fill="'+C.capDark+'"/>'+
+    '<rect x="0" y="0" width="7" height="7" fill="'+C.capTan+'"/>'+
+    '<rect x="7" y="7" width="7" height="7" fill="'+C.capTan+'"/>'+
+    '</pattern></defs>';
+}
+
 function shoe(x,y,flip){
-  var s = flip?-1:1, tx = flip? (x*2+38) : 0;
+  var tx = flip? (x*2+38) : 0;
   return '<g transform="'+(flip?'translate('+tx+',0) scale(-1,1)':'')+'">'+
     '<rect x="'+x+'" y="'+(y+20)+'" width="40" height="11" rx="5.5" fill="'+C.sole+'"/>'+
     '<path d="M'+x+' '+(y+22)+' q0,-24 16,-24 h10 q14,4 14,18 v8 z" fill="'+C.shoe+'"/>'+
@@ -686,111 +728,130 @@ function shoe(x,y,flip){
     '<rect x="'+(x+2)+'" y="'+(y+18)+'" width="36" height="4" rx="2" fill="#fff" opacity=".5"/>'+
   '</g>';
 }
+
+/* washed denim, cut off just above the knee, two patch pockets on the back */
 function leg(id,x,dark){
   var sh = dark? C.denimD : C.denim;
   var sk = dark? C.skinD : C.skin;
+  var px = x+7;
   return '<g id="'+id+'" class="limb">'+
-    /* denim, down to the knee */
-    '<path d="M'+x+' 182 h34 q4,0 4,5 v62 q0,7 -7,7 h-28 q-7,0 -7,-7 v-62 q0,-5 4,-5 z" fill="'+sh+'"/>'+
-    '<path d="M'+(x+2)+' 236 h30 v8 h-30 z" fill="'+(dark?'#25436b':'#33598a')+'"/>'+
-    '<path d="M'+(x+3)+' 190 v54" stroke="'+C.stitch+'" stroke-width="1.6" opacity=".5"/>'+
-    '<path d="M'+(x+35)+' 190 v54" stroke="'+C.stitch+'" stroke-width="1.6" opacity=".5"/>'+
+    '<path d="M'+x+' 182 h38 q4,0 4,5 v70 q0,8 -8,8 h-30 q-8,0 -8,-8 v-70 q0,-5 4,-5 z" fill="'+sh+'"/>'+
+    '<path d="M'+(x+20)+' 182 h18 q4,0 4,5 v70 q0,8 -8,8 h-14 z" fill="'+C.denimD+'" opacity=".32"/>'+
+    /* patch pocket */
+    '<path d="M'+px+' 198 h24 v26 q0,6 -12,6 q-12,0 -12,-6 z" fill="none" stroke="'+C.stitch+'" stroke-width="1.7" opacity=".6"/>'+
+    '<path d="M'+px+' 205 h24" stroke="'+C.stitch+'" stroke-width="1.5" opacity=".45"/>'+
+    /* faded, frayed hem */
+    '<path d="M'+(x+2)+' 246 h34" stroke="'+C.denimL+'" stroke-width="7" opacity=".38"/>'+
+    '<path d="M'+(x+2)+' 256 h34" stroke="'+C.stitch+'" stroke-width="1.4" opacity=".4"/>'+
     /* calf */
-    '<rect x="'+(x+7)+'" y="250" width="21" height="58" rx="10.5" fill="'+sk+'"/>'+
-    '<rect x="'+(x+10)+'" y="260" width="7" height="32" rx="3.5" fill="'+(dark?C.skinDD:C.skinD)+'" opacity=".4"/>'+
-    shoe(x-2,298,false)+
+    '<rect x="'+(x+8)+'" y="256" width="23" height="54" rx="11.5" fill="'+sk+'"/>'+
+    '<rect x="'+(x+11)+'" y="264" width="8" height="30" rx="4" fill="'+(dark?C.skinDD:C.skinD)+'" opacity=".38"/>'+
+    shoe(x-1,300,false)+
   '</g>';
 }
+
+/* thick arms — he is built, the sleeves sit high on the bicep */
 function arm(id,x,dark){
   var sh = dark? C.shirtD : C.shirt;
   var sk = dark? C.skinD : C.skin;
   return '<g id="'+id+'" class="limb">'+
-    '<path d="M'+x+' 100 h27 q5,0 5,6 v40 q0,6 -6,6 h-25 q-6,0 -6,-6 v-40 q0,-6 5,-6 z" fill="'+sh+'"/>'+
-    '<rect x="'+(x+5)+'" y="146" width="18" height="50" rx="9" fill="'+sk+'"/>'+
-    '<circle cx="'+(x+14)+'" cy="199" r="9" fill="'+sk+'"/>'+
+    '<path d="M'+x+' 122 q0,-19 17.5,-19 q17.5,0 17.5,19 v25 q0,7 -7,7 h-21 q-7,0 -7,-7 z" fill="'+sh+'"/>'+
+    '<path d="M'+(x+3)+' 150 h28" stroke="'+C.seam+'" stroke-width="2" opacity=".4"/>'+
+    '<rect x="'+(x+6)+'" y="150" width="23" height="54" rx="11" fill="'+sk+'"/>'+
+    '<circle cx="'+(x+17.5)+'" cy="207" r="10" fill="'+sk+'"/>'+
   '</g>';
 }
-/* the back of Nir's head: hair, ears, and the cap on backwards —
-   which from behind means you are looking straight into the brim */
-function head(){
+
+/* back of his head: short hair, and the Vegas cap on backwards —
+   from behind that means you are looking straight into the brim */
+function head(k){
   return '<g class="head">'+
-    '<ellipse cx="100" cy="60" rx="32" ry="35" fill="'+C.skinD+'"/>'+
-    '<path d="M68 62 q0,-36 32,-36 q32,0 32,36 q0,33 -32,33 q-32,0 -32,-33 z" fill="'+C.hair+'"/>'+
-    '<ellipse cx="67" cy="74" rx="5.5" ry="8.5" fill="'+C.skinDD+'"/>'+
-    '<ellipse cx="133" cy="74" rx="5.5" ry="8.5" fill="'+C.skinDD+'"/>'+
-    '<path d="M79 84 q21,9 42,0 q-7,11 -21,11 q-14,0 -21,-11 z" fill="#1d150e"/>'+
+    '<ellipse cx="100" cy="58" rx="32" ry="36" fill="'+C.skin+'"/>'+
+    '<path d="M68 58 q0,-37 32,-37 q32,0 32,37 q0,34 -32,34 q-32,0 -32,-34 z" fill="'+C.hair+'"/>'+
+    '<path d="M74 76 q26,13 52,0 q-6,18 -26,18 q-20,0 -26,-18 z" fill="'+C.hairD+'"/>'+
+    '<ellipse cx="67" cy="70" rx="6.5" ry="10" fill="'+C.skinD+'"/>'+
+    '<ellipse cx="133" cy="70" rx="6.5" ry="10" fill="'+C.skinD+'"/>'+
     /* crown */
-    '<path d="M67 60 q0,-44 33,-44 q33,0 33,44 q-33,10 -66,0 z" fill="'+C.cap+'"/>'+
-    '<path d="M100 16 q33,0 33,44 q-16,5 -33,5.8 z" fill="'+C.capL+'" opacity=".5"/>'+
-    '<circle cx="100" cy="19" r="4.5" fill="'+C.capL+'"/>'+
-    /* brim, aimed at the camera */
-    '<ellipse cx="100" cy="64" rx="39" ry="13" fill="#080d18"/>'+
-    '<ellipse cx="100" cy="61" rx="39" ry="12.5" fill="'+C.capL+'"/>'+
-    '<ellipse cx="100" cy="59" rx="30" ry="8" fill="#3a4f80" opacity=".5"/>'+
+    '<path d="M68 50 q0,-39 32,-39 q32,0 32,39 q-32,9 -64,0 z" fill="url(#dm'+k+')"/>'+
+    '<path d="M100 11 q32,0 32,39 q-16,4.5 -32,5.2 z" fill="#000" opacity=".22"/>'+
+    '<path d="M68 50 q32,9 64,0" fill="none" stroke="'+C.capDark+'" stroke-width="3"/>'+
+    '<circle cx="100" cy="14" r="4.5" fill="'+C.capDark+'"/>'+
+    /* brim, aimed at the camera, with the gold Vegas script */
+    '<ellipse cx="100" cy="57" rx="39" ry="12" fill="'+C.capDark+'"/>'+
+    '<ellipse cx="100" cy="54" rx="39" ry="11.5" fill="url(#dm'+k+')"/>'+
+    '<ellipse cx="100" cy="54" rx="39" ry="11.5" fill="#000" opacity=".14"/>'+
+    '<ellipse cx="100" cy="53.5" rx="16" ry="5.5" fill="none" stroke="'+C.capGold+'" stroke-width="2.3"/>'+
+    '<path d="M90 53.5 q10,-4.5 20,0" fill="none" stroke="'+C.capGold+'" stroke-width="1.9" stroke-linecap="round"/>'+
   '</g>';
 }
+
 var RIG_WALK =
 '<svg class="rig rig-walk" viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg">'+
+ defs('W')+
  '<g id="body-walk">'+
-   leg('legR',101,true)+
-   leg('legL',63,false)+
-   /* both arms sit behind the torso, so only the sleeves and forearms show */
-   arm('armR',126,true)+
-   arm('armL',41,false)+
-   '<rect x="88" y="70" width="24" height="36" rx="9" fill="'+C.skinDD+'"/>'+
-   /* blue tee */
-   '<path d="M68 104 q0,-13 15,-16 l9,-3 q8,4 16,0 l9,3 q15,3 15,16 v80 q0,9 -9,9 h-46 q-9,0 -9,-9 z" fill="'+C.shirt+'"/>'+
-   '<path d="M100 104 v89 h23 q9,0 9,-9 v-80 q0,-13 -15,-16 l-9,-3 q-4,2 -8,2 z" fill="'+C.shirtD+'" opacity=".42"/>'+
-   '<path d="M82 88 q18,14 36,0" fill="none" stroke="'+C.shirtL+'" stroke-width="6" stroke-linecap="round"/>'+
-   '<path d="M100 116 v72" stroke="'+C.shirtD+'" stroke-width="2" opacity=".5"/>'+
-   '<rect x="62" y="178" width="76" height="12" rx="5" fill="'+C.denimD+'"/>'+
-   head()+
+   leg('legR',100,true)+
+   leg('legL',62,false)+
+   arm('armR',128,true)+
+   arm('armL',38,false)+
+   '<path d="M85 84 h30 v30 h-30 z" fill="'+C.skinDD+'"/>'+
+   /* royal blue technical tee */
+   '<path d="M58 114 q2,-17 18,-21 l11,-4 q15,7 30,0 l11,4 q16,4 18,21 v66 q0,11 -11,11 h-66 q-11,0 -11,-11 z" fill="'+C.shirt+'"/>'+
+   '<path d="M100 104 v87 h31 q11,0 11,-11 v-66 q-2,-17 -18,-21 l-11,-4 q-6,3 -13,3 z" fill="'+C.shirtD+'" opacity=".32"/>'+
+   /* the flatlock seams that show on the back of the shirt */
+   '<g fill="none" stroke="'+C.seam+'" stroke-width="2.1" opacity=".42" stroke-linecap="round">'+
+     '<path d="M62 132 q38,22 76,0"/>'+
+     '<path d="M79 136 q-4,32 -1,55"/>'+
+     '<path d="M121 136 q4,32 1,55"/>'+
+     '<path d="M76 116 q10,-9 24,-10"/>'+
+     '<path d="M124 116 q-10,-9 -24,-10"/>'+
+   '</g>'+
+   '<path d="M83 90 q17,15 34,0" fill="none" stroke="'+C.shirtL+'" stroke-width="6" stroke-linecap="round"/>'+
+   /* denim waistband under the hem */
+   '<rect x="60" y="174" width="80" height="22" rx="7" fill="'+C.denimD+'"/>'+
+   head('W')+
  '</g>'+
 '</svg>';
 
 var RIG_BIKE =
 '<svg class="rig rig-bike" viewBox="0 0 260 360" xmlns="http://www.w3.org/2000/svg">'+
-  /* rear wheel */
-  '<g id="wheelB"><circle cx="130" cy="284" r="58" fill="none" stroke="#12161f" stroke-width="11"/>'+
-  '<circle cx="130" cy="284" r="50" fill="none" stroke="#3a4152" stroke-width="2"/>'+
-  '<g stroke="#8792a8" stroke-width="1.8">'+
-   '<line x1="130" y1="228" x2="130" y2="340"/><line x1="74" y1="284" x2="186" y2="284"/>'+
-   '<line x1="90" y1="244" x2="170" y2="324"/><line x1="170" y1="244" x2="90" y2="324"/>'+
-   '<line x1="103" y1="234" x2="157" y2="334"/><line x1="157" y1="234" x2="103" y2="334"/></g>'+
-  '<circle cx="130" cy="284" r="7" fill="#c8cede"/></g>'+
-  /* frame + seat post */
-  '<path d="M130 284 L130 226 M112 262 L148 262" stroke="#e03a5f" stroke-width="9" stroke-linecap="round" fill="none"/>'+
-  '<path d="M108 226 h44 q6,0 6,6 q0,8 -28,8 q-28,0 -28,-8 q0,-6 6,-6 z" fill="#11151d"/>'+
-  /* handlebar */
-  '<path d="M74 214 h112" stroke="#1b2130" stroke-width="10" stroke-linecap="round"/>'+
-  '<circle cx="74" cy="214" r="8" fill="#0c1018"/><circle cx="186" cy="214" r="8" fill="#0c1018"/>'+
-  /* crank */
-  '<g id="pedals"><circle cx="130" cy="290" r="18" fill="none" stroke="#2a3140" stroke-width="5"/>'+
-  '<rect x="104" y="284" width="24" height="10" rx="4" fill="#39414f"/>'+
-  '<rect x="132" y="284" width="24" height="10" rx="4" fill="#39414f"/></g>'+
+  defs('B')+
+  '<g id="wheelB"><circle cx="130" cy="296" r="47" fill="none" stroke="#12161f" stroke-width="10"/>'+
+  '<circle cx="130" cy="296" r="40" fill="none" stroke="#3a4152" stroke-width="2"/>'+
+  '<g stroke="#8792a8" stroke-width="1.7">'+
+   '<line x1="130" y1="251" x2="130" y2="341"/><line x1="85" y1="296" x2="175" y2="296"/>'+
+   '<line x1="98" y1="264" x2="162" y2="328"/><line x1="162" y1="264" x2="98" y2="328"/>'+
+   '<line x1="108" y1="256" x2="152" y2="336"/><line x1="152" y1="256" x2="108" y2="336"/></g>'+
+  '<circle cx="130" cy="296" r="6" fill="#c8cede"/></g>'+
+  '<path d="M130 296 L130 232 M110 268 L150 268" stroke="#e03a5f" stroke-width="9" stroke-linecap="round" fill="none"/>'+
+  '<path d="M104 232 h52 q6,0 6,6 q0,9 -32,9 q-32,0 -32,-9 q0,-6 6,-6 z" fill="#11151d"/>'+
+  '<path d="M64 214 h132" stroke="#1b2130" stroke-width="10" stroke-linecap="round"/>'+
+  '<circle cx="64" cy="214" r="8.5" fill="#0c1018"/><circle cx="196" cy="214" r="8.5" fill="#0c1018"/>'+
+  '<g id="pedals"><circle cx="130" cy="302" r="17" fill="none" stroke="#2a3140" stroke-width="5"/>'+
+  '<rect x="106" y="297" width="23" height="10" rx="4" fill="#39414f"/>'+
+  '<rect x="131" y="297" width="23" height="10" rx="4" fill="#39414f"/></g>'+
   '<g id="rider">'+
-    /* legs, knees out over the crank */
-    '<g id="bLegR"><path d="M144 236 L156 276" stroke="'+C.denimD+'" stroke-width="27" stroke-linecap="round"/>'+
-      '<path d="M156 276 L150 302" stroke="'+C.skinD+'" stroke-width="19" stroke-linecap="round"/>'+
-      '<g transform="translate(130,296) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
-    '<g id="bLegL"><path d="M116 236 L104 276" stroke="'+C.denim+'" stroke-width="27" stroke-linecap="round"/>'+
-      '<path d="M104 276 L110 302" stroke="'+C.skin+'" stroke-width="19" stroke-linecap="round"/>'+
-      '<g transform="translate(90,296) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
-    /* arms reaching for the grips */
-    '<path d="M104 176 L78 210" stroke="'+C.skin+'" stroke-width="18" stroke-linecap="round"/>'+
-    '<path d="M156 176 L182 210" stroke="'+C.skinD+'" stroke-width="18" stroke-linecap="round"/>'+
-    '<path d="M106 172 L92 190" stroke="'+C.shirt+'" stroke-width="26" stroke-linecap="round"/>'+
-    '<path d="M154 172 L168 190" stroke="'+C.shirtD+'" stroke-width="26" stroke-linecap="round"/>'+
-    /* torso, leaning into the ride */
-    '<path d="M98 168 q0,-16 15,-19 l9,-3 q8,4 16,0 l9,3 q15,3 15,19 v62 q0,9 -9,9 h-46 q-9,0 -9,-9 z" fill="'+C.shirt+'"/>'+
-    '<path d="M130 146 v100 h23 q9,0 9,-9 v-62 q0,-16 -15,-19 l-9,-3 q-4,2 -8,2 z" fill="'+C.shirtD+'" opacity=".42"/>'+
-    '<rect x="118" y="118" width="24" height="36" rx="9" fill="'+C.skinDD+'"/>'+
-    '<g transform="translate(30,52) scale(1)">'+head()+'</g>'+
+    '<g id="bLegR"><path d="M148 240 L166 284" stroke="'+C.denimD+'" stroke-width="31" stroke-linecap="round"/>'+
+      '<path d="M166 284 L158 312" stroke="'+C.skinD+'" stroke-width="22" stroke-linecap="round"/>'+
+      '<g transform="translate(138,306) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
+    '<g id="bLegL"><path d="M112 240 L94 284" stroke="'+C.denim+'" stroke-width="31" stroke-linecap="round"/>'+
+      '<path d="M94 284 L102 312" stroke="'+C.skin+'" stroke-width="22" stroke-linecap="round"/>'+
+      '<g transform="translate(82,306) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
+    '<path d="M100 180 L68 210" stroke="'+C.skin+'" stroke-width="21" stroke-linecap="round"/>'+
+    '<path d="M160 180 L192 210" stroke="'+C.skinD+'" stroke-width="21" stroke-linecap="round"/>'+
+    '<path d="M104 172 L88 192" stroke="'+C.shirt+'" stroke-width="28" stroke-linecap="round"/>'+
+    '<path d="M156 172 L172 192" stroke="'+C.shirtD+'" stroke-width="28" stroke-linecap="round"/>'+
+    '<path d="M94 170 q2,-18 17,-22 l10,-3 q9,4 18,0 l10,3 q15,4 17,22 v58 q0,10 -10,10 h-52 q-10,0 -10,-10 z" fill="'+C.shirt+'"/>'+
+    '<path d="M130 145 v103 h26 q10,0 10,-10 v-58 q-2,-18 -17,-22 l-10,-3 q-4,2 -9,2 z" fill="'+C.shirtD+'" opacity=".32"/>'+
+    '<g fill="none" stroke="'+C.seam+'" stroke-width="2.1" opacity=".4" stroke-linecap="round">'+
+      '<path d="M98 186 q32,19 64,0"/><path d="M113 190 q-3,26 -1,44"/><path d="M147 190 q3,26 1,44"/></g>'+
+    '<path d="M116 136 h28 v26 h-28 z" fill="'+C.skinDD+'"/>'+
+    '<g transform="translate(30,54)">'+head('B')+'</g>'+
   '</g>'+
 '</svg>';
 
 var RIG_CAR =
 '<svg class="rig rig-car" viewBox="0 0 360 250" xmlns="http://www.w3.org/2000/svg">'+
+  defs('C')+
   '<ellipse cx="180" cy="232" rx="168" ry="16" fill="#000" opacity=".45"/>'+
   '<rect x="34" y="176" width="52" height="52" rx="16" fill="#0b0e14"/>'+
   '<rect x="274" y="176" width="52" height="52" rx="16" fill="#0b0e14"/>'+
@@ -801,9 +862,11 @@ var RIG_CAR =
   '<path d="M112 62 h136 l20,44 q-88,14 -176,0 z" fill="'+C.glass+'"/>'+
   '<path d="M118 68 h124 l14,30 q-76,11 -152,0 z" fill="#16233d"/>'+
   /* Nir inside: cap silhouette */
-  '<g opacity=".92"><ellipse cx="180" cy="96" rx="24" ry="18" fill="'+C.skinD+'"/>'+
-  '<path d="M156 92 q0,-26 24,-26 q24,0 24,26 q-24,7 -48,0 z" fill="'+C.cap+'"/>'+
-  '<ellipse cx="180" cy="92" rx="28" ry="8" fill="'+C.capL+'" opacity=".7"/></g>'+
+  '<g opacity=".92"><ellipse cx="180" cy="102" rx="19" ry="14" fill="'+C.skinD+'"/>'+
+  '<path d="M162 96 q0,-19 18,-19 q18,0 18,19 q-18,5 -36,0 z" fill="url(#dmC)"/>'+
+  '<ellipse cx="180" cy="98" rx="21" ry="6.5" fill="url(#dmC)"/>'+
+  '<ellipse cx="180" cy="98" rx="21" ry="6.5" fill="#000" opacity=".2"/>'+
+  '<ellipse cx="180" cy="97.5" rx="8" ry="3" fill="none" stroke="'+C.capGold+'" stroke-width="1.6"/></g>'+
   /* taillights */
   '<rect x="52" y="150" width="72" height="24" rx="9" fill="#ff2a2a"/>'+
   '<rect x="236" y="150" width="72" height="24" rx="9" fill="#ff2a2a"/>'+
@@ -1034,6 +1097,11 @@ function big(text){
   var b=$('bigtext'); $('bigtextSpan').textContent=text;
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
+function lower(k, t, sub){
+  $('lowK').textContent = k; $('lowT').textContent = t; $('lowS').textContent = sub || '';
+  var el = $('lower');
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
 function shake(){ var s=$('stage'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -1078,10 +1146,10 @@ function resample(path, step){
   return out;
 }
 var MODE_CFG = {
-  WALKING:  { state:'walk', step:14, ms:560, zoom:.85, pitch:-6,  kmh:5,  cyc:'.62s', label:'ברגל',    cls:'w', gmode:'walking' },
-  BICYCLING:{ state:'bike', step:26, ms:430, zoom:.70, pitch:-4,  kmh:18, cyc:'.44s', label:'אופניים', cls:'b', gmode:'bicycling' },
-  DRIVING:  { state:'car',  step:42, ms:360, zoom:.55, pitch:-3,  kmh:38, cyc:'.30s', label:'ברכב',    cls:'d', gmode:'driving' },
-  TRANSIT:  { state:'walk', step:20, ms:420, zoom:.80, pitch:-5,  kmh:24, cyc:'.5s',  label:'תחבורה',  cls:'t', gmode:'transit' }
+  WALKING:  { state:'walk', step:14, ms:560, zoom:.85, pitch:-6, kmh:5,  cyc:'.62s', label:'ברגל',    en:'ON FOOT',     cls:'w', gmode:'walking' },
+  BICYCLING:{ state:'bike', step:26, ms:430, zoom:.70, pitch:-4, kmh:18, cyc:'.44s', label:'אופניים', en:'ON THE BIKE', cls:'b', gmode:'bicycling' },
+  DRIVING:  { state:'car',  step:42, ms:360, zoom:.55, pitch:-3, kmh:38, cyc:'.30s', label:'ברכב',    en:'IN THE CAR',  cls:'d', gmode:'driving' },
+  TRANSIT:  { state:'walk', step:20, ms:420, zoom:.80, pitch:-5, kmh:24, cyc:'.5s',  label:'תחבורה',  en:'TRANSIT',     cls:'t', gmode:'transit' }
 };
 function cfg(m){ return MODE_CFG[m] || MODE_CFG.WALKING; }
 function curDay(){ return S.trip.days[S.dayIdx]; }
@@ -1420,6 +1488,7 @@ function playRoute(){
     S.mini.setZoom(c.state==='car' ? 15 : 16);
     loader(false);
     big(c.state==='car' ? 'DRIVE' : (c.state==='bike' ? 'RIDE' : 'GO'));
+    lower(c.en + ' · ' + to.t, to.name, '🍽 ' + to.eat);
     sfxStart();
     tick();
   }).catch(function(err){
