@@ -619,6 +619,7 @@ window.initMaps=function(){
 };
 
 function geoSearch(q){
+  if(!mapsReady){const f=$('#kl-q'); if(f&&q){f.value=q;$('#kl-search').click();} return;}
   if(!q||!geocoder)return;
   geocoder.geocode({address:q,componentRestrictions:{country:'US'}},(res,st)=>{
     if(st==='OK'&&res[0]){const g=res[0];
@@ -661,7 +662,7 @@ function showFraming(){
   $('#f-f').textContent=Math.round(pick.fov||80)+'°';
 }
 function drawMarkers(){
-  if(!mapsReady)return;
+  if(!mapsReady){ drawKeylessMarkers(); return; }
   markers.forEach(m=>m.setMap(null)); markers=[];
   LOCS.forEach(l=>{
     const m=new google.maps.Marker({position:{lat:l.lat,lng:l.lng},map,title:l.name,icon:PIN(PINCOLOR[l.status]||'#c3a6ff')});
@@ -1324,6 +1325,120 @@ $('#wipe').onclick=async()=>{
   LOCS=[]; save(); drawMarkers(); refreshCounts(); renderGallery(); storageInfo(); toast('הכל נמחק');
 };
 
+/* ============================================================
+   KEYLESS MODE — a working map and capture panel with no API key.
+   Tiles: OpenStreetMap via CARTO. Search: Nominatim. Both free.
+   Capture works with no network beyond GPS; tiles and search need one.
+   ============================================================ */
+let lmap=null, lmarkers=[], lpickMarker=null;
+
+function keylessUI(){
+  $('#pano').style.height='auto';
+  $('#pano').innerHTML=
+      '<div class="eyebrow">לכידת מיקום</div>'+
+      '<div class="row" style="margin:11px 0 9px">'+
+        '<button class="btn sm" id="kl-gps" style="flex:1">אני פה עכשיו</button></div>'+
+      '<div class="field" style="margin-bottom:9px"><input id="kl-q" placeholder="או חפשי: Venice Beach Los Angeles"></div>'+
+      '<button class="btn ghost sm" id="kl-search" style="width:100%">חיפוש</button>'+
+      '<div id="kl-results" style="margin-top:9px"></div>'+
+      '<div class="field" style="margin:11px 0 0"><label>או הדביקי קואורדינטות</label>'+
+        '<input id="kl-coords" dir="ltr" placeholder="34.0522, -118.2437"></div>'+
+      '<div class="field" style="margin:11px 0 0"><label>כיוון הצילום — <span id="kl-hd">0°</span></label>'+
+        '<input type="range" id="kl-heading" min="0" max="359" value="0" style="padding:0;height:34px">'+
+        '<a class="btn ghost sm" id="kl-sv" target="_blank" rel="noopener" style="width:100%;margin-top:7px">לראות ב-Street View</a>'+
+        '<div class="hint">פותח את Street View האמיתי של גוגל בטאב חדש, בלי מפתח. מסובבים שם, חוזרים ומכוונים את הסליידר.</div></div>';
+
+  $('#kl-gps').onclick=()=>{
+    if(!navigator.geolocation)return toast('אין גישה למיקום');
+    toast('מאתר...');
+    navigator.geolocation.getCurrentPosition(p=>{
+      me={lat:p.coords.latitude,lng:p.coords.longitude};
+      klPick(me.lat,me.lng,'','' ); klFly(me.lat,me.lng,15); renderNear();
+    },()=>toast('לא הצלחתי לאתר — אפשר לחפש או להדביק קואורדינטות'),
+     {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  };
+  const doSearch=async()=>{
+    const q=$('#kl-q').value.trim(); if(!q)return;
+    $('#kl-results').innerHTML='<div class="hint">מחפש...</div>';
+    try{
+      const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=us&q='+encodeURIComponent(q));
+      const j=await r.json();
+      if(!j.length){$('#kl-results').innerHTML='<div class="hint">לא נמצא. נסי שם מלא יותר, או הדביקי קואורדינטות.</div>';return;}
+      $('#kl-results').innerHTML=j.map(o=>
+        '<div class="mini" style="cursor:pointer" data-kl="'+o.lat+','+o.lon+'" data-nm="'+esc(o.name||'')+'" data-ad="'+esc(o.display_name||'')+'">'+
+        '<h5>'+esc(o.name||String(o.display_name).split(',')[0])+'</h5>'+
+        '<p><bdi dir="ltr">'+esc(String(o.display_name).slice(0,70))+'</bdi></p></div>').join('');
+    }catch(e){
+      $('#kl-results').innerHTML='<div class="hint">החיפוש לא זמין כרגע. אפשר להדביק קואורדינטות ידנית.</div>';
+    }
+  };
+  $('#kl-search').onclick=doSearch;
+  $('#kl-q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}});
+  $('#kl-results').onclick=e=>{const d=e.target.closest('[data-kl]'); if(!d)return;
+    const a=d.dataset.kl.split(','); klPick(+a[0],+a[1],d.dataset.nm,d.dataset.ad); klFly(+a[0],+a[1],15);};
+  $('#kl-coords').addEventListener('change',e=>{
+    const m=e.target.value.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+    if(!m)return toast('פורמט: 34.0522, -118.2437');
+    klPick(+m[1],+m[2],'',''); klFly(+m[1],+m[2],15);});
+  $('#kl-heading').addEventListener('input',e=>{
+    $('#kl-hd').textContent=e.target.value+'°';
+    if(pick){pick.heading=+e.target.value;showFraming();klSV();}});
+}
+function klSV(){
+  const a=$('#kl-sv'); if(!a||!pick)return;
+  a.href='https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+pick.lat+','+pick.lng+'&heading='+Math.round(pick.heading||0);
+}
+function klPick(lat,lng,name,addr){
+  const h=+((($('#kl-heading')||{}).value)||0);
+  pick={lat,lng,name:name||'',address:addr||'',heading:h,pitch:0,fov:80};
+  $('#pick-name').textContent=name||'מיקום נבחר';
+  $('#pick-name').dir=/[֐-׿]/.test(name||'')?'rtl':'ltr';
+  $('#pick-coords').textContent=r5(lat)+', '+r5(lng);
+  $('#btn-add').disabled=false; showFraming(); klSV();
+  if(lmap&&window.L){
+    if(lpickMarker)lpickMarker.remove();
+    lpickMarker=L.circleMarker([lat,lng],{radius:9,color:'#ffb7b7',weight:2,fillColor:'#ffb7b7',fillOpacity:.5}).addTo(lmap);
+  }
+}
+function klFly(lat,lng,z){ if(lmap)lmap.setView([lat,lng],z||lmap.getZoom()); }
+
+function loadLeaflet(){return new Promise((res,rej)=>{
+  if(window.L)return res();
+  const css=document.createElement('link');
+  css.rel='stylesheet'; css.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+  document.head.appendChild(css);
+  const js=document.createElement('script');
+  js.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  const t=setTimeout(()=>{js.onload=js.onerror=null;rej(new Error('timeout'))},15000);
+  js.onload=()=>{clearTimeout(t);res()}; js.onerror=()=>{clearTimeout(t);rej(new Error('cdn'))};
+  document.head.appendChild(js);});}
+
+async function initKeylessMap(){
+  keylessUI();
+  $('#map').innerHTML='<div class="pano-empty" style="height:100%">טוען מפה...</div>';
+  try{ await loadLeaflet(); }
+  catch(e){
+    $('#map').innerHTML='<div class="pano-empty" style="height:100%"><div>המפה לא נטענה.<br>הלכידה בצד — GPS, חיפוש והדבקת קואורדינטות — עובדת בלעדיה.</div></div>';
+    return;
+  }
+  $('#map').innerHTML='';
+  lmap=L.map($('#map'),{zoomControl:true}).setView(me?[me.lat,me.lng]:[39.5,-98.35],me?12:4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(lmap);
+  lmap.on('click',e=>klPick(e.latlng.lat,e.latlng.lng,'',''));
+  drawKeylessMarkers();
+  setTimeout(()=>{try{lmap.invalidateSize()}catch(e){}},250);
+}
+function drawKeylessMarkers(){
+  if(!lmap||!window.L)return;
+  lmarkers.forEach(m=>m.remove()); lmarkers=[];
+  LOCS.forEach(l=>{
+    const c=PINCOLOR[l.status]||'#c3a6ff';
+    lmarkers.push(L.circleMarker([l.lat,l.lng],{radius:7,weight:2,color:c,fillColor:c,fillOpacity:.55})
+      .addTo(lmap).on('click',()=>openDrawer(l.id)));
+  });
+}
+
 /* ---------- demo set: one tap to a populated lab ---------- */
 const DEMO_AVATAR={
   name:'SHELLY',
@@ -1362,8 +1477,10 @@ function startApp(){
   fillSettings(); refreshCounts(); renderGallery(); storageInfo();
   if(MAPKEY)loadMaps();
   else{
-    $('#map').innerHTML='<div class="pano-empty" style="height:100%"><div>אין מפתח Google Maps.<br>הוסיפי אותו בהגדרות כדי להפעיל מפה ו-Street View.<br><br>כל השאר — גלריה, לוח הפקה, רפרנסים ופרומפטים — עובד גם בלי.</div></div>';
-    if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{me={lat:p.coords.latitude,lng:p.coords.longitude};renderNear();},()=>{});
+    initKeylessMap();
+    if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{
+      me={lat:p.coords.latitude,lng:p.coords.longitude}; renderNear();
+      if(lmap&&!LOCS.length)lmap.setView([me.lat,me.lng],12);},()=>{});
   }
   if(!LOCS.length&&!AVATAR.desc)setTimeout(()=>toast('טיפ: מלאי קודם את ה-Character Lock בהגדרות'),1400);
   const lastExp=+(localStorage.getItem(K_EXP)||0);
