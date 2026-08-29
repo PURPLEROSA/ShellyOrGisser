@@ -131,7 +131,10 @@ svg{stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;fill:none}
 .loc:hover{transform:translateY(-4px);border-color:var(--b-h);background:var(--card-h)}
 .loc-thumb{position:relative;aspect-ratio:16/10;background:#0b0b0e;overflow:hidden}
 .loc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.loc-thumb .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dark);font-family:var(--display);font-weight:800;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase}
+.loc-thumb .ph{position:absolute;inset:0;display:flex;align-items:flex-end;padding:12px}
+.loc-thumb .ph::before{content:'';position:absolute;inset:0;opacity:.9;background:var(--ph-grad,linear-gradient(135deg,#c3a6ff,#96e6ff))}
+.loc-thumb .ph::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,5,.55),rgba(5,5,5,0) 55%)}
+.loc-thumb .ph span{position:relative;z-index:2;font-family:var(--display);font-weight:700;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.95);text-shadow:0 1px 8px rgba(0,0,0,.5)}
 .loc-thumb .badge{position:absolute;top:9px;inset-inline-start:9px;z-index:2}
 .loc-thumb .cnt{position:absolute;bottom:9px;inset-inline-end:9px;z-index:2;font-size:.56rem;letter-spacing:.08em;background:rgba(5,5,5,.7);backdrop-filter:blur(8px);border:1px solid var(--b-s);border-radius:100px;padding:3px 8px;color:var(--dim)}
 .loc-body{padding:14px;display:flex;flex-direction:column;gap:7px;flex:1}
@@ -249,6 +252,8 @@ html[dir="rtl"] .drawer{transform:translateX(100%)}
       <div class="divider"></div>
       <button class="btn ghost" style="width:100%" id="gate-skip">להיכנס בלי מפתח — מצב לוח הפקה בלבד</button>
       <div class="hint">בלי מפתח: הגלריה, לוח ההפקה, התמונות והפרומפטים עובדים במלואם. המפה ו-Street View לא.</div>
+      <button class="btn ghost" style="width:100%;margin-top:9px" id="gate-demo">כניסה עם סט הדגמה — 8 מיקומים בארה״ב</button>
+      <div class="hint">הדרך המהירה להראות את זה למישהו: נכנס מלא, עם Character Lock מוכן. אפשר למחוק הכל בהגדרות.</div>
     </div>
   </div>
 </div>
@@ -324,6 +329,7 @@ html[dir="rtl"] .drawer{transform:translateX(100%)}
       <h3>המעבדה ריקה</h3>
       <p>לכי למפה, חפשי מקום או לחצי על "אני פה עכשיו", ונעלי את הקאדר הראשון שלך.</p>
       <button class="btn" data-goto="map">למפה</button>
+      <button class="btn outline" id="empty-demo" style="margin-inline-start:9px">טעינת סט הדגמה</button>
     </div>
   </section>
 
@@ -745,7 +751,7 @@ function renderGallery(){
     const d=distLabel(l), n=(l.shots||[]).length;
     return '<article class="loc" data-open="'+l.id+'" style="animation-delay:'+Math.min(i*.04,.5)+'s">'+
       '<div class="loc-thumb"><img data-thumb="'+l.id+'" alt="" loading="lazy" style="display:none">'+
-        '<div class="ph" data-ph="'+l.id+'">'+(MAPKEY?'LOADING':'NO PREVIEW')+'</div>'+
+        '<div class="ph" data-ph="'+l.id+'" style="--ph-grad:'+PHGRAD[archOf(l)]+'"><span>'+esc(ARCH[archOf(l)].label)+'</span></div>'+
         '<span class="chip '+l.status+' badge"><span class="dot"></span>'+S_HE[l.status]+'</span>'+
         (n?'<span class="cnt">'+n+' רפרנסים</span>':'')+'</div>'+
       '<div class="loc-body">'+
@@ -766,9 +772,8 @@ async function hydrateThumbs(list){
     if(l.coverShot){const r=await shotGet(l.coverShot); if(r)src=r.data;}
     if(!src&&MAPKEY)src=svImg(l,640,400);
     if(!src&&(l.shots||[]).length){const r=await shotGet(l.shots[0]); if(r)src=r.data;}
-    if(!src){if(ph)ph.textContent='NO PREVIEW';continue;}
+    if(!src)continue;
     img.onload=()=>{img.style.display='block'; if(ph)ph.remove();};
-    img.onerror=()=>{if(ph)ph.textContent='NO PREVIEW';};
     img.src=src;
   }
 }
@@ -933,6 +938,13 @@ const ARCH={
       'a cropped zip hoodie, wide track trousers with a side stripe, chunky retro trainers, small tinted sunglasses',
       'an oversized wool overshirt in faded plaid over a white tank, straight black denim, low sneakers',
       'a fitted long-sleeve top tucked into wide carpenter jeans, a leather belt, boots, hair straight and loose']}
+};
+const PHGRAD={
+  coastal:'linear-gradient(135deg,#96e6ff,#b4ffda)', desert:'linear-gradient(135deg,#ffd8be,#ffb7b7)',
+  retro:'linear-gradient(135deg,#e1b7ff,#ffb7b7)',   urban:'linear-gradient(135deg,#c3a6ff,#96e6ff)',
+  outdoor:'linear-gradient(135deg,#b4ffda,#96e6ff)', rustic:'linear-gradient(135deg,#ffd8be,#b4ffda)',
+  refined:'linear-gradient(135deg,#c3a6ff,#e1b7ff)', night:'linear-gradient(135deg,#8e79c9,#4a6b8a)',
+  street:'linear-gradient(135deg,#e1b7ff,#96e6ff)'
 };
 const DIRS={
   auto:'לפי הלוקיישן',
@@ -1312,6 +1324,36 @@ $('#wipe').onclick=async()=>{
   LOCS=[]; save(); drawMarkers(); refreshCounts(); renderGallery(); storageInfo(); toast('הכל נמחק');
 };
 
+/* ---------- demo set: one tap to a populated lab ---------- */
+const DEMO_AVATAR={
+  name:'SHELLY',
+  desc:"a woman in her late 30s, warm olive Mediterranean skin with a tan; long dense straight hair, dark chestnut brown with warm caramel and copper highlights from mid-length to the ends, falling well past the collarbone; elongated oval face with a defined squared jaw and a narrow chin; high broad cheekbones; almond-shaped green-hazel eyes, olive green at the rim with warm amber near the pupil, slightly deep-set; thick dark brown brows, near-straight with a low soft arch; a narrow straight nose bridge widening slightly at the base with a defined rounded tip; medium-full lips, the upper slightly thinner than the lower with a clear cupid's bow; a long neck and a clean jawline; visible pores and fine sun texture across the cheeks and nose bridge, light freckling there; athletic build with broad shoulders relative to the waist; resting expression is a closed-lip asymmetric half-smile with a direct steady gaze",
+  signature:'stacked gold rings across several fingers, a fine gold chain with a small cross pendant, small gold hoops',
+  look:'shot on 35mm, shallow depth of field, natural light, editorial realism, visible skin texture, no beauty retouching',
+  refs:[],updatedAt:Date.now()
+};
+const DEMO_LOCS=[
+  ['Venice Beach Boardwalk','1800 Ocean Front Walk, Los Angeles, CA 90291',33.9850,-118.4695,212,-3,88,'published',['beach','graffiti','golden hour'],'הליכה מול קיר הגרפיטי, השמש נמוכה מאחור'],
+  ['Joshua Tree — Cholla Cactus Garden','Pinto Basin Rd, Twentynine Palms, CA 92277',33.9256,-115.9267,305,0,90,'shot',['desert','wide','sunset'],'שוט רחב, היא קטנה בפריים, הקוצים תופסים את האור האחרון'],
+  ['Route 66 Diner','1405 Central Ave NE, Albuquerque, NM 87106',35.0808,-106.6284,44,2,75,'edited',['neon','retro','night'],'הניאון האדום נופל על הפנים, מהצד השני של הכביש'],
+  ['Times Square','Manhattan, New York, NY 10036',40.7580,-73.9855,168,8,95,'scouted',['urban','crowd','night'],'עומדת דוממת בזמן שהכל זז — long exposure feel'],
+  ['Battery Spencer — Golden Gate','Conzelman Rd, Sausalito, CA 94965',37.8270,-122.4820,140,-5,80,'idea',['bridge','fog','outdoor'],'לחכות לערפל שנכנס מתחת לגשר'],
+  ['The Met — Fifth Avenue Steps','1000 5th Ave, New York, NY 10028',40.7794,-73.9632,250,5,70,'scouted',['museum','architecture'],'על המדרגות, סימטריה מלאה מול העמודים'],
+  ['Broadway Honky-Tonk Row','Broadway, Nashville, TN 37201',36.1612,-86.7775,20,6,85,'idea',['neon','night','music'],'שלטי הניאון של הברים כתאורה ראשית'],
+  ['Prada Marfa','US-90, Valentine, TX 79854',30.6033,-104.5556,95,0,82,'scouted',['desert','art','minimal'],'המבנה לבד במדבר, היא בפריים הרחב מימין']
+];
+function loadDemo(){
+  const now=Date.now();
+  LOCS=DEMO_LOCS.map((d,i)=>({
+    id:'demo'+i,name:d[0],address:d[1],lat:d[2],lng:d[3],heading:d[4],pitch:d[5],fov:d[6],
+    status:d[7],tags:d[8],notes:d[9],shots:[],cover:'',coverShot:'',
+    createdAt:now-(DEMO_LOCS.length-i)*36e5,updatedAt:now-(DEMO_LOCS.length-i)*36e5}));
+  save();
+  if(!AVATAR.desc){AVATAR=Object.assign({},DEMO_AVATAR);saveAvatar();fillSettings();}
+  refreshCounts(); drawMarkers(); renderNear(); renderGallery(); storageInfo();
+  go('gallery'); toast('נטענו 8 מיקומים לדוגמה');
+}
+
 /* ---------- boot ---------- */
 function startApp(){
   netState();
@@ -1335,6 +1377,8 @@ $('#gate-go').onclick=()=>{
 };
 $('#gate-key').addEventListener('keydown',e=>{if(e.key==='Enter')$('#gate-go').click();});
 $('#gate-skip').onclick=()=>{localStorage.setItem(K_SKIP,'1');startApp();};
+$('#gate-demo').onclick=()=>{localStorage.setItem(K_SKIP,'1');startApp();loadDemo();};
+$('#empty-demo').onclick=()=>loadDemo();
 
 load();
 if(MAPKEY||localStorage.getItem(K_SKIP))startApp();
