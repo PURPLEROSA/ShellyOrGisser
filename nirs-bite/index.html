@@ -217,51 +217,52 @@ body{
   backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
 }
 
-/* top HUD row — flex, so mission + status can never overlap at any width */
+/* top strip: one full-width bar of cells, like a game frame */
 #topbar{
-  position:absolute;top:calc(12px + var(--safeT));left:12px;right:12px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
-  pointer-events:none;
-}
-#mission{
-  padding:9px 14px 10px;max-width:min(46vw,360px);min-width:0;
+  position:absolute;left:0;right:0;top:0;z-index:12;
+  display:flex;align-items:stretch;
+  padding-top:var(--safeT);
+  background:linear-gradient(180deg,rgba(42,16,73,.96),rgba(15,6,30,.94));
+  border-bottom:3px solid var(--edge);
+  box-shadow:0 4px 0 rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
   pointer-events:auto;
 }
-#mission .lbl{font-size:11px;letter-spacing:3px;color:var(--cyan);font-weight:700;
-  text-shadow:0 0 8px rgba(0,229,255,.7)}
-#mission .ttl{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,3.4vw,27px);line-height:1.05;
-  color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.75);margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#mission .sub{font-size:12.5px;color:#aab2c4;letter-spacing:.4px;margin-top:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  unicode-bidi:plaintext;text-align:start}
-
-/* day + clock */
-#status{flex:0 0 auto;display:flex;gap:8px;align-items:stretch;pointer-events:auto}
-#status .cell{padding:8px 12px;text-align:center;min-width:64px}
-#status .k{font-size:10px;letter-spacing:2.4px;color:#a98fd8}
-#status .v{font-family:'Anton',Impact,sans-serif;font-size:20px;line-height:1.05;color:var(--cyan);
-  text-shadow:0 0 10px rgba(0,229,255,.55),0 2px 0 rgba(0,0,0,.7)}
-#status .v.gold{color:var(--gold);text-shadow:0 0 10px rgba(255,212,0,.5),0 2px 0 rgba(0,0,0,.7)}
-#btnDays{
-  cursor:pointer;color:#fff;font-family:'Anton',Impact,sans-serif;font-size:18px;
-  padding:7px 14px;background:linear-gradient(180deg,#ff67b4,#b8005e);
-  border:3px solid var(--edge);border-radius:2px;text-shadow:0 2px 0 rgba(0,0,0,.5);
-  box-shadow:inset 2px 2px 0 rgba(255,255,255,.4),inset -2px -2px 0 rgba(0,0,0,.4),
-    0 4px 0 rgba(0,0,0,.6), 0 0 18px rgba(255,45,149,.45);
+#topbar .cell{
+  padding:8px 14px;border-right:3px solid var(--edge);
+  display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0;
 }
-#btnDays:active{transform:translateY(3px)}
+#topbar .cell.mis{flex:0 1 auto;max-width:42vw}
+#topbar .cell.hood{flex:1 1 auto}
+#topbar .k{font-size:9.5px;letter-spacing:2.6px;color:#a98fd8;line-height:1}
+#topbar .v{font-family:'Anton',Impact,sans-serif;font-size:19px;line-height:1.05;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#topbar .v.c{color:var(--cyan);text-shadow:0 0 10px rgba(0,229,255,.55),0 2px 0 #000}
+#topbar .v.g{color:var(--gold);text-shadow:0 0 10px rgba(255,212,0,.5),0 2px 0 #000}
+#topbar .v.s{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;
+  color:#c3aef0;text-shadow:none;unicode-bidi:plaintext;text-align:start}
+#btnDays{
+  flex:0 0 auto;cursor:pointer;color:#fff;font-family:'Anton',Impact,sans-serif;font-size:20px;
+  width:56px;border:none;border-left:3px solid var(--edge);border-radius:0;
+  background:linear-gradient(180deg,#ff67b4,#b8005e);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.32);
+}
+#btnDays:active{filter:brightness(.85)}
 
-/* progress pips, inside the mission plate */
-#pips{display:flex;gap:4px;margin-top:9px;max-width:100%}
-#pips i{flex:1 1 0;min-width:6px;max-width:26px;height:6px;border-radius:0;
-  background:rgba(255,255,255,.16);border:1.5px solid #000}
+/* the day's progress, as one strip under the bar */
+#pips{
+  position:absolute;left:0;right:0;top:calc(var(--safeT) + 46px);z-index:12;
+  display:flex;gap:2px;height:8px;padding:0 3px;
+  background:#05010d;border-bottom:3px solid var(--edge);
+}
+#pips i{flex:1 1 0;min-width:0;background:rgba(163,255,18,.16);
+  box-shadow:inset 0 0 0 1px rgba(163,255,18,.22)}
 #pips i.done{background:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,.7)}
-#pips i.now{background:var(--neon);box-shadow:0 0 14px var(--neon)}
+#pips i.now{background:var(--neon);box-shadow:0 0 12px var(--neon)}
 
 /* ---------- radar / minimap ---------- */
 #radarWrap{
-  position:absolute;left:14px;bottom:calc(34px + var(--safeB));
+  position:absolute;left:14px;bottom:calc(84px + var(--safeB));
   width:var(--radar);height:var(--radar);z-index:9;
 }
 #radarWrap.hidden{display:none}
@@ -296,7 +297,7 @@ body{
   border-radius:50%;
 }
 #street{
-  position:absolute;left:0;bottom:-10px;width:calc(var(--radar) + 90px);
+  position:absolute;left:0;bottom:-10px;width:max-content;max-width:calc(var(--radar) + 110px);
   padding:6px 11px;border-radius:0;font-size:13px;letter-spacing:1.4px;
   font-family:'Anton',Impact,sans-serif;text-transform:uppercase;
   color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -307,7 +308,7 @@ body{
 
 /* ---------- objective card — bottom right ---------- */
 #objective{
-  position:absolute;right:12px;bottom:calc(108px + var(--safeB));
+  position:absolute;right:12px;bottom:calc(84px + var(--safeB));
   width:min(40vw,330px);padding:12px 14px 13px;
 }
 #objective .tag{
@@ -333,9 +334,16 @@ body{
 
 /* ---------- bottom control bar ---------- */
 #bar{
-  position:absolute;left:50%;bottom:calc(34px + var(--safeB));transform:translateX(-50%);
-  display:flex;gap:8px;align-items:center;padding:8px;z-index:10;
+  position:absolute;left:0;right:0;bottom:0;z-index:12;
+  display:flex;gap:6px;align-items:center;justify-content:center;
+  padding:8px 10px calc(8px + var(--safeB));
+  background:linear-gradient(180deg,rgba(21,8,38,.94),rgba(9,3,18,.96));
+  border-top:3px solid var(--edge);border-radius:0;
+  box-shadow:0 -4px 0 rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.1);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  overflow-x:auto;scrollbar-width:none;
 }
+#bar::-webkit-scrollbar{display:none}
 #bar button{
   cursor:pointer;border-radius:2px;padding:10px 15px;
   font-family:'Anton',Impact,sans-serif;font-size:15px;letter-spacing:.8px;
@@ -363,7 +371,7 @@ body{
 
 /* speedometer */
 #speedo{
-  position:absolute;right:12px;top:calc(108px + var(--safeT));
+  position:absolute;right:12px;top:calc(78px + var(--safeT));
   padding:8px 14px;text-align:center;opacity:0;transition:opacity .35s;
 }
 #speedo.on{opacity:1}
@@ -443,7 +451,7 @@ body{
 
 /* ---------- free roam: walk the street yourself ---------- */
 #dpad{
-  position:absolute;left:14px;bottom:calc(56px + var(--radar) + var(--safeB));z-index:11;
+  position:absolute;left:14px;bottom:calc(106px + var(--radar) + var(--safeB));z-index:11;
   display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:2px;
 }
 #dpad.on{display:grid}
@@ -466,7 +474,7 @@ body{
 
 /* ---------- ask Nir where to go ---------- */
 #search{
-  position:absolute;left:50%;top:calc(14px + var(--safeT));transform:translate(-50%,-160%);
+  position:absolute;left:50%;top:calc(62px + var(--safeT));transform:translate(-50%,-260%);
   z-index:22;display:flex;gap:0;width:min(92vw,560px);transition:transform .32s cubic-bezier(.2,.9,.25,1);
 }
 #search.on{transform:translate(-50%,0)}
@@ -489,11 +497,11 @@ body{
 
 /* Nir's verdict on a place you typed */
 #verdict{
-  position:absolute;left:50%;top:calc(72px + var(--safeT));transform:translate(-50%,-8px);
+  position:absolute;left:50%;top:calc(118px + var(--safeT));transform:translate(-50%,-8px);
   z-index:21;width:min(92vw,560px);padding:14px 16px 15px;display:none;
 }
 #verdict.on{display:block;animation:vIn .32s cubic-bezier(.2,.9,.25,1)}
-@keyframes vIn{from{opacity:0;transform:translate(-50%,-22px)}to{opacity:1;transform:translate(-50%,-8px)}}
+@keyframes vIn{from{opacity:0;transform:translate(-50%,-26px)}to{opacity:1;transform:translate(-50%,-8px)}}
 #verdict .who{font-size:10.5px;letter-spacing:3px;color:var(--cyan);font-weight:700}
 #verdict h4{font-family:'Anton',Impact,sans-serif;font-size:21px;color:#fff;margin:5px 0 2px;
   text-shadow:0 2px 0 rgba(0,0,0,.7)}
@@ -510,34 +518,114 @@ body{
 #verdict .row button.go{background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff}
 #verdict .row button:active{transform:translateY(2px)}
 
-/* ---------- the map, full size ---------- */
-#mapview{
-  position:absolute;inset:0;z-index:44;display:none;flex-direction:column;
-  background:linear-gradient(180deg,#0e0520,#07030f);
+/* ============ WALK MAP — real streets, no API key needed ============ */
+#walk{
+  position:absolute;inset:0;z-index:44;display:none;overflow:hidden;
+  background:#0b0518;touch-action:none;user-select:none;
 }
-#mapview.on{display:flex}
-#mapview header{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:calc(12px + var(--safeT)) 16px 12px 22px;border-bottom:3px solid #000;
-  background:linear-gradient(180deg,#2a1049,#150826);
+#walk.on{display:block}
+#wworld{position:absolute;left:0;top:0;width:0;height:0;will-change:transform}
+#wworld img{position:absolute;width:256px;height:256px;image-rendering:auto;
+  filter:brightness(1.34) contrast(1.05) saturate(1.2)}
+#wtint{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,229,255,.13), rgba(139,61,255,.10) 45%, rgba(255,45,149,.15));
+  mix-blend-mode:screen;
 }
-#mapview header .t{font-family:'Anton',Impact,sans-serif;font-size:clamp(20px,4vw,34px)}
-#mapview header .sub{font-family:'Heebo',sans-serif;font-size:12px;color:#a98fd8;direction:rtl}
-#mapview header button{
-  cursor:pointer;border:3px solid #000;border-radius:0;width:42px;height:42px;font-size:19px;
-  color:#fff;background:linear-gradient(180deg,#ff67b4,#b8005e);
-  box-shadow:inset 2px 2px 0 rgba(255,255,255,.35),0 3px 0 rgba(0,0,0,.6);
+#wvig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(64% 48% at 50% 50%, rgba(0,0,0,0) 42%, rgba(8,0,22,.62) 100%);
 }
-#bigMap{flex:1;min-height:0;position:relative}
-#mapview .legend{
-  display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
-  padding:10px 14px calc(12px + var(--safeB));border-top:3px solid #000;
-  background:linear-gradient(180deg,#150826,#0b0418);
-  font-family:'Heebo',sans-serif;font-size:11.5px;color:#a98fd8;direction:rtl;
+#wscan{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.34) 0 1px,rgba(0,0,0,0) 1px 3px);
+  mix-blend-mode:multiply}
+#wsvg{position:absolute;inset:0;pointer-events:none}
+#wnir{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;
+  pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,45,149,.8)) drop-shadow(0 3px 4px rgba(0,0,0,.9))}
+#wnir svg{width:100%;height:100%;display:block;transition:transform .12s linear}
+
+#whead{
+  position:absolute;left:0;right:0;top:0;z-index:3;
+  display:flex;align-items:stretch;gap:0;
+  border-bottom:3px solid #000;background:linear-gradient(180deg,#2a1049,#150826);
+  padding-top:var(--safeT);
 }
-#mapview .legend b{color:var(--cyan);font-weight:700}
-#mapview .legend i{display:inline-block;width:11px;height:11px;border:2px solid #000;margin-left:5px;
-  vertical-align:-1px}
+#whead .cell{padding:9px 14px;border-right:3px solid #000;display:flex;flex-direction:column;justify-content:center}
+#whead .cell:last-child{border-right:none}
+#whead .k{font-size:9.5px;letter-spacing:2.4px;color:#a98fd8}
+#whead .v{font-family:'Anton',Impact,sans-serif;font-size:17px;line-height:1.05;color:var(--cyan);
+  text-shadow:0 0 10px rgba(0,229,255,.5)}
+#whead .grow{flex:1;min-width:0}
+#whead .v.name{color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#whead button{
+  flex:0 0 auto;cursor:pointer;border:none;border-left:3px solid #000;border-radius:0;width:52px;
+  color:#fff;background:linear-gradient(180deg,#ff67b4,#b8005e);font-size:19px;
+}
+#wfoot{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  display:flex;align-items:center;gap:8px;padding:9px 12px calc(9px + var(--safeB));
+  border-top:3px solid #000;background:linear-gradient(180deg,#150826,#0b0418);
+}
+#wfoot button{
+  cursor:pointer;border:3px solid #000;border-radius:0;padding:9px 13px;
+  font-family:'Anton',Impact,sans-serif;font-size:14px;color:var(--white);
+  background:linear-gradient(180deg,#3a1a63,#1b0b31);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18),0 3px 0 rgba(0,0,0,.6);white-space:nowrap;
+}
+#wfoot button.primary{background:linear-gradient(180deg,#c8ff4a,#5fa300);color:#0a1400}
+#wfoot button:active{transform:translateY(3px)}
+#wfoot .sp{flex:1}
+#whint{
+  position:absolute;left:50%;top:calc(var(--safeT) + 66px);transform:translateX(-50%);
+  z-index:4;padding:8px 14px;pointer-events:none;
+  background:linear-gradient(180deg,#2a1049,#12061f);border:3px solid #000;
+  box-shadow:inset 0 0 0 2px rgba(0,229,255,.35), 0 5px 0 rgba(0,0,0,.6);
+  font-family:'Heebo',sans-serif;direction:rtl;font-size:13px;font-weight:700;color:#e6ecf9;
+  white-space:nowrap;animation:hintOut 4.5s ease forwards;
+}
+@keyframes hintOut{0%,70%{opacity:1}100%{opacity:0}}
+#wattr{position:absolute;right:6px;bottom:calc(56px + var(--safeB));z-index:3;
+  font:10px/1.4 system-ui,sans-serif;color:#8a76b8;background:rgba(5,1,13,.7);padding:2px 6px}
+#wattr a{color:#a98fd8}
+
+/* the on-map pad */
+#wpad{
+  position:absolute;left:12px;bottom:calc(64px + var(--safeB));z-index:4;
+  display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:2px;
+}
+#wpad button{
+  cursor:pointer;border:3px solid #000;border-radius:0;font-size:20px;color:var(--cyan);
+  background:linear-gradient(180deg,#3a1a63,#1b0b31);touch-action:none;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.18),0 3px 0 rgba(0,0,0,.6);
+}
+#wpad button:active,#wpad button.hit{background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff;transform:translateY(3px)}
+#wpad .u{grid-area:1/2}#wpad .l{grid-area:2/1}#wpad .r{grid-area:2/3}#wpad .d{grid-area:3/2}
+#wpad .c{grid-area:2/2;border-color:transparent;background:none;box-shadow:none;pointer-events:none}
+#wpad .c i{display:block;width:10px;height:10px;background:var(--neon);margin:18px auto;box-shadow:0 0 12px var(--neon)}
+
+/* the card that pops when Nir reaches a stop */
+#wcard{
+  position:absolute;left:50%;bottom:calc(74px + var(--safeB));transform:translate(-50%,0);
+  z-index:5;width:min(92vw,540px);padding:13px 15px 14px;display:none;
+}
+#wcard.on{display:block}
+#wcard .tag{display:inline-block;font-size:10px;letter-spacing:2.6px;font-weight:700;
+  color:#0a1400;background:var(--lime);padding:2px 8px;border:2px solid #000}
+#wcard h4{font-family:'Anton',Impact,sans-serif;font-size:20px;color:#fff;margin:7px 0 2px}
+#wcard .addr{font-size:12px;color:#a98fd8;direction:ltr;text-align:left}
+#wcard .eat{margin-top:8px;padding:8px 10px;border:2px solid rgba(255,212,0,.5);
+  background:linear-gradient(180deg,rgba(255,122,24,.20),rgba(255,45,149,.10));
+  font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:13px;line-height:1.5;color:#ffe6b0;font-weight:700}
+#wcard .why{margin-top:7px;font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;
+  text-align:start;font-size:12.5px;line-height:1.55;color:#c3aef0}
+#wcard .x{position:absolute;top:8px;left:8px;cursor:pointer;border:2px solid #000;border-radius:0;
+  width:28px;height:28px;color:#fff;background:linear-gradient(180deg,#ff67b4,#b8005e);font-size:14px}
+
+@media (max-width:760px){
+  #whead .cell{padding:7px 10px}
+  #whead .v{font-size:15px}
+  #wpad{grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px)}
+  #wfoot button{padding:8px 10px;font-size:13px}
+}
 
 /* ---------- days & stops drawer ---------- */
 #drawer{
@@ -682,14 +770,15 @@ body{
 
 /* toast */
 #toast{
-  position:absolute;left:50%;top:calc(14px + var(--safeT));transform:translate(-50%,-140%);
+  position:absolute;left:50%;top:calc(64px + var(--safeT));transform:translate(-50%,-260%);
   z-index:55;padding:10px 16px;border-radius:11px;
   background:linear-gradient(180deg,#2a1049,#12061f);border:3px solid #000;
   box-shadow:inset 0 0 0 2px rgba(0,229,255,.35), 0 5px 0 rgba(0,0,0,.6);
   font-family:'Heebo',sans-serif;direction:rtl;font-size:13px;color:#e6ecf9;font-weight:700;
-  transition:transform .35s cubic-bezier(.2,.9,.25,1);max-width:88vw;text-align:center;
+  transition:transform .35s cubic-bezier(.2,.9,.25,1), opacity .25s;
+  max-width:88vw;text-align:center;opacity:0;pointer-events:none;
 }
-#toast.show{transform:translate(-50%,0)}
+#toast.show{transform:translate(-50%,0);opacity:1}
 
 /* board mode (no key) */
 #board{position:absolute;inset:0;z-index:35;display:none;overflow-y:auto;
@@ -701,56 +790,52 @@ body{
 
 /* ---------- responsive: phone portrait ---------- */
 @media (max-width:760px){
-  :root{--radar:104px}
-  #mission{max-width:none;flex:1 1 auto;padding:7px 10px 8px}
+  :root{--radar:128px}
+  #topbar .cell{padding:6px 10px}
+  #topbar .cell.mis{max-width:46vw}
+  #topbar .v{font-size:16px}
+  #topbar .v.s{font-size:12.5px}
+  #topbar .k{font-size:9px;letter-spacing:2px}
+  #btnDays{width:48px;font-size:18px}
+  #pips{top:calc(var(--safeT) + 42px);height:7px}
   #objective{
     left:calc(var(--radar) + 26px);right:10px;width:auto;
-    bottom:calc(96px + var(--safeB));padding:9px 11px 10px;
+    bottom:calc(84px + var(--safeB));padding:9px 11px 10px;
   }
   #objective h3{font-size:16px;margin:5px 0 1px}
   #objective .eat{font-size:12px;margin-top:6px;padding:6px 8px;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+    overflow-wrap:anywhere}
   #objective .why{display:none}
   #objective .dist{margin-top:7px;font-size:11px}
-  #radarWrap{left:10px;bottom:calc(96px + var(--safeB))}
-  #street{width:calc(var(--radar) + 26px);font-size:10.5px;padding:4px 7px}
-  #bar{width:calc(100% - 20px);justify-content:center;flex-wrap:nowrap;overflow-x:auto;
-    scrollbar-width:none;padding:6px}
-  #bar::-webkit-scrollbar{display:none}
-  #bar button{padding:10px 12px;font-size:13.5px}
-  #speedo{bottom:auto;top:calc(112px + var(--safeT));right:12px;padding:6px 11px}
-  #lower{top:calc(122px + var(--safeT));bottom:auto;max-width:84vw;padding:10px 30px 11px 14px}
-  #lower .s{font-size:12px}
+  #radarWrap{left:10px;bottom:calc(84px + var(--safeB))}
+  #street{max-width:calc(var(--radar) + 40px);font-size:10.5px;padding:4px 7px}
+  #bar{gap:5px;justify-content:flex-start;padding:7px 8px calc(7px + var(--safeB))}
+  #bar button{padding:9px 11px;font-size:13.5px}
+  #bar #btnMap .bl{display:none}
+  #speedo{top:calc(74px + var(--safeT));right:10px;padding:6px 11px}
   #speedo .n{font-size:24px}
   #actor{width:min(15vh,120px);bottom:calc(30% + var(--safeB))}
   #actor.veh-bike{bottom:calc(29% + var(--safeB))}
   #actor.veh-car{bottom:calc(27% + var(--safeB))}
   #shadow{bottom:calc(29.4% + var(--safeB));width:min(10vh,82px);height:min(2.6vh,20px)}
-  #pips i{max-width:18px;height:4px}
-  #status{gap:5px}
-  #status .cell{padding:6px 8px;min-width:0}
-  #status .k{font-size:9px;letter-spacing:1.6px}
-  #status .v{font-size:16px}
-  #btnDays{padding:6px 10px;font-size:15px}
-  #bar #btnMap .bl{display:none}
-  #objective .eat{overflow-wrap:anywhere}
   #dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:2px;
-    left:auto;right:10px;bottom:calc(96px + var(--safeB))}
-  #dpad.on ~ #objective, body.roam #objective{display:none}
-  #verdict{top:calc(66px + var(--safeT));padding:11px 12px 12px}
+    left:auto;right:10px;bottom:calc(84px + var(--safeB))}
+  body.roam #objective{display:none}
+  #search{top:calc(58px + var(--safeT))}
+  #verdict{top:calc(108px + var(--safeT));padding:11px 12px 12px}
   #verdict h4{font-size:18px}
+  #toast{top:calc(58px + var(--safeT))}
 }
 @media (max-width:430px){
-  :root{--radar:92px}
-  #cellTime{display:none}
-  #mission .lbl{font-size:10px;letter-spacing:2px}
-  #mission .sub{font-size:11px}
+  :root{--radar:104px}
+  #cellHood,#cellTime{display:none}
+  #topbar .cell.mis{max-width:58vw}
   #objective{left:calc(var(--radar) + 18px);right:8px;padding:8px 10px 9px}
   #objective h3{font-size:15px}
   #objective .eat{font-size:11.5px;-webkit-line-clamp:4}
-  #bar button{padding:9px 11px;font-size:13px}
+  #bar button{padding:9px 10px;font-size:13px}
   #btnPrev,#btnNext{display:none}
-  #btnDays .bl{display:none}
 }
 @media (max-width:760px) and (orientation:landscape){
   #actor{bottom:calc(10% + var(--safeB))}
@@ -777,25 +862,20 @@ body{
   <div id="hud">
 
     <div id="topbar">
-      <div id="mission" class="plate">
-        <div class="lbl">MISSION</div>
-        <div class="ttl" id="mTitle">NIR'S BITE</div>
-        <div class="sub he" id="mSub">בוחרים יום ויוצאים לדרך</div>
-        <div id="pips"></div>
+      <div class="cell mis">
+        <div class="k">MISSION</div>
+        <div class="v" id="mTitle">NIR'S BITE</div>
       </div>
-
-      <div id="status">
-        <div class="cell plate">
-          <div class="k">DAY</div>
-          <div class="v" id="sDay">—</div>
-        </div>
-        <div class="cell plate" id="cellTime">
-          <div class="k">TIME</div>
-          <div class="v gold" id="sTime">—</div>
-        </div>
-        <button id="btnDays" aria-label="ימים ותחנות">☰ <span class="bl">DAYS</span></button>
+      <div class="cell hood" id="cellHood">
+        <div class="k">AREA</div>
+        <div class="v s" id="mSub">בוחרים יום ויוצאים לדרך</div>
       </div>
+      <div class="cell"><div class="k">DAY</div><div class="v c" id="sDay">—</div></div>
+      <div class="cell" id="cellTime"><div class="k">TIME</div><div class="v g" id="sTime">—</div></div>
+      <div class="cell" id="cellStop"><div class="k">STOP</div><div class="v c" id="sStop">—</div></div>
+      <button id="btnDays" aria-label="ימים ותחנות">☰</button>
     </div>
+    <div id="pips"></div>
 
     <div id="speedo" class="plate">
       <div class="n" id="spdN">0</div>
@@ -867,23 +947,6 @@ body{
     </div>
   </div>
 
-  <div id="mapview">
-    <header>
-      <div>
-        <div class="t gta">CITY MAP</div>
-        <div class="sub" id="mvSub">—</div>
-      </div>
-      <button id="btnCloseMap" aria-label="סגור">✕</button>
-    </header>
-    <div id="bigMap"></div>
-    <div class="legend">
-      <span><i style="background:#a3ff12"></i>תחנה</span>
-      <span><i style="background:#ff2d95"></i>איפה שאתם עכשיו</span>
-      <span><i style="background:#00e5ff"></i>המסלול</span>
-      <span><b>לחיצה על תחנה</b> קופצת אליה ברחוב</span>
-    </div>
-  </div>
-
   <div id="bigtext"><span id="bigtextSpan">MISSION START</span></div>
 
   <div id="lower">
@@ -900,6 +963,53 @@ body{
     <button id="btnPassedNext">EAT THE DAMN THING →</button>
   </div>
 
+  <!-- ============ WALK MAP ============ -->
+  <div id="walk">
+    <div id="wworld"></div>
+    <div id="wtint"></div>
+    <div id="wvig"></div>
+    <div id="wscan"></div>
+    <svg id="wsvg"></svg>
+    <div id="wnir"></div>
+
+    <div id="whead">
+      <div class="cell"><div class="k">STOP</div><div class="v" id="wCount">—</div></div>
+      <div class="cell grow"><div class="k">NEXT</div><div class="v name" id="wNext">—</div></div>
+      <div class="cell"><div class="k">DIST</div><div class="v" id="wDist">—</div></div>
+      <button id="wClose" aria-label="סגור">✕</button>
+    </div>
+
+    <div id="wpad">
+      <button class="u" data-d="u">▲</button>
+      <button class="l" data-d="l">◀</button>
+      <div class="c"><i></i></div>
+      <button class="r" data-d="r">▶</button>
+      <button class="d" data-d="d">▼</button>
+    </div>
+
+    <div id="wcard" class="plate">
+      <button class="x" id="wCardX">✕</button>
+      <span class="tag" id="wcTag">ARRIVED</span>
+      <h4 id="wcName">—</h4>
+      <div class="addr" id="wcAddr">—</div>
+      <div class="eat" id="wcEat">—</div>
+      <div class="why" id="wcWhy">—</div>
+    </div>
+
+    <div id="whint">חיצים או ה-D-pad — ניר הולך על הרחובות האמיתיים</div>
+
+    <div id="wattr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a></div>
+
+    <div id="wfoot">
+      <button id="wAuto" class="primary">▶ ניר הולך לבד</button>
+      <button id="wSnap">↺ למרכז</button>
+      <span class="sp"></span>
+      <button id="wOut">−</button>
+      <button id="wIn">+</button>
+      <button id="wStreet">👁 STREET</button>
+    </div>
+  </div>
+
   <!-- ============ DRAWER ============ -->
   <aside id="drawer">
     <header>
@@ -914,7 +1024,10 @@ body{
   <div id="board">
     <div class="bh">
       <div class="t gta">NIR'S BITE — BOARD MODE</div>
-      <button id="btnBoardKey" style="background:linear-gradient(180deg,#d8ff4a,#8fc700);border:none;border-radius:10px;padding:10px 16px;font-family:'Anton';font-size:15px;cursor:pointer">חבר מפתח</button>
+      <span style="display:flex;gap:8px">
+        <button id="btnBoardWalk" style="background:linear-gradient(180deg,#ff67b4,#b8005e);color:#fff;border:3px solid #000;border-radius:0;padding:10px 16px;font-family:'Anton';font-size:15px;cursor:pointer">🗺 מפה שאפשר ללכת בה</button>
+        <button id="btnBoardKey" style="background:linear-gradient(180deg,#c8ff4a,#5fa300);color:#0a1400;border:3px solid #000;border-radius:0;padding:10px 16px;font-family:'Anton';font-size:15px;cursor:pointer">חבר מפתח</button>
+      </span>
     </div>
     <div class="grid" id="boardGrid"></div>
   </div>
@@ -2649,7 +2762,7 @@ var S = {
   trip:null, dayIdx:0, stopIdx:0,
   pano:null, mini:null, dir:null, sph:null,
   frames:[], fi:0, playing:false, timer:null, povRaf:0, svc:null, jumpSeq:0,
-  roam:false, places:null, found:null, bigMap:null, bigMarks:[], onArrive:null, lastStep:0, here:null,
+  roam:false, places:null, found:null, onArrive:null, lastStep:0, here:null,
   heading:0, pitch:-6, mode:'WALKING',
   line:null, destMk:null, sfx:true, ac:null, ready:false
 };
@@ -2774,10 +2887,27 @@ var MAP_STYLE_BIG = MAP_STYLE.concat([
   {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#4fa8ff'}]}
 ]);
 
+function mapsDown(){
+  S.mapsDead = true;
+  toast('Google Maps דחה את המפתח. הרחוב לא ייטען — אבל המפה (🗺 MAP) עובדת בלעדיו.', 7000);
+  var pane = $('pano');
+  if(pane) pane.innerHTML =
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;'+
+    'justify-content:center;gap:14px;text-align:center;padding:24px;'+
+    'background:linear-gradient(180deg,#150826,#07030f)">'+
+    '<div class="gta" style="font-family:Anton,Impact,sans-serif;font-size:clamp(22px,5vw,44px)">NO SIGNAL</div>'+
+    '<div style="font-family:Heebo,sans-serif;direction:rtl;color:#c3aef0;font-size:14px;line-height:1.7;max-width:520px">'+
+    'Google דחה את המפתח, אז Street View לא נטען.<br>'+
+    'בדקי ב-Google Cloud ש-<b>Maps JavaScript API</b> מופעל, שיש חשבון חיוב פעיל,<br>'+
+    'ושהמפתח לא מוגבל ל-referrer שלא מתאים לאיפה שפתחת את הקובץ.<br><br>'+
+    '<b style="color:#a3ff12">בינתיים לחצי 🗺 MAP</b> — היא לא צריכה את גוגל בכלל.</div></div>';
+}
 function loadMaps(key){
   return new Promise(function(res, rej){
     window.__nirsBiteReady = function(){ res(); };
-    window.gm_authFailure = function(){ rej(new Error('AUTH')); };
+    window.gm_authFailure = function(){
+      if(S.ready) mapsDown(); else rej(new Error('AUTH'));
+    };
     var s=document.createElement('script');
     s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+
           '&libraries=geometry,places&v=weekly&language=en&region=US&callback=__nirsBiteReady';
@@ -2925,6 +3055,7 @@ function renderHUD(){
   $('mSub').textContent = day.hood;
   $('sDay').textContent = day.d;
   $('sTime').textContent = s.t;
+  $('sStop').textContent = (S.stopIdx+1) + '/' + day.stops.length;
 
   var pips='';
   day.stops.forEach(function(_,j){
@@ -3450,55 +3581,334 @@ function arriveFound(place){
 }
 
 /* ============================================================
-   THE MAP, FULL SIZE
+   WALK MAP — real streets from OpenStreetMap tiles.
+   No Google key involved, so this works even when Maps is down.
    ============================================================ */
-function openMap(){
-  if(!S.mini){ toast('המפה זמינה אחרי שנטען Google Maps'); return; }
-  $('mapview').classList.add('on');
-  if(!S.bigMap){
-    S.bigMap = new google.maps.Map($('bigMap'), {
-      zoom: 14, center: hereNow(), styles: MAP_STYLE_BIG,
-      disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy',
-      clickableIcons: false, backgroundColor: '#120726'
-    });
-    S.bigLine = new google.maps.Polyline({
-      map: S.bigMap, path: [], strokeColor:'#00e5ff', strokeOpacity:.95, strokeWeight:5, zIndex:2
-    });
-    S.bigMe = new google.maps.Marker({
-      map: S.bigMap, zIndex: 99,
-      icon: {path: google.maps.SymbolPath.CIRCLE, scale: 9,
-             fillColor:'#ff2d95', fillOpacity:1, strokeColor:'#000', strokeWeight:3}
-    });
-  }
-  drawDayOnMap();
-  google.maps.event.trigger(S.bigMap, 'resize');
-}
-function closeMap(){ $('mapview').classList.remove('on'); }
+var TILE = 256;
+var TILE_SUBS = ['a','b','c','d'];
+var W = {
+  on:false, z:17, lat:0, lng:0, head:0,
+  keys:{}, raf:0, last:0, range:null, pool:{},
+  route:[], auto:false, ai:0, seen:{}, speedM:80
+};
 
-function drawDayOnMap(){
-  (S.bigMarks||[]).forEach(function(m){ m.setMap(null); });
-  S.bigMarks = [];
-  var day = curDay(), b = new google.maps.LatLngBounds(), path = [];
-  day.stops.forEach(function(st, j){
-    var pos = new google.maps.LatLng(st.lat, st.lng);
-    b.extend(pos); path.push(pos);
-    var m = new google.maps.Marker({
-      map: S.bigMap, position: pos, zIndex: 10 + j,
-      title: st.t + ' · ' + st.name,
-      label: {text: String(j+1), color:'#0a1400', fontFamily:'Anton, Impact, sans-serif',
-              fontSize:'14px', fontWeight:'400'},
-      icon: {path: google.maps.SymbolPath.CIRCLE, scale: 15,
-             fillColor: (j === S.stopIdx ? '#ff2d95' : '#a3ff12'), fillOpacity: 1,
-             strokeColor: '#000', strokeWeight: 3}
+function lon2px(lng, z){ return (lng + 180) / 360 * TILE * Math.pow(2, z); }
+function lat2px(lat, z){
+  var r = lat * Math.PI / 180;
+  return (1 - Math.log(Math.tan(r) + 1/Math.cos(r)) / Math.PI) / 2 * TILE * Math.pow(2, z);
+}
+function metresPerPx(lat, z){
+  return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, z);
+}
+function haversine(a, b){
+  var R=6371000, p=Math.PI/180;
+  var dLat=(b.lat-a.lat)*p, dLng=(b.lng-a.lng)*p;
+  var h=Math.sin(dLat/2)*Math.sin(dLat/2)+
+        Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function bearing(a, b){
+  var p=Math.PI/180;
+  var y=Math.sin((b.lng-a.lng)*p)*Math.cos(b.lat*p);
+  var x=Math.cos(a.lat*p)*Math.sin(b.lat*p)-Math.sin(a.lat*p)*Math.cos(b.lat*p)*Math.cos((b.lng-a.lng)*p);
+  return Math.atan2(y,x)/p;
+}
+
+var NIR_TOP =
+'<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">'+
+  defs('T')+
+  '<circle cx="28" cy="28" r="26" fill="none" stroke="#ff2d95" stroke-width="2.5" opacity=".75"/>'+
+  '<circle cx="28" cy="28" r="26" fill="#ff2d95" opacity=".12"/>'+
+  '<path d="M28 0 l4 7 h-8 z" fill="#ff2d95"/>'+
+  '<ellipse cx="28" cy="42" rx="15" ry="7" fill="#000" opacity=".45"/>'+
+  '<rect x="5.5" y="21" width="9" height="17" rx="4.5" fill="'+C.skin+'"/>'+
+  '<rect x="41.5" y="21" width="9" height="17" rx="4.5" fill="'+C.skinD+'"/>'+
+  '<rect x="12" y="17" width="32" height="25" rx="11" fill="'+C.shirt+'"/>'+
+  '<path d="M12 29 h32" stroke="'+C.seam+'" stroke-width="1.8" opacity=".45"/>'+
+  '<path d="M28 17 v25" stroke="'+C.shirtD+'" stroke-width="1.6" opacity=".5"/>'+
+  '<circle cx="28" cy="24" r="12" fill="'+C.hair+'"/>'+
+  '<path d="M18 32 q10 8 20 0 q-3 9 -10 9 q-7 0 -10 -9 z" fill="'+C.capDark+'"/>'+
+  '<circle cx="28" cy="24" r="11" fill="url(#dmT)"/>'+
+  '<circle cx="28" cy="24" r="11" fill="#000" opacity=".12"/>'+
+  '<circle cx="28" cy="24" r="2.8" fill="'+C.capDark+'"/>'+
+  '<path d="M22 15 q6 -3 12 0" stroke="'+C.capGold+'" stroke-width="1.8" fill="none" opacity=".9"/>'+
+'</svg>';
+
+function openWalk(){
+  var st = curStop();
+  W.on = true;
+  W.lat = st.lat; W.lng = st.lng; W.head = 0;
+  W.seen = {}; W.auto = false; W.route = []; W.ai = 0;
+  W.seen[S.stopIdx] = true;          /* he is standing on it; no need to announce it */
+  $('walk').classList.add('on');
+  document.body.classList.add('walking');
+  $('wnir').innerHTML = NIR_TOP;
+  $('wAuto').textContent = '▶ ניר הולך לבד';
+  W.range = null;
+  routeToNext();
+  W.last = 0;
+  cancelAnimationFrame(W.raf);
+  W.raf = requestAnimationFrame(walkTick);
+  var hint = $('whint');
+  hint.style.animation = 'none'; void hint.offsetWidth; hint.style.animation = '';
+}
+function closeWalk(){
+  W.on = false; W.auto = false;
+  cancelAnimationFrame(W.raf);
+  $('walk').classList.remove('on');
+  document.body.classList.remove('walking');
+  $('wcard').classList.remove('on');
+}
+
+/* real walking directions from the public OSRM server; a straight line if it is not there */
+function routeToNext(){
+  var nx = nextStop();
+  if(!nx){ W.route = []; drawWalkHud(); return; }
+  var from = {lat:W.lat, lng:W.lng}, to = {lat:nx.lat, lng:nx.lng};
+  W.route = [from, to];
+  W.ai = 1;
+  var url = 'https://router.project-osrm.org/route/v1/foot/' +
+            from.lng + ',' + from.lat + ';' + to.lng + ',' + to.lat +
+            '?overview=full&geometries=geojson';
+  fetch(url).then(function(r){ return r.json(); }).then(function(j){
+    if(!W.on || j.code !== 'Ok' || !j.routes || !j.routes.length) return;
+    var c = j.routes[0].geometry.coordinates;
+    if(c.length < 2) return;
+    W.route = c.map(function(p){ return {lat:p[1], lng:p[0]}; });
+    W.ai = 1;
+  }).catch(function(){ /* straight line stands */ });
+}
+
+function walkTick(now){
+  if(!W.on) return;
+  var dt = W.last ? Math.min(0.05, (now - W.last)/1000) : 0;
+  W.last = now;
+
+  var step = W.speedM * dt;               /* metres this frame, independent of zoom */
+
+  if(W.auto && W.route.length > 1){
+    autoStep(step);
+  }else{
+    var dx = 0, dy = 0;
+    if(W.keys.u) dy -= 1;
+    if(W.keys.d) dy += 1;
+    if(W.keys.l) dx -= 1;
+    if(W.keys.r) dx += 1;
+    if(dx || dy){
+      var len = Math.sqrt(dx*dx + dy*dy);
+      dx /= len; dy /= len;
+      W.head = Math.atan2(dx, -dy) * 180 / Math.PI;
+      moveBy(dx * step, -dy * step);
+      $('wcard').classList.remove('on');
+    }
+  }
+
+  drawTiles();
+  drawOverlay();
+  drawWalkHud();
+  checkArrivals();
+  $('wnir').firstChild.style.transform = 'rotate(' + W.head.toFixed(1) + 'deg)';
+  W.raf = requestAnimationFrame(walkTick);
+}
+
+function moveBy(east, north){
+  W.lat += north / 111320;
+  W.lng += east / (111320 * Math.cos(W.lat * Math.PI/180));
+}
+
+function autoStep(step){
+  while(step > 0 && W.ai < W.route.length){
+    var target = W.route[W.ai];
+    var d = haversine({lat:W.lat, lng:W.lng}, target);
+    if(d <= step){
+      W.lat = target.lat; W.lng = target.lng;
+      step -= d; W.ai++;
+    }else{
+      W.head = bearing({lat:W.lat, lng:W.lng}, target);
+      var f = step / d;
+      W.lat += (target.lat - W.lat) * f;
+      W.lng += (target.lng - W.lng) * f;
+      step = 0;
+    }
+  }
+  if(W.ai >= W.route.length){
+    W.auto = false;
+    $('wAuto').textContent = '▶ ניר הולך לבד';
+  }
+}
+
+function drawTiles(){
+  var cw = window.innerWidth, ch = window.innerHeight, z = W.z;
+  var cx = lon2px(W.lng, z), cy = lat2px(W.lat, z);
+  var left = cx - cw/2, top = cy - ch/2;
+  var x0 = Math.floor(left/TILE), x1 = Math.floor((left+cw)/TILE);
+  var y0 = Math.floor(top/TILE),  y1 = Math.floor((top+ch)/TILE);
+  var key = z+':'+x0+','+y0+','+x1+','+y1;
+
+  var world = $('wworld');
+  if(key !== W.range){
+    W.range = key;
+    var n = Math.pow(2, z), html = '', x, y, tx, ty, si = 0;
+    for(y = y0; y <= y1; y++){
+      for(x = x0; x <= x1; x++){
+        tx = ((x % n) + n) % n; ty = y;
+        if(ty < 0 || ty >= n) continue;
+        html += '<img alt="" loading="eager" src="https://' + TILE_SUBS[(si++) % 4] +
+                '.basemaps.cartocdn.com/dark_all/' + z + '/' + tx + '/' + ty + '.png" ' +
+                'style="left:' + ((x - x0) * TILE) + 'px;top:' + ((y - y0) * TILE) + 'px">';
+      }
+    }
+    world.innerHTML = html;
+    world.dataset.ox = x0 * TILE;
+    world.dataset.oy = y0 * TILE;
+  }
+  var ox = +world.dataset.ox, oy = +world.dataset.oy;
+  world.style.transform = 'translate3d(' + (ox - left).toFixed(1) + 'px,' + (oy - top).toFixed(1) + 'px,0)';
+}
+
+function projectW(lat, lng){
+  var cw = window.innerWidth, ch = window.innerHeight, z = W.z;
+  return {
+    x: lon2px(lng, z) - (lon2px(W.lng, z) - cw/2),
+    y: lat2px(lat, z) - (lat2px(W.lat, z) - ch/2)
+  };
+}
+
+function drawOverlay(){
+  var svg = $('wsvg'), cw = window.innerWidth, ch = window.innerHeight;
+  var day = curDay(), out = '', i, p, st;
+
+  if(W.route.length > 1){
+    var d = '';
+    for(i=0;i<W.route.length;i++){
+      p = projectW(W.route[i].lat, W.route[i].lng);
+      d += (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' ';
+    }
+    out += '<path d="'+d+'" fill="none" stroke="#000" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>';
+    out += '<path d="'+d+'" fill="none" stroke="#00e5ff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95"/>';
+    out += '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="2 12" stroke-linecap="round" opacity=".8"/>';
+  }
+
+  for(i=0;i<day.stops.length;i++){
+    st = day.stops[i];
+    p = projectW(st.lat, st.lng);
+    if(p.x < -80 || p.y < -80 || p.x > cw+80 || p.y > ch+80) continue;
+    var done = !!W.seen[i], cur = (i === S.stopIdx);
+    var fill = done ? '#7a2fb8' : (cur ? '#ff2d95' : '#a3ff12');
+    out += '<g transform="translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+')">'+
+      '<circle r="17" fill="#000"/>'+
+      '<circle r="14" fill="'+fill+'"/>'+
+      '<text y="5" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="15" fill="#0a1400">'+(i+1)+'</text>'+
+      '<rect x="-52" y="20" width="104" height="17" fill="#05010d" opacity=".85"/>'+
+      '<text y="32" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="12.5" fill="#d9c9ff">'+
+        esc(st.name.length > 20 ? st.name.slice(0,19)+'…' : st.name)+'</text>'+
+    '</g>';
+  }
+  svg.setAttribute('viewBox','0 0 '+cw+' '+ch);
+  svg.innerHTML = out;
+}
+
+function drawWalkHud(){
+  var day = curDay(), nx = nextStop();
+  $('wCount').textContent = (S.stopIdx+1) + '/' + day.stops.length;
+  if(nx){
+    $('wNext').textContent = nx.name;
+    var d = haversine({lat:W.lat, lng:W.lng}, {lat:nx.lat, lng:nx.lng});
+    $('wDist').textContent = d < 1000 ? Math.round(d) + ' m' : (d/1000).toFixed(1) + ' km';
+  }else{
+    $('wNext').textContent = 'סוף היום';
+    $('wDist').textContent = '—';
+  }
+}
+
+function checkArrivals(){
+  var day = curDay(), i, st, d;
+  for(i=0;i<day.stops.length;i++){
+    if(W.seen[i]) continue;
+    st = day.stops[i];
+    d = haversine({lat:W.lat, lng:W.lng}, {lat:st.lat, lng:st.lng});
+    if(d < 30){
+      W.seen[i] = true;
+      S.stopIdx = i;
+      renderHUD();
+      showWalkCard(st);
+      sfxPassed();
+      W.auto = false;
+      $('wAuto').textContent = '▶ ניר הולך לבד';
+      routeToNext();
+      return;
+    }
+  }
+}
+
+function showWalkCard(st){
+  $('wcTag').textContent = 'ARRIVED · ' + st.t;
+  $('wcName').textContent = st.name;
+  $('wcAddr').textContent = st.addr;
+  $('wcEat').textContent = '🍽 ' + st.eat;
+  $('wcWhy').textContent = st.why;
+  $('wcard').classList.add('on');
+}
+
+function setWalkZoom(dz){
+  W.z = Math.max(14, Math.min(19, W.z + dz));
+  W.range = null;
+}
+
+function wireWalk(){
+  $('wClose').onclick  = closeWalk;
+  $('wCardX').onclick  = function(){ $('wcard').classList.remove('on'); };
+  $('wIn').onclick     = function(){ setWalkZoom(1); };
+  $('wOut').onclick    = function(){ setWalkZoom(-1); };
+  $('wSnap').onclick   = function(){
+    var st = curStop(); W.lat = st.lat; W.lng = st.lng; W.range = null; routeToNext();
+  };
+  $('wAuto').onclick   = function(){
+    if(!W.route.length){ toast('אין תחנה הבאה היום'); return; }
+    W.auto = !W.auto;
+    $('wAuto').textContent = W.auto ? '⏸ עצור' : '▶ ניר הולך לבד';
+    if(W.auto){ W.ai = 1; big('GO'); sfxStart(); }
+  };
+  $('wStreet').onclick = function(){
+    closeWalk();
+    if(!S.pano){ toast('Street View לא זמין בלי מפתח תקין'); return; }
+    var pos = new google.maps.LatLng(W.lat, W.lng);
+    var seq = ++S.jumpSeq;
+    findPano(pos, function(id, at){
+      if(seq !== S.jumpSeq) return;
+      if(id) S.pano.setPano(id); else S.pano.setPosition(pos);
     });
-    m.addListener('click', function(){ jumpToStop(j); closeMap(); });
-    S.bigMarks.push(m);
+  };
+
+  Array.prototype.forEach.call($('wpad').querySelectorAll('button'), function(b){
+    var d = b.dataset.d;
+    function on(e){ e.preventDefault(); W.keys[d] = true;  b.classList.add('hit'); }
+    function off(){ W.keys[d] = false; b.classList.remove('hit'); }
+    b.addEventListener('pointerdown', on);
+    b.addEventListener('pointerup', off);
+    b.addEventListener('pointerleave', off);
+    b.addEventListener('pointercancel', off);
   });
-  S.bigLine.setPath(path);
-  var p = S.pano && S.pano.getPosition();
-  if(p){ S.bigMe.setPosition(p); b.extend(p); }
-  if(!b.isEmpty()) S.bigMap.fitBounds(b, 60);
-  $('mvSub').textContent = day.d + ' · ' + day.title + ' · ' + day.stops.length + ' תחנות';
+
+  function code2dir(c){
+    if(c==='ArrowUp'||c==='KeyW') return 'u';
+    if(c==='ArrowDown'||c==='KeyS') return 'd';
+    if(c==='ArrowLeft'||c==='KeyA') return 'l';
+    if(c==='ArrowRight'||c==='KeyD') return 'r';
+    return null;
+  }
+  document.addEventListener('keydown', function(e){
+    if(!W.on || e.target.tagName==='INPUT') return;
+    var d = code2dir(e.code);
+    if(d){ e.preventDefault(); W.keys[d] = true; W.auto = false; }
+    if(e.code==='Escape') closeWalk();
+    if(e.code==='Space'){ e.preventDefault(); $('wAuto').click(); }
+  }, true);
+  document.addEventListener('keyup', function(e){
+    var d = code2dir(e.code);
+    if(d) W.keys[d] = false;
+  }, true);
+  window.addEventListener('resize', function(){ if(W.on) W.range = null; });
 }
 
 /* ============================================================
@@ -3516,8 +3926,8 @@ function wire(){
   $('btnNext').onclick = function(){ jumpToStop(S.stopIdx+1); };
   $('btnPrev').onclick = function(){ jumpToStop(S.stopIdx-1); };
 
-  $('btnMap').onclick   = openMap;
-  $('btnCloseMap').onclick = closeMap;
+  $('btnMap').onclick   = openWalk;
+  wireWalk();
   $('btnRoam').onclick  = function(){ setRoam(!S.roam); };
   $('btnFind').onclick  = function(){
     var on = !$('search').classList.contains('on');
@@ -3556,6 +3966,7 @@ function wire(){
 
   document.addEventListener('keydown', function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    if(W.on) return;                       /* the walk map owns the keys while it is open */
     switch(e.code){
       /* walk the street */
       case 'ArrowUp': case 'KeyW':    e.preventDefault(); stepStreet(1);  break;
@@ -3566,12 +3977,12 @@ function wire(){
       case 'Space':        e.preventDefault(); $('btnPlay').click(); break;
       case 'BracketLeft':  jumpToStop(S.stopIdx-1); break;
       case 'BracketRight': jumpToStop(S.stopIdx+1); break;
-      case 'KeyM':         $('mapview').classList.contains('on') ? closeMap() : openMap(); break;
+      case 'KeyM':         W.on ? closeWalk() : openWalk(); break;
       case 'KeyR':         setRoam(!S.roam); break;
       case 'KeyF': case 'Slash': e.preventDefault(); $('btnFind').click(); break;
       case 'Tab':          e.preventDefault(); $('btnDays').click(); break;
       case 'Escape':
-        closeDrawer(); closeMap();
+        closeDrawer();
         $('passed').classList.remove('show');
         $('search').classList.remove('on');
         $('verdict').classList.remove('on');
@@ -3655,6 +4066,7 @@ function renderBoard(){
     $('board').classList.remove('show');
     $('boot').classList.remove('gone');
   };
+  $('btnBoardWalk').onclick=function(){ openWalk(); };
 }
 
 /* ============================================================
