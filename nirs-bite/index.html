@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060a">
+<meta name="description" content="NIR'S BITE — Eat the damn thing. משחק רחוב בסגנון GTA על מסלול האוכל של ניר בניו יורק.">
+<title>NIR'S BITE — Eat the damn thing</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NIR'S BITE — GTA-style street engine
+   ============================================================ */
+:root{
+  --ink:#05060a;
+  --ink2:#0c0f16;
+  --neon:#ff2e88;
+  --lime:#c8ff2e;
+  --amber:#ffb300;
+  --gold:#ffd447;
+  --ice:#6fe3ff;
+  --white:#f6f7fb;
+  --radar:150px;
+  --safeT:env(safe-area-inset-top,0px);
+  --safeB:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--white)}
+body{
+  font-family:'Barlow Condensed','Heebo',system-ui,sans-serif;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+.he{font-family:'Heebo',system-ui,sans-serif;direction:rtl;text-align:right}
+.gta{
+  font-family:'Anton',Impact,sans-serif;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  background:linear-gradient(180deg,#fff6cf 0%,var(--gold) 42%,#ff9d00 78%,#ff6a00 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:2px #14100a;
+  paint-order:stroke fill;
+  filter:drop-shadow(0 4px 0 rgba(0,0,0,.55));
+}
+
+/* ---------- app shell ---------- */
+#app{position:fixed;inset:0;overflow:hidden;background:#000}
+
+/* ---------- street view stage ---------- */
+#stage{position:absolute;inset:0;z-index:1}
+#pano{position:absolute;inset:0;filter:saturate(1.3) contrast(1.1) brightness(.97)}
+#pano *{outline:none!important}
+/* Google's logo + Terms stay visible — that is a Maps licence requirement.
+   we only lift our own HUD off the bottom strip so nothing covers them. */
+
+/* cinematic grade */
+#grade{position:absolute;inset:0;z-index:2;pointer-events:none}
+#grade::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(120% 90% at 50% 8%, rgba(255,178,60,.30), rgba(255,120,0,0) 55%),
+    linear-gradient(180deg, rgba(255,132,0,.16) 0%, rgba(0,0,0,0) 35%, rgba(6,12,30,.34) 100%);
+  mix-blend-mode:overlay;
+}
+#grade::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(112% 82% at 50% 52%, rgba(0,0,0,0) 46%, rgba(0,0,0,.62) 100%);
+}
+#grain{
+  position:absolute;inset:-50%;z-index:3;pointer-events:none;opacity:.16;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.6'/></svg>");
+  animation:grainShift .8s steps(4) infinite;
+}
+@keyframes grainShift{
+  0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}
+  50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(0,0)}
+}
+
+/* motion speed lines */
+#speedlines{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .35s}
+#speedlines.on{opacity:1}
+#speedlines i{
+  position:absolute;left:50%;top:50%;width:2px;height:46vh;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.85),rgba(255,255,255,0));
+  transform-origin:50% 0;border-radius:2px;
+  animation:zoomOut 1.1s linear infinite;
+}
+@keyframes zoomOut{
+  0%{opacity:0;transform:rotate(var(--a)) translateY(0) scaleY(.15)}
+  35%{opacity:.7}
+  100%{opacity:0;transform:rotate(var(--a)) translateY(34vh) scaleY(1.5)}
+}
+
+/* camera shake */
+#stage.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{
+  10%,90%{transform:translate3d(-2px,1px,0)}
+  30%,70%{transform:translate3d(4px,-2px,0)}
+  50%{transform:translate3d(-6px,2px,0)}
+}
+
+/* ============================================================
+   NIR — the character
+   ============================================================ */
+#actor{
+  position:absolute;left:50%;bottom:calc(11% + var(--safeB));
+  z-index:5;pointer-events:none;
+  transform:translateX(-50%);
+  width:min(20vh,175px);
+  transition:width .5s cubic-bezier(.2,.9,.25,1), bottom .5s;
+}
+#actor.veh-bike{width:min(24vh,215px);bottom:calc(9% + var(--safeB))}
+#actor.veh-car{width:min(34vh,300px);bottom:calc(5% + var(--safeB))}
+#actor svg{width:100%;height:auto;display:none;
+  filter:drop-shadow(0 18px 22px rgba(0,0,0,.6)) drop-shadow(0 0 1px rgba(0,0,0,.9))}
+#actor[data-state="walk"] .rig-walk,
+#actor[data-state="idle"] .rig-walk,
+#actor[data-state="bike"] .rig-bike,
+#actor[data-state="car"]  .rig-car{display:block}
+
+/* ground shadow */
+#shadow{
+  position:absolute;left:50%;bottom:calc(10.4% + var(--safeB));z-index:4;
+  width:min(14vh,118px);height:min(3.6vh,26px);
+  transform:translateX(-50%);
+  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.62), rgba(0,0,0,0) 72%);
+  pointer-events:none;
+  animation:shadowPulse .62s ease-in-out infinite;
+}
+#actor.veh-car ~ #shadow,#shadow.hide{opacity:0}
+@keyframes shadowPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(.86)}}
+
+/* walk cycle */
+.limb{transform-box:fill-box}
+#legL,#legR{transform-origin:50% 4%}
+#armL,#armR{transform-origin:50% 6%}
+#body-walk{transform-box:fill-box;transform-origin:50% 100%}
+#actor[data-state="walk"] #legL{animation:swingA var(--cyc,.62s) ease-in-out infinite}
+#actor[data-state="walk"] #legR{animation:swingB var(--cyc,.62s) ease-in-out infinite}
+#actor[data-state="walk"] #armL{animation:swingB calc(var(--cyc,.62s)) ease-in-out infinite}
+#actor[data-state="walk"] #armR{animation:swingA calc(var(--cyc,.62s)) ease-in-out infinite}
+#actor[data-state="walk"] #body-walk{animation:bob calc(var(--cyc,.62s)/2) ease-in-out infinite}
+#actor[data-state="idle"] #body-walk{animation:breathe 3.4s ease-in-out infinite}
+@keyframes swingA{0%,100%{transform:rotate(26deg)}50%{transform:rotate(-26deg)}}
+@keyframes swingB{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(26deg)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-2.6%) rotate(1.2deg)}}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1%)}}
+/* pedal cycle */
+#pedals{transform-box:fill-box;transform-origin:50% 50%}
+#actor[data-state="bike"] #pedals{animation:spin var(--cyc,.5s) linear infinite}
+#actor[data-state="bike"] #wheelB{animation:spin calc(var(--cyc,.5s)/1.6) linear infinite;
+  transform-box:fill-box;transform-origin:50% 50%}
+#actor[data-state="bike"] #rider{animation:bob calc(var(--cyc,.5s)) ease-in-out infinite;
+  transform-box:fill-box;transform-origin:50% 100%}
+#bLegL,#bLegR{transform-box:fill-box;transform-origin:50% 6%}
+#actor[data-state="bike"] #bLegL{animation:pedalA var(--cyc,.5s) ease-in-out infinite}
+#actor[data-state="bike"] #bLegR{animation:pedalB var(--cyc,.5s) ease-in-out infinite}
+@keyframes pedalA{0%,100%{transform:rotate(10deg)}50%{transform:rotate(-10deg)}}
+@keyframes pedalB{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* car idle rumble */
+#actor[data-state="car"] .rig-car{animation:rumble .16s linear infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes rumble{0%,100%{transform:translateY(0)}50%{transform:translateY(.5%)}}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+#hud{position:absolute;inset:0;z-index:9;pointer-events:none}
+#hud button,#hud .clk{pointer-events:auto}
+
+.plate{
+  background:linear-gradient(180deg,rgba(8,10,16,.92),rgba(8,10,16,.74));
+  border:2px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+}
+
+/* top HUD row — flex, so mission + status can never overlap at any width */
+#topbar{
+  position:absolute;top:calc(12px + var(--safeT));left:12px;right:12px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  pointer-events:none;
+}
+#mission{
+  padding:9px 14px 10px;max-width:min(46vw,360px);min-width:0;
+  pointer-events:auto;
+}
+#mission .lbl{font-size:11px;letter-spacing:3px;color:var(--neon);font-weight:700}
+#mission .ttl{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,3.4vw,27px);line-height:1.05;
+  color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.75);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mission .sub{font-size:12.5px;color:#aab2c4;letter-spacing:.4px;margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  unicode-bidi:plaintext;text-align:start}
+
+/* day + clock */
+#status{flex:0 0 auto;display:flex;gap:8px;align-items:stretch;pointer-events:auto}
+#status .cell{padding:8px 12px;text-align:center;min-width:64px}
+#status .k{font-size:10px;letter-spacing:2.4px;color:#7f8aa3}
+#status .v{font-family:'Anton',Impact,sans-serif;font-size:20px;line-height:1.05;color:var(--lime)}
+#status .v.gold{color:var(--gold)}
+#btnDays{
+  border:none;cursor:pointer;color:#fff;font-family:'Anton',Impact,sans-serif;font-size:18px;
+  padding:8px 14px;background:linear-gradient(180deg,var(--neon),#c4145f);
+  border-radius:12px;box-shadow:0 8px 20px rgba(255,46,136,.4), inset 0 1px 0 rgba(255,255,255,.35);
+}
+#btnDays:active{transform:translateY(2px)}
+
+/* progress pips, inside the mission plate */
+#pips{display:flex;gap:6px;margin-top:9px}
+#pips i{width:26px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);
+  box-shadow:0 1px 0 rgba(0,0,0,.6)}
+#pips i.done{background:var(--lime)}
+#pips i.now{background:var(--neon);box-shadow:0 0 12px var(--neon)}
+
+/* ---------- radar / minimap ---------- */
+#radarWrap{
+  position:absolute;left:14px;bottom:calc(34px + var(--safeB));
+  width:var(--radar);height:var(--radar);z-index:9;
+}
+#radarWrap.hidden{display:none}
+#radarRing{
+  position:absolute;inset:0;border-radius:50%;
+  border:3px solid #000;
+  box-shadow:0 0 0 2px rgba(255,255,255,.28), 0 14px 34px rgba(0,0,0,.7);
+  overflow:hidden;background:#0b1020;
+}
+#radarRot{position:absolute;inset:-32%;transform-origin:50% 50%;will-change:transform}
+#miniMap{position:absolute;inset:0}
+#radarWrap .arrow{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  width:24px;height:24px;z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.8))
+}
+#radarWrap .cone{
+  position:absolute;left:50%;top:50%;width:0;height:0;z-index:2;
+  transform:translate(-50%,-100%);
+  border-left:36px solid transparent;border-right:36px solid transparent;
+  border-top:70px solid rgba(200,255,46,.22);
+  border-radius:50%;
+}
+#street{
+  position:absolute;left:0;bottom:-6px;width:calc(var(--radar) + 84px);
+  padding:5px 10px;border-radius:8px;font-size:12.5px;letter-spacing:.6px;
+  color:#dfe5f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:rgba(5,6,10,.9);border:1.5px solid rgba(255,255,255,.14);
+}
+
+/* ---------- objective card — bottom right ---------- */
+#objective{
+  position:absolute;right:12px;bottom:calc(34px + var(--safeB));
+  width:min(40vw,330px);padding:12px 14px 13px;
+}
+#objective .tag{
+  display:inline-block;font-size:10.5px;letter-spacing:2.6px;font-weight:700;
+  color:#05060a;background:var(--lime);padding:2px 8px;border-radius:4px
+}
+#objective h3{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,2.5vw,21px);
+  line-height:1.1;margin:7px 0 2px;color:#fff}
+#objective .addr{font-size:12px;color:#8d97ad}
+#objective .eat{
+  margin-top:9px;padding:8px 10px;border-radius:9px;
+  background:linear-gradient(180deg,rgba(255,180,0,.16),rgba(255,110,0,.06));
+  border:1.5px solid rgba(255,180,0,.35);
+  font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:13px;line-height:1.5;color:#ffe6b0;font-weight:700;
+}
+#objective .why{margin-top:8px;font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:12.5px;line-height:1.55;color:#b9c1d2;max-height:5.2em;overflow:auto}
+#objective .dist{margin-top:9px;display:flex;gap:10px;font-size:12px;color:#7f8aa3;
+  font-family:'Heebo',sans-serif;direction:rtl;flex-wrap:wrap}
+#objective .dist b{color:var(--ice);font-weight:700}
+
+/* ---------- bottom control bar ---------- */
+#bar{
+  position:absolute;left:50%;bottom:calc(34px + var(--safeB));transform:translateX(-50%);
+  display:flex;gap:8px;align-items:center;padding:8px;z-index:10;
+}
+#bar button{
+  border:none;cursor:pointer;border-radius:11px;padding:11px 15px;
+  font-family:'Anton',Impact,sans-serif;font-size:15px;letter-spacing:.6px;
+  color:#eaf0ff;background:linear-gradient(180deg,#1b2130,#10141d);
+  border:1.5px solid rgba(255,255,255,.16);
+  box-shadow:0 7px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+  white-space:nowrap;
+}
+#bar button:active{transform:translateY(2px)}
+#bar button.primary{
+  background:linear-gradient(180deg,#d8ff4a,#8fc700);color:#0a0f02;
+  border-color:rgba(255,255,255,.4);
+  box-shadow:0 8px 22px rgba(200,255,46,.35), inset 0 1px 0 rgba(255,255,255,.55);
+}
+#bar button.hot{background:linear-gradient(180deg,#ff5ea3,#c4145f);color:#fff}
+#bar button[disabled]{opacity:.35;pointer-events:none}
+
+/* speedometer */
+#speedo{
+  position:absolute;right:12px;bottom:calc(220px + var(--safeB));
+  padding:8px 14px;text-align:center;opacity:0;transition:opacity .35s;
+}
+#speedo.on{opacity:1}
+#speedo .n{font-family:'Anton',Impact,sans-serif;font-size:32px;line-height:.95;color:var(--gold)}
+#speedo .u{font-size:10px;letter-spacing:3px;color:#7f8aa3}
+
+/* ---------- big centered event text ---------- */
+#bigtext{
+  position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;
+}
+#bigtext.show{animation:bigPop 2.3s cubic-bezier(.2,.9,.25,1) forwards}
+#bigtext span{font-family:'Anton',Impact,sans-serif;font-size:clamp(38px,10vw,120px);
+  text-align:center;line-height:.92;
+  background:linear-gradient(180deg,#fff8d8,var(--gold) 45%,#ff8a00 85%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:3px #120e06;paint-order:stroke fill;
+  filter:drop-shadow(0 8px 0 rgba(0,0,0,.5));
+}
+@keyframes bigPop{
+  0%{opacity:0;transform:scale(1.6) translateY(10px)}
+  12%{opacity:1;transform:scale(1)}
+  74%{opacity:1;transform:scale(1.02)}
+  100%{opacity:0;transform:scale(1.12)}
+}
+
+/* ---------- MISSION PASSED overlay ---------- */
+#passed{
+  position:absolute;inset:0;z-index:30;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:8px;
+  background:radial-gradient(80% 60% at 50% 45%,rgba(0,0,0,.55),rgba(0,0,0,.9));
+  backdrop-filter:blur(3px);
+}
+#passed.show{display:flex;animation:fadeIn .35s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+#passed .p1{font-family:'Anton',Impact,sans-serif;font-size:clamp(30px,7vw,74px);
+  color:#fff;text-shadow:0 5px 0 rgba(0,0,0,.7);letter-spacing:1px}
+#passed .p2{font-family:'Anton',Impact,sans-serif;font-size:clamp(20px,4.6vw,44px);
+  color:var(--lime);text-shadow:0 4px 0 rgba(0,0,0,.7)}
+#passed .p3{font-family:'Heebo',sans-serif;direction:rtl;color:#ffe6b0;font-size:clamp(13px,2.6vw,18px);
+  max-width:min(80vw,560px);text-align:center;line-height:1.6;margin-top:10px;font-weight:700}
+#passed button{
+  margin-top:20px;border:none;cursor:pointer;border-radius:12px;padding:13px 26px;
+  font-family:'Anton',Impact,sans-serif;font-size:19px;color:#0a0f02;
+  background:linear-gradient(180deg,#d8ff4a,#8fc700);
+  box-shadow:0 10px 26px rgba(200,255,46,.4);
+}
+
+/* ---------- days & stops drawer ---------- */
+#drawer{
+  position:absolute;top:0;right:0;bottom:0;z-index:40;
+  width:min(92vw,430px);transform:translateX(105%);transition:transform .38s cubic-bezier(.2,.9,.25,1);
+  background:linear-gradient(180deg,#0a0d14,#05060a);
+  border-left:2px solid rgba(255,255,255,.12);
+  box-shadow:-24px 0 60px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;direction:rtl;
+}
+#drawer.open{transform:translateX(0)}
+#drawer header{padding:calc(16px + var(--safeT)) 16px 12px;border-bottom:1.5px solid rgba(255,255,255,.1);
+  display:flex;justify-content:space-between;align-items:center;gap:10px}
+#drawer header .t{font-family:'Anton',Impact,sans-serif;font-size:24px;color:#fff}
+#drawer header button{background:none;border:1.5px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:9px;width:36px;height:36px;font-size:19px;cursor:pointer}
+#dayTabs{display:flex;gap:7px;overflow-x:auto;padding:12px 16px;border-bottom:1.5px solid rgba(255,255,255,.08);scrollbar-width:none}
+#dayTabs::-webkit-scrollbar{display:none}
+#dayTabs button{
+  flex:0 0 auto;border:1.5px solid rgba(255,255,255,.16);background:#111725;color:#c3cbdc;
+  border-radius:10px;padding:8px 12px;cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;font-size:13px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;min-width:62px;
+}
+#dayTabs button small{font-size:10px;color:#7f8aa3;font-weight:400}
+#dayTabs button.active{background:linear-gradient(180deg,var(--neon),#c4145f);color:#fff;border-color:rgba(255,255,255,.4)}
+#dayTabs button.today{border-color:var(--lime)}
+#stopList{flex:1;overflow-y:auto;padding:12px 14px calc(20px + var(--safeB));display:flex;flex-direction:column;gap:10px}
+.stopCard{
+  flex:0 0 auto;
+  border:1.5px solid rgba(255,255,255,.12);border-radius:13px;padding:12px 13px;
+  background:linear-gradient(180deg,#101724,#0a0e17);cursor:pointer;position:relative;overflow:hidden;
+}
+.stopCard:active{transform:scale(.99)}
+.stopCard.active{border-color:var(--lime);box-shadow:0 0 0 1.5px rgba(200,255,46,.4) inset, 0 10px 26px rgba(0,0,0,.5)}
+.stopCard .row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stopCard .time{font-family:'Anton',Impact,sans-serif;font-size:17px;color:var(--gold);direction:ltr}
+.stopCard .mode{font-size:10.5px;letter-spacing:1.6px;color:#0a0f02;background:var(--ice);
+  padding:2px 7px;border-radius:4px;font-weight:700;direction:ltr}
+.stopCard .mode.w{background:var(--lime)}
+.stopCard .mode.b{background:#7cf2c0}
+.stopCard .mode.d{background:var(--amber)}
+.stopCard .mode.t{background:#b39dff}
+.stopCard h4{font-family:'Anton',Impact,sans-serif;font-size:18px;color:#fff;margin:7px 0 2px;direction:ltr;text-align:left}
+.stopCard .he-addr{font-size:12px;color:#8d97ad;direction:ltr;text-align:left}
+.stopCard .he-eat{margin-top:8px;font-family:'Heebo',sans-serif;font-size:12.5px;line-height:1.5;
+  color:#ffdf9e;font-weight:700;unicode-bidi:plaintext;text-align:start}
+.stopCard .he-why{margin-top:5px;font-family:'Heebo',sans-serif;font-size:12px;line-height:1.55;
+  color:#96a0b5;unicode-bidi:plaintext;text-align:start}
+.stopCard .go{
+  margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;
+}
+.stopCard .go a{
+  font-family:'Heebo',sans-serif;font-size:11.5px;font-weight:700;text-decoration:none;
+  color:#cfd7e6;border:1.5px solid rgba(255,255,255,.18);border-radius:8px;padding:5px 9px;
+}
+.stopCard .go a:active{background:rgba(255,255,255,.1)}
+
+/* ---------- boot / key screen ---------- */
+#boot{
+  position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;padding:26px;
+  background:
+    radial-gradient(70% 55% at 50% 22%, rgba(255,150,0,.20), rgba(0,0,0,0) 62%),
+    linear-gradient(180deg,#0a0c12,#05060a 60%,#0a0610);
+  text-align:center;
+}
+#boot.gone{display:none}
+#boot .logo{font-family:'Anton',Impact,sans-serif;font-size:clamp(46px,13vw,132px);line-height:.86;
+  background:linear-gradient(180deg,#fff8d8,var(--gold) 42%,#ff8a00 78%,#ff5100 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:3px #14100a;paint-order:stroke fill;
+  filter:drop-shadow(0 10px 0 rgba(0,0,0,.55));
+  transform:skewX(-6deg);
+}
+#boot .slogan{font-family:'Anton',Impact,sans-serif;font-size:clamp(15px,3.6vw,30px);
+  letter-spacing:6px;color:var(--neon);text-shadow:0 3px 0 rgba(0,0,0,.7)}
+#boot .sub{font-family:'Heebo',sans-serif;direction:rtl;color:#9aa4ba;font-size:14px;line-height:1.7;
+  max-width:min(88vw,540px);margin-top:2px}
+#boot .keybox{display:flex;gap:8px;width:min(92vw,520px);margin-top:8px}
+#boot input{
+  flex:1;background:#0e131d;border:1.5px solid rgba(255,255,255,.2);border-radius:11px;
+  padding:13px 14px;color:#fff;font-size:14px;font-family:'Barlow Condensed',monospace;direction:ltr;
+}
+#boot input:focus{outline:none;border-color:var(--lime)}
+#boot .go{
+  border:none;cursor:pointer;border-radius:11px;padding:13px 22px;
+  font-family:'Anton',Impact,sans-serif;font-size:18px;color:#0a0f02;
+  background:linear-gradient(180deg,#d8ff4a,#8fc700);box-shadow:0 9px 24px rgba(200,255,46,.35);
+}
+#boot .skip{
+  background:none;border:none;color:#6d7690;text-decoration:underline;cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:13px;margin-top:4px;
+}
+#boot .hint{font-family:'Heebo',sans-serif;direction:rtl;font-size:11.5px;color:#5f6880;
+  max-width:min(90vw,520px);line-height:1.6}
+#boot .err{color:#ff7b9c;font-family:'Heebo',sans-serif;font-size:13px;min-height:18px}
+
+/* loading bar */
+#loader{
+  position:absolute;left:0;top:0;height:3px;width:0%;z-index:70;
+  background:linear-gradient(90deg,var(--lime),var(--gold),var(--neon));
+  box-shadow:0 0 14px rgba(255,180,0,.7);transition:width .35s;opacity:0;
+}
+#loader.on{opacity:1}
+
+/* toast */
+#toast{
+  position:absolute;left:50%;top:calc(14px + var(--safeT));transform:translate(-50%,-140%);
+  z-index:55;padding:10px 16px;border-radius:11px;
+  background:rgba(8,10,16,.95);border:1.5px solid rgba(255,255,255,.18);
+  font-family:'Heebo',sans-serif;direction:rtl;font-size:13px;color:#e6ecf9;font-weight:700;
+  transition:transform .35s cubic-bezier(.2,.9,.25,1);max-width:88vw;text-align:center;
+}
+#toast.show{transform:translate(-50%,0)}
+
+/* board mode (no key) */
+#board{position:absolute;inset:0;z-index:35;display:none;overflow-y:auto;
+  background:linear-gradient(180deg,#080a10,#05060a);padding:calc(16px + var(--safeT)) 14px calc(24px + var(--safeB));direction:rtl}
+#board.show{display:block}
+#board .bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+#board .bh .t{font-family:'Anton',Impact,sans-serif;font-size:26px;color:#fff}
+#board .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+
+/* ---------- responsive: phone portrait ---------- */
+@media (max-width:760px){
+  :root{--radar:104px}
+  #mission{max-width:none;flex:1 1 auto;padding:7px 10px 8px}
+  #objective{
+    left:calc(var(--radar) + 26px);right:10px;width:auto;
+    bottom:calc(96px + var(--safeB));padding:9px 11px 10px;
+  }
+  #objective h3{font-size:16px;margin:5px 0 1px}
+  #objective .eat{font-size:12px;margin-top:6px;padding:6px 8px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  #objective .why{display:none}
+  #objective .dist{margin-top:7px;font-size:11px}
+  #radarWrap{left:10px;bottom:calc(96px + var(--safeB))}
+  #street{width:calc(var(--radar) + 26px);font-size:10.5px;padding:4px 7px}
+  #bar{width:calc(100% - 20px);justify-content:center;flex-wrap:nowrap;overflow-x:auto;
+    scrollbar-width:none;padding:6px}
+  #bar::-webkit-scrollbar{display:none}
+  #bar button{padding:10px 12px;font-size:13.5px}
+  #speedo{bottom:auto;top:calc(112px + var(--safeT));right:12px;padding:6px 11px}
+  #speedo .n{font-size:24px}
+  #actor{width:min(15vh,120px);bottom:calc(30% + var(--safeB))}
+  #actor.veh-bike{width:min(18vh,145px);bottom:calc(29% + var(--safeB))}
+  #actor.veh-car{width:min(26vh,205px);bottom:calc(27% + var(--safeB))}
+  #shadow{bottom:calc(29.4% + var(--safeB));width:min(10vh,82px);height:min(2.6vh,20px)}
+  #pips i{width:18px;height:4px}
+  #status{gap:5px}
+  #status .cell{padding:6px 8px;min-width:0}
+  #status .k{font-size:9px;letter-spacing:1.6px}
+  #status .v{font-size:16px}
+  #btnDays{padding:6px 10px;font-size:15px}
+  #bar #btnMap .bl{display:none}
+  #objective .eat{overflow-wrap:anywhere}
+}
+@media (max-width:430px){
+  :root{--radar:92px}
+  #cellTime{display:none}
+  #mission .lbl{font-size:10px;letter-spacing:2px}
+  #mission .sub{font-size:11px}
+  #objective{left:calc(var(--radar) + 18px);right:8px;padding:8px 10px 9px}
+  #objective h3{font-size:15px}
+  #objective .eat{font-size:11.5px;-webkit-line-clamp:4}
+  #bar button{padding:9px 11px;font-size:13px}
+  #btnPrev,#btnNext{display:none}
+  #btnDays .bl{display:none}
+}
+@media (max-width:760px) and (orientation:landscape){
+  #actor{bottom:calc(10% + var(--safeB))}
+  #objective{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ STREET STAGE ============ -->
+  <div id="stage">
+    <div id="pano"></div>
+    <div id="grade"></div>
+    <div id="grain"></div>
+    <div id="speedlines"></div>
+    <div id="shadow"></div>
+    <div id="actor" data-state="idle"></div>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud">
+
+    <div id="topbar">
+      <div id="mission" class="plate">
+        <div class="lbl">MISSION</div>
+        <div class="ttl" id="mTitle">NIR'S BITE</div>
+        <div class="sub he" id="mSub">בוחרים יום ויוצאים לדרך</div>
+        <div id="pips"></div>
+      </div>
+
+      <div id="status">
+        <div class="cell plate">
+          <div class="k">DAY</div>
+          <div class="v" id="sDay">—</div>
+        </div>
+        <div class="cell plate" id="cellTime">
+          <div class="k">TIME</div>
+          <div class="v gold" id="sTime">—</div>
+        </div>
+        <button id="btnDays" aria-label="ימים ותחנות">☰ <span class="bl">DAYS</span></button>
+      </div>
+    </div>
+
+    <div id="speedo" class="plate">
+      <div class="n" id="spdN">0</div>
+      <div class="u">KM/H</div>
+    </div>
+
+    <div id="radarWrap">
+      <div id="radarRing">
+        <div id="radarRot"><div id="miniMap"></div></div>
+        <div class="cone"></div>
+        <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1.5 L20.5 21 L12 16.4 L3.5 21 Z" fill="#fff" stroke="#05060a" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M12 5 L17.6 18 L12 15.2 L6.4 18 Z" fill="#ff2e88"/>
+        </svg>
+      </div>
+      <div id="street" class="plate">— — —</div>
+    </div>
+
+    <div id="objective" class="plate">
+      <span class="tag" id="oTag">NEXT STOP</span>
+      <h3 id="oName">—</h3>
+      <div class="addr" id="oAddr">—</div>
+      <div class="eat" id="oEat">—</div>
+      <div class="why" id="oWhy">—</div>
+      <div class="dist">
+        <span>מרחק <b id="oDist">—</b></span>
+        <span>זמן <b id="oEta">—</b></span>
+        <span id="oMode">—</span>
+      </div>
+    </div>
+
+    <div id="bar" class="plate">
+      <button id="btnPrev" title="תחנה קודמת">◀</button>
+      <button id="btnPlay" class="primary">▶ <span class="bl">PLAY ROUTE</span></button>
+      <button id="btnSkip" class="hot">SKIP →</button>
+      <button id="btnNext" title="תחנה הבאה">▶</button>
+      <button id="btnMap">🗺 <span class="bl">DIRECTIONS</span></button>
+      <button id="btnSfx" title="סאונד">🔊</button>
+    </div>
+  </div>
+
+  <div id="bigtext"><span id="bigtextSpan">MISSION START</span></div>
+
+  <!-- ============ MISSION PASSED ============ -->
+  <div id="passed">
+    <div class="p1">MISSION PASSED</div>
+    <div class="p2" id="passedSub">RESPECT + &nbsp; APPETITE ++</div>
+    <div class="p3" id="passedEat">—</div>
+    <button id="btnPassedNext">EAT THE DAMN THING →</button>
+  </div>
+
+  <!-- ============ DRAWER ============ -->
+  <aside id="drawer">
+    <header>
+      <div class="t">מסלול הזהב של ניר</div>
+      <button id="btnCloseDrawer" aria-label="סגור">✕</button>
+    </header>
+    <div id="dayTabs"></div>
+    <div id="stopList"></div>
+  </aside>
+
+  <!-- ============ BOARD MODE (no key) ============ -->
+  <div id="board">
+    <div class="bh">
+      <div class="t gta">NIR'S BITE — BOARD MODE</div>
+      <button id="btnBoardKey" style="background:linear-gradient(180deg,#d8ff4a,#8fc700);border:none;border-radius:10px;padding:10px 16px;font-family:'Anton';font-size:15px;cursor:pointer">חבר מפתח</button>
+    </div>
+    <div class="grid" id="boardGrid"></div>
+  </div>
+
+  <!-- ============ BOOT ============ -->
+  <div id="boot">
+    <div class="logo">NIR'S BITE</div>
+    <div class="slogan">EAT THE DAMN THING</div>
+    <div class="sub">
+      האיש שאפשר לסמוך עליו כשצריך לאכול טוב.<br>
+      הרחובות האמיתיים של ניו יורק, ניר בפרונט, המסלול של ניר — בדיוק לפי הימים 24–31.8.
+    </div>
+    <div class="keybox">
+      <input id="keyInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
+             placeholder="Google Maps JavaScript API key">
+      <button class="go" id="btnStart">START</button>
+    </div>
+    <div class="err" id="keyErr"></div>
+    <button class="skip" id="btnNoKey">להיכנס בלי מפתח (לוח מסלול בלבד)</button>
+    <div class="hint">
+      צריך מפתח עם <b>Maps JavaScript API</b> מופעל (לא Embed). מומלץ להגביל אותו ב-Google Cloud
+      ל-HTTP referrer של הדומיין שלך בלבד. המפתח נשמר רק ב-localStorage של הדפדפן הזה,
+      ואפשר גם לפתוח את הכתובת עם <code style="direction:ltr">?key=...</code> פעם אחת.
+    </div>
+  </div>
+
+  <div id="loader"></div>
+  <div id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   NIR'S BITE — engine
+   Eat the damn thing.
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------- palette for the character ---------- */
+var C = {
+  skin:'#d8a273', skinD:'#bd875a', skinDD:'#a06f47',
+  shirt:'#1f66db', shirtD:'#164da9', shirtL:'#3a83f0',
+  denim:'#3f6ea8', denimD:'#2d5280', stitch:'#e9c98c',
+  shoe:'#9aa4af', shoeD:'#78838f', sole:'#f3f4f6', stripe:'#ffffff',
+  cap:'#141c2e', capL:'#222f4c', hair:'#2b2018',
+  car:'#d81f2a', carD:'#96121b', carL:'#ff4d57', glass:'#0d1626'
+};
+
+/* ---------- SVG rigs: Nir, back view, GTA camera ---------- */
+function shoe(x,y,flip){
+  var s = flip?-1:1, tx = flip? (x*2+38) : 0;
+  return '<g transform="'+(flip?'translate('+tx+',0) scale(-1,1)':'')+'">'+
+    '<rect x="'+x+'" y="'+(y+20)+'" width="40" height="11" rx="5.5" fill="'+C.sole+'"/>'+
+    '<path d="M'+x+' '+(y+22)+' q0,-24 16,-24 h10 q14,4 14,18 v8 z" fill="'+C.shoe+'"/>'+
+    '<path d="M'+x+' '+(y+22)+' q0,-24 16,-24 h4 v26 z" fill="'+C.shoeD+'" opacity=".55"/>'+
+    '<g fill="'+C.stripe+'" opacity=".95">'+
+      '<rect x="'+(x+16)+'" y="'+(y+2)+'" width="4.4" height="18" rx="2.2" transform="rotate(11 '+(x+18)+' '+(y+11)+')"/>'+
+      '<rect x="'+(x+23)+'" y="'+(y+2)+'" width="4.4" height="18" rx="2.2" transform="rotate(11 '+(x+25)+' '+(y+11)+')"/>'+
+      '<rect x="'+(x+30)+'" y="'+(y+2)+'" width="4.4" height="18" rx="2.2" transform="rotate(11 '+(x+32)+' '+(y+11)+')"/>'+
+    '</g>'+
+    '<rect x="'+(x+2)+'" y="'+(y+18)+'" width="36" height="4" rx="2" fill="#fff" opacity=".5"/>'+
+  '</g>';
+}
+function leg(id,x,dark){
+  var sh = dark? C.denimD : C.denim;
+  var sk = dark? C.skinD : C.skin;
+  return '<g id="'+id+'" class="limb">'+
+    /* denim, down to the knee */
+    '<path d="M'+x+' 182 h34 q4,0 4,5 v62 q0,7 -7,7 h-28 q-7,0 -7,-7 v-62 q0,-5 4,-5 z" fill="'+sh+'"/>'+
+    '<path d="M'+(x+2)+' 236 h30 v8 h-30 z" fill="'+(dark?'#25436b':'#33598a')+'"/>'+
+    '<path d="M'+(x+3)+' 190 v54" stroke="'+C.stitch+'" stroke-width="1.6" opacity=".5"/>'+
+    '<path d="M'+(x+35)+' 190 v54" stroke="'+C.stitch+'" stroke-width="1.6" opacity=".5"/>'+
+    /* calf */
+    '<rect x="'+(x+7)+'" y="250" width="21" height="58" rx="10.5" fill="'+sk+'"/>'+
+    '<rect x="'+(x+10)+'" y="260" width="7" height="32" rx="3.5" fill="'+(dark?C.skinDD:C.skinD)+'" opacity=".4"/>'+
+    shoe(x-2,298,false)+
+  '</g>';
+}
+function arm(id,x,dark){
+  var sh = dark? C.shirtD : C.shirt;
+  var sk = dark? C.skinD : C.skin;
+  return '<g id="'+id+'" class="limb">'+
+    '<path d="M'+x+' 100 h27 q5,0 5,6 v40 q0,6 -6,6 h-25 q-6,0 -6,-6 v-40 q0,-6 5,-6 z" fill="'+sh+'"/>'+
+    '<rect x="'+(x+5)+'" y="146" width="18" height="50" rx="9" fill="'+sk+'"/>'+
+    '<circle cx="'+(x+14)+'" cy="199" r="9" fill="'+sk+'"/>'+
+  '</g>';
+}
+/* the back of Nir's head: hair, ears, and the cap on backwards —
+   which from behind means you are looking straight into the brim */
+function head(){
+  return '<g class="head">'+
+    '<ellipse cx="100" cy="60" rx="32" ry="35" fill="'+C.skinD+'"/>'+
+    '<path d="M68 62 q0,-36 32,-36 q32,0 32,36 q0,33 -32,33 q-32,0 -32,-33 z" fill="'+C.hair+'"/>'+
+    '<ellipse cx="67" cy="74" rx="5.5" ry="8.5" fill="'+C.skinDD+'"/>'+
+    '<ellipse cx="133" cy="74" rx="5.5" ry="8.5" fill="'+C.skinDD+'"/>'+
+    '<path d="M79 84 q21,9 42,0 q-7,11 -21,11 q-14,0 -21,-11 z" fill="#1d150e"/>'+
+    /* crown */
+    '<path d="M67 60 q0,-44 33,-44 q33,0 33,44 q-33,10 -66,0 z" fill="'+C.cap+'"/>'+
+    '<path d="M100 16 q33,0 33,44 q-16,5 -33,5.8 z" fill="'+C.capL+'" opacity=".5"/>'+
+    '<circle cx="100" cy="19" r="4.5" fill="'+C.capL+'"/>'+
+    /* brim, aimed at the camera */
+    '<ellipse cx="100" cy="64" rx="39" ry="13" fill="#080d18"/>'+
+    '<ellipse cx="100" cy="61" rx="39" ry="12.5" fill="'+C.capL+'"/>'+
+    '<ellipse cx="100" cy="59" rx="30" ry="8" fill="#3a4f80" opacity=".5"/>'+
+  '</g>';
+}
+var RIG_WALK =
+'<svg class="rig rig-walk" viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg">'+
+ '<g id="body-walk">'+
+   leg('legR',101,true)+
+   leg('legL',63,false)+
+   /* both arms sit behind the torso, so only the sleeves and forearms show */
+   arm('armR',126,true)+
+   arm('armL',41,false)+
+   '<rect x="88" y="70" width="24" height="36" rx="9" fill="'+C.skinDD+'"/>'+
+   /* blue tee */
+   '<path d="M68 104 q0,-13 15,-16 l9,-3 q8,4 16,0 l9,3 q15,3 15,16 v80 q0,9 -9,9 h-46 q-9,0 -9,-9 z" fill="'+C.shirt+'"/>'+
+   '<path d="M100 104 v89 h23 q9,0 9,-9 v-80 q0,-13 -15,-16 l-9,-3 q-4,2 -8,2 z" fill="'+C.shirtD+'" opacity=".42"/>'+
+   '<path d="M82 88 q18,14 36,0" fill="none" stroke="'+C.shirtL+'" stroke-width="6" stroke-linecap="round"/>'+
+   '<path d="M100 116 v72" stroke="'+C.shirtD+'" stroke-width="2" opacity=".5"/>'+
+   '<rect x="62" y="178" width="76" height="12" rx="5" fill="'+C.denimD+'"/>'+
+   head()+
+ '</g>'+
+'</svg>';
+
+var RIG_BIKE =
+'<svg class="rig rig-bike" viewBox="0 0 260 360" xmlns="http://www.w3.org/2000/svg">'+
+  /* rear wheel */
+  '<g id="wheelB"><circle cx="130" cy="284" r="58" fill="none" stroke="#12161f" stroke-width="11"/>'+
+  '<circle cx="130" cy="284" r="50" fill="none" stroke="#3a4152" stroke-width="2"/>'+
+  '<g stroke="#8792a8" stroke-width="1.8">'+
+   '<line x1="130" y1="228" x2="130" y2="340"/><line x1="74" y1="284" x2="186" y2="284"/>'+
+   '<line x1="90" y1="244" x2="170" y2="324"/><line x1="170" y1="244" x2="90" y2="324"/>'+
+   '<line x1="103" y1="234" x2="157" y2="334"/><line x1="157" y1="234" x2="103" y2="334"/></g>'+
+  '<circle cx="130" cy="284" r="7" fill="#c8cede"/></g>'+
+  /* frame + seat post */
+  '<path d="M130 284 L130 226 M112 262 L148 262" stroke="#e03a5f" stroke-width="9" stroke-linecap="round" fill="none"/>'+
+  '<path d="M108 226 h44 q6,0 6,6 q0,8 -28,8 q-28,0 -28,-8 q0,-6 6,-6 z" fill="#11151d"/>'+
+  /* handlebar */
+  '<path d="M74 214 h112" stroke="#1b2130" stroke-width="10" stroke-linecap="round"/>'+
+  '<circle cx="74" cy="214" r="8" fill="#0c1018"/><circle cx="186" cy="214" r="8" fill="#0c1018"/>'+
+  /* crank */
+  '<g id="pedals"><circle cx="130" cy="290" r="18" fill="none" stroke="#2a3140" stroke-width="5"/>'+
+  '<rect x="104" y="284" width="24" height="10" rx="4" fill="#39414f"/>'+
+  '<rect x="132" y="284" width="24" height="10" rx="4" fill="#39414f"/></g>'+
+  '<g id="rider">'+
+    /* legs, knees out over the crank */
+    '<g id="bLegR"><path d="M144 236 L156 276" stroke="'+C.denimD+'" stroke-width="27" stroke-linecap="round"/>'+
+      '<path d="M156 276 L150 302" stroke="'+C.skinD+'" stroke-width="19" stroke-linecap="round"/>'+
+      '<g transform="translate(130,296) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
+    '<g id="bLegL"><path d="M116 236 L104 276" stroke="'+C.denim+'" stroke-width="27" stroke-linecap="round"/>'+
+      '<path d="M104 276 L110 302" stroke="'+C.skin+'" stroke-width="19" stroke-linecap="round"/>'+
+      '<g transform="translate(90,296) scale(.62)">'+shoe(0,0,false)+'</g></g>'+
+    /* arms reaching for the grips */
+    '<path d="M104 176 L78 210" stroke="'+C.skin+'" stroke-width="18" stroke-linecap="round"/>'+
+    '<path d="M156 176 L182 210" stroke="'+C.skinD+'" stroke-width="18" stroke-linecap="round"/>'+
+    '<path d="M106 172 L92 190" stroke="'+C.shirt+'" stroke-width="26" stroke-linecap="round"/>'+
+    '<path d="M154 172 L168 190" stroke="'+C.shirtD+'" stroke-width="26" stroke-linecap="round"/>'+
+    /* torso, leaning into the ride */
+    '<path d="M98 168 q0,-16 15,-19 l9,-3 q8,4 16,0 l9,3 q15,3 15,19 v62 q0,9 -9,9 h-46 q-9,0 -9,-9 z" fill="'+C.shirt+'"/>'+
+    '<path d="M130 146 v100 h23 q9,0 9,-9 v-62 q0,-16 -15,-19 l-9,-3 q-4,2 -8,2 z" fill="'+C.shirtD+'" opacity=".42"/>'+
+    '<rect x="118" y="118" width="24" height="36" rx="9" fill="'+C.skinDD+'"/>'+
+    '<g transform="translate(30,52) scale(1)">'+head()+'</g>'+
+  '</g>'+
+'</svg>';
+
+var RIG_CAR =
+'<svg class="rig rig-car" viewBox="0 0 360 250" xmlns="http://www.w3.org/2000/svg">'+
+  '<ellipse cx="180" cy="232" rx="168" ry="16" fill="#000" opacity=".45"/>'+
+  '<rect x="34" y="176" width="52" height="52" rx="16" fill="#0b0e14"/>'+
+  '<rect x="274" y="176" width="52" height="52" rx="16" fill="#0b0e14"/>'+
+  /* body */
+  '<path d="M52 214 q-14,0 -14,-16 v-46 q0,-22 22,-28 l24,-52 q6,-14 22,-14 h108 q16,0 22,14 l24,52 q22,6 22,28 v46 q0,16 -14,16 z" fill="'+C.car+'"/>'+
+  '<path d="M180 58 h108 q16,0 22,14 l24,52 q22,6 22,28 v46 q0,16 -14,16 h-162 z" fill="'+C.carD+'" opacity=".35"/>'+
+  /* roof + rear glass */
+  '<path d="M112 62 h136 l20,44 q-88,14 -176,0 z" fill="'+C.glass+'"/>'+
+  '<path d="M118 68 h124 l14,30 q-76,11 -152,0 z" fill="#16233d"/>'+
+  /* Nir inside: cap silhouette */
+  '<g opacity=".92"><ellipse cx="180" cy="96" rx="24" ry="18" fill="'+C.skinD+'"/>'+
+  '<path d="M156 92 q0,-26 24,-26 q24,0 24,26 q-24,7 -48,0 z" fill="'+C.cap+'"/>'+
+  '<ellipse cx="180" cy="92" rx="28" ry="8" fill="'+C.capL+'" opacity=".7"/></g>'+
+  /* taillights */
+  '<rect x="52" y="150" width="72" height="24" rx="9" fill="#ff2a2a"/>'+
+  '<rect x="236" y="150" width="72" height="24" rx="9" fill="#ff2a2a"/>'+
+  '<rect x="58" y="155" width="60" height="9" rx="4.5" fill="#ffb0b0" opacity=".85"/>'+
+  '<rect x="242" y="155" width="60" height="9" rx="4.5" fill="#ffb0b0" opacity=".85"/>'+
+  /* bumper + plate */
+  '<rect x="40" y="196" width="280" height="22" rx="9" fill="#171b23"/>'+
+  '<rect x="136" y="192" width="88" height="28" rx="6" fill="#f2f3f6"/>'+
+  '<text x="180" y="212" font-family="Anton,Impact,sans-serif" font-size="16" fill="#111826" text-anchor="middle">NIR 1</text>'+
+  '<rect x="70" y="216" width="30" height="9" rx="4.5" fill="#333a46"/>'+
+  '<rect x="260" y="216" width="30" height="9" rx="4.5" fill="#333a46"/>'+
+  /* highlight */
+  '<path d="M62 124 q118,-16 236,0" stroke="'+C.carL+'" stroke-width="4" fill="none" opacity=".5"/>'+
+'</svg>';
+
+/* ============================================================
+   THE ROUTE — ניו יורק 24–31.8
+   mode = איך מגיעים לתחנה הזאת מהקודמת
+   ניתן להחליף בייבוא JSON מתוך התפריט (☰ ימים ← ייבוא)
+   ============================================================ */
+var TRIP_DEFAULT = {
+  city:'New York',
+  year:2026,
+  days:[
+  { d:'24.8', code:'LES', title:'PASTRAMI RUN', hood:'Lower East Side → SoHo', stops:[
+    { t:'09:30', mode:'WALKING', name:"Russ & Daughters", addr:'179 E Houston St',
+      q:"Russ & Daughters, 179 E Houston St, New York, NY",
+      lat:40.72258, lng:-73.98828,
+      eat:'בייגל עם לוקס, קרם צ׳יז, בצל וקייפרס. לבקש את הסלמון פרוס דק.',
+      why:'חנות ה־appetizing של 1914. זה לא דלי — זה מוסד. פותחים כאן את היום כי מאוחר יותר יש תור.' },
+    { t:'12:30', mode:'WALKING', name:"Katz's Delicatessen", addr:'205 E Houston St',
+      q:"Katz's Delicatessen, 205 E Houston St, New York, NY",
+      lat:40.72224, lng:-73.98733,
+      eat:'פסטרמי על לחם שיפון, חרדל, חמוץ. לבקש hand-carved, fatty.',
+      why:'שתי דקות הליכה מראס. שומרים את הכרטיס הכתום — בלעדיו לא יוצאים. טיפ לחותך = פרוסה לטעימה.' },
+    { t:'15:00', mode:'WALKING', name:'Prince Street Pizza', addr:'27 Prince St',
+      q:"Prince Street Pizza, 27 Prince St, New York, NY",
+      lat:40.72294, lng:-73.99444,
+      eat:'Spicy Spring — פרוסה מרובעת עם פפרוני שמתקפל לכוסיות.',
+      why:'התור ארוך אבל זז. אוכלים בעמידה על המדרכה, זו חצי מהחוויה.' },
+    { t:'17:30', mode:'WALKING', name:'Dominique Ansel Bakery', addr:'189 Spring St',
+      q:"Dominique Ansel Bakery, 189 Spring St, New York, NY",
+      lat:40.72524, lng:-74.00281,
+      eat:'קרונאט של החודש + DKA. לקחת לחצר האחורית.',
+      why:'סוגרים את היום במתוק ובכיוון סוהו, בדיוק לפני שהחנויות נסגרות.' }
+  ]},
+  { d:'25.8', code:'WV', title:'SLICE & TACOS', hood:'West Village → Chelsea', stops:[
+    { t:'10:30', mode:'WALKING', name:"Joe's Pizza", addr:'7 Carmine St',
+      q:"Joe's Pizza, 7 Carmine St, New York, NY",
+      lat:40.73043, lng:-74.00201,
+      eat:'פרוסת plain אחת. מקפלים לאורך, אוכלים בעמידה.',
+      why:'הפרוסה שכל ניו יורקי ישלח אליה. לא יושבים, לא מצטלמים הרבה — אוכלים.' },
+    { t:'12:30', mode:'WALKING', name:'Los Tacos No.1 — Chelsea Market', addr:'75 9th Ave',
+      q:"Los Tacos No. 1, 75 9th Ave, New York, NY",
+      lat:40.74234, lng:-74.00611,
+      eat:'שלושה אדובדה על טורטיית תירס + קסדייה אחת לשולחן.',
+      why:'עומדים בבר, בלי כיסאות. הרוטב הירוק חריף — מתחילים בטיפה.' },
+    { t:'15:00', mode:'WALKING', name:'The High Line', addr:'Gansevoort St entrance',
+      q:"The High Line, Gansevoort St, New York, NY",
+      lat:40.73962, lng:-74.00817,
+      eat:'לא אוכלים — מעכלים. קפה קר בדרך.',
+      why:'הליכה על פסי הרכבת הישנים מצפון לדרום. זה הקטע שמחבר בין הטאקוס לקינוח.' },
+    { t:'17:00', mode:'WALKING', name:'Magnolia Bakery — Bleecker', addr:'401 Bleecker St',
+      q:"Magnolia Bakery, 401 Bleecker St, New York, NY",
+      lat:40.73558, lng:-74.00566,
+      eat:'בננה פודינג, גודל בינוני. לא קאפקייק.',
+      why:'הסניף המקורי של West Village. יושבים על המדרכה ממול.' }
+  ]},
+  { d:'26.8', code:'MID', title:'THE HALAL RUN', hood:'Midtown East → Garment District', stops:[
+    { t:'09:00', mode:'WALKING', name:'Ess-a-Bagel', addr:'831 3rd Ave',
+      q:"Ess-a-Bagel, 831 3rd Ave, New York, NY",
+      lat:40.75529, lng:-73.96955,
+      eat:'בייגל everything, scallion cream cheese, נובה. לא לבקש טוסט.',
+      why:'הבייגל הכי גדול בעיר. מספיק לשניים, וזה בסדר.' },
+    { t:'12:30', mode:'WALKING', name:'The Halal Guys', addr:'W 53rd St & 6th Ave',
+      q:"The Halal Guys, W 53rd St & 6th Ave, New York, NY",
+      lat:40.76194, lng:-73.97906,
+      eat:'Combo over rice. רוטב לבן בנדיבות, אדום בזהירות — הוא באמת חריף.',
+      why:'העגלה המקורית, פינה צפון־מזרחית. אוכלים על המדרכה כמו כולם.' },
+    { t:'15:00', mode:'WALKING', name:'Grand Central Oyster Bar', addr:'89 E 42nd St, Lower Level',
+      q:"Grand Central Oyster Bar, 89 E 42nd St, New York, NY",
+      lat:40.75264, lng:-73.97682,
+      eat:'פאן רוסט צדפות + חצי תריסר Blue Point.',
+      why:'יושבים בבר המעוקל מתחת לתקרות הקמרון. לפני זה — לוחשים בפינת הלחישות.' },
+    { t:'19:30', mode:'WALKING', name:'Keens Steakhouse', addr:'72 W 36th St',
+      q:"Keens Steakhouse, 72 W 36th St, New York, NY",
+      lat:40.75011, lng:-73.98577,
+      eat:'Mutton Chop. אחד. לשולחן.',
+      why:'מ־1885, עם 50,000 מקטרות חימר על התקרה. הזמנה מראש חובה.' }
+  ]},
+  { d:'27.8', code:'CP', title:'BIKE DAY', hood:'Upper West Side + Central Park', stops:[
+    { t:'09:30', mode:'WALKING', name:'Levain Bakery', addr:'351 Amsterdam Ave',
+      q:"Levain Bakery, 351 Amsterdam Ave, New York, NY",
+      lat:40.78072, lng:-73.98013,
+      eat:'עוגיית Chocolate Chip Walnut. חמה. אחת לאדם — היא 170 גרם.',
+      why:'מתחילים את יום האופניים בסוכר. אוכלים בדרך לפארק, לא בחנות.' },
+    { t:'11:00', mode:'BICYCLING', name:'Bethesda Terrace, Central Park', addr:'Central Park, 72nd St',
+      q:"Bethesda Terrace, Central Park, New York, NY",
+      lat:40.77420, lng:-73.97089,
+      eat:'מים ופרצל מהעגלה. זה הכל.',
+      why:'רוכבים את הלולאה של הפארק דרומה. עוצרים במזרקה, ממשיכים למול.' },
+    { t:'13:00', mode:'BICYCLING', name:'Barney Greengrass', addr:'541 Amsterdam Ave',
+      q:"Barney Greengrass, 541 Amsterdam Ave, New York, NY",
+      lat:40.78659, lng:-73.97690,
+      eat:'סטרג׳ן עם ביצים מקושקשות ובצל + חלה קלויה.',
+      why:'"מלך הסטרג׳ן" מ־1908. פורמייקה, מלצרים חדים, אפס עיצוב — וזה הקטע.' },
+    { t:'16:30', mode:'BICYCLING', name:"Gray's Papaya", addr:'2090 Broadway',
+      q:"Gray's Papaya, 2090 Broadway, New York, NY",
+      lat:40.77957, lng:-73.98169,
+      eat:'Recession Special — שתי נקניקיות ומשקה פפאיה.',
+      why:'עומדים בדלפק מול החלון. סוגרים את יום האופניים בזול ובמושלם.' }
+  ]},
+  { d:'28.8', code:'BK', title:'BRIDGE & BEEF', hood:'Dumbo → Williamsburg', stops:[
+    { t:'11:00', mode:'DRIVING', name:"Juliana's Pizza", addr:'19 Old Fulton St, Brooklyn',
+      q:"Juliana's Pizza, 19 Old Fulton St, Brooklyn, NY",
+      lat:40.70274, lng:-73.99354,
+      eat:'No.1 — מרגריטה עם באזיל טרי, תנור פחמים.',
+      why:'פטסי גרימלדי חזר לרחוב שלו. הפיצה מחכה לכם מתחת לגשר.' },
+    { t:'13:30', mode:'WALKING', name:'Time Out Market New York', addr:'55 Water St, Brooklyn',
+      q:"Time Out Market New York, 55 Water St, Brooklyn, NY",
+      lat:40.70326, lng:-73.99036,
+      eat:'סבבה — כל אחד לוקח דוכן אחר ומתחלקים.',
+      why:'הגג משקיף על מנהטן והגשר. זו התמונה של הטיול.' },
+    { t:'16:00', mode:'DRIVING', name:"L'Industrie Pizzeria", addr:'254 S 2nd St, Brooklyn',
+      q:"L'Industrie Pizzeria, 254 S 2nd St, Brooklyn, NY",
+      lat:40.71230, lng:-73.95760,
+      eat:'Burrata slice. אחת. אחר כך תרצו עוד.',
+      why:'ויליאמסבורג, תור בחוץ, פרוסה שמחליפה את כל מה שידעתם על בורטה.' },
+    { t:'19:45', mode:'DRIVING', name:'Peter Luger Steak House', addr:'178 Broadway, Brooklyn',
+      q:"Peter Luger Steak House, 178 Broadway, Brooklyn, NY",
+      lat:40.70988, lng:-73.96222,
+      eat:'Steak for Two, medium rare, עם הרוטב שלהם. בייקון עבה להתחלה.',
+      why:'מזומן בלבד או כרטיס של הבית. מ־1887, מתחת לגשר ויליאמסבורג. Eat the damn thing.' }
+  ]},
+  { d:'29.8', code:'CT', title:'CHINATOWN CRAWL', hood:'Chinatown → Little Italy', stops:[
+    { t:'11:00', mode:'WALKING', name:'Nom Wah Tea Parlor', addr:'13 Doyers St',
+      q:"Nom Wah Tea Parlor, 13 Doyers St, New York, NY",
+      lat:40.71446, lng:-73.99807,
+      eat:'האג רול המקורי + שומאי + שרימפ דמפלינג.',
+      why:'1920, על הרחוב המעוקל של דויירס. מסמנים על הדף, לא מזמינים במלצר.' },
+    { t:'13:30', mode:'WALKING', name:'Xi\'an Famous Foods', addr:'45 Bayard St',
+      q:"Xi'an Famous Foods, 45 Bayard St, New York, NY",
+      lat:40.71542, lng:-73.99789,
+      eat:'Spicy Cumin Lamb Hand-Ripped Noodles. מספר 1 בתפריט.',
+      why:'עומדים בתור, מזמינים במספר, מוצאים שולחן. הנודלס נמשכים ביד מאחורה.' },
+    { t:'16:00', mode:'WALKING', name:'Ferrara Bakery & Café', addr:'195 Grand St',
+      q:"Ferrara Bakery, 195 Grand St, New York, NY",
+      lat:40.71906, lng:-73.99722,
+      eat:'קנולי ממולא ברגע + אספרסו כפול.',
+      why:'ליטל איטלי מ־1892. מבקשים שימלאו את הקנולי מולכם, אחרת הוא רך.' },
+    { t:'19:00', mode:'WALKING', name:'Great NY Noodletown', addr:'28 Bowery',
+      q:"Great N.Y. Noodletown, 28 Bowery, New York, NY",
+      lat:40.71482, lng:-73.99653,
+      eat:'ברווז קלוי על אורז + ג׳ינג׳ר־סקאליון נודלס.',
+      why:'פתוח עד מאוחר, אורות פלורסנט, אפס אווירה, אוכל מושלם.' }
+  ]},
+  { d:'30.8', code:'HAR', title:'UPTOWN SOUL', hood:'Harlem', stops:[
+    { t:'11:30', mode:'DRIVING', name:"Sylvia's Restaurant", addr:'328 Malcolm X Blvd',
+      q:"Sylvia's Restaurant, 328 Malcolm X Blvd, New York, NY",
+      lat:40.80785, lng:-73.94493,
+      eat:'Smothered chicken + mac and cheese + collard greens.',
+      why:'"מלכת הסול פוד" מ־1962. בראנץ׳ עם גוספל אם מגיעים ביום ראשון.' },
+    { t:'14:00', mode:'WALKING', name:"Amy Ruth's", addr:'113 W 116th St',
+      q:"Amy Ruth's, 113 W 116th St, New York, NY",
+      lat:40.80181, lng:-73.94858,
+      eat:'"The Rev. Al Sharpton" — עוף מטוגן על וופל.',
+      why:'המנות נקראות על שם דמויות מהארלם. זו לא גימיק — זו היסטוריה מקומית.' },
+    { t:'16:30', mode:'WALKING', name:'Red Rooster Harlem', addr:'310 Lenox Ave',
+      q:"Red Rooster Harlem, 310 Lenox Ave, New York, NY",
+      lat:40.80828, lng:-73.94547,
+      eat:'Fried Yard Bird + קורנברד עם חמאת דבש.',
+      why:'מרקוס סמואלסון. מוזיקה חיה למטה ב־Ginny\'s אם יש כוח.' },
+    { t:'19:00', mode:'DRIVING', name:'Riverside Park — Pier i', addr:'W 70th St at Hudson River',
+      q:"Pier i Cafe, Riverside Park, New York, NY",
+      lat:40.77852, lng:-73.98894,
+      eat:'בירה וכוס קרח מול השקיעה. סיימנו לאכול היום.',
+      why:'השמש יורדת מעבר לנהר. זה הסיום של היום הצפוני.' }
+  ]},
+  { d:'31.8', code:'FIN', title:'THE LAST BITE', hood:'Flatiron → Midtown', stops:[
+    { t:'11:00', mode:'WALKING', name:'Shake Shack — Madison Square Park', addr:'Madison Ave & E 23rd St',
+      q:"Shake Shack Madison Square Park, New York, NY",
+      lat:40.74146, lng:-73.98803,
+      eat:'ShackBurger כפול, fries עם גבינה, שייק Black & White.',
+      why:'הדוכן המקורי בפארק. יושבים על ספסל, יונים כלולות.' },
+    { t:'13:30', mode:'WALKING', name:'Eataly NYC Flatiron', addr:'200 5th Ave',
+      q:"Eataly NYC Flatiron, 200 5th Ave, New York, NY",
+      lat:40.74209, lng:-73.98965,
+      eat:'פסטה מהדלפק + מוצרלה טרייה. קונים שמן זית הביתה.',
+      why:'התחנה של הקניות. מה שלא נקנה עכשיו — לא ייקנה.' },
+    { t:'16:00', mode:'DRIVING', name:'Serendipity 3', addr:'225 E 60th St',
+      q:"Serendipity 3, 225 E 60th St, New York, NY",
+      lat:40.76267, lng:-73.96490,
+      eat:'Frrrozen Hot Chocolate. אחד לשניים, באמת.',
+      why:'קיטש מוחלט, ומגיע לו. אחרי זה עולים צפונה לרוקפלר.' },
+    { t:'19:00', mode:'WALKING', name:'Top of the Rock', addr:'30 Rockefeller Plaza',
+      q:"Top of the Rock, 30 Rockefeller Plaza, New York, NY",
+      lat:40.75907, lng:-73.97925,
+      eat:'כלום. רק מסתכלים. אכלנו מספיק.',
+      why:'התצפית האחרונה. משם רואים את כל המסלול של השבוע. Eat the damn thing — עשינו את זה.' }
+  ]}
+  ]
+};
+
+/* ============================================================
+   STATE + HELPERS
+   ============================================================ */
+var PLAY_HTML = '\u25B6 <span class="bl">PLAY ROUTE</span>';
+var LS = { key:'nb.mapskey', trip:'nb.trip', sfx:'nb.sfx' };
+var $ = function(id){ return document.getElementById(id); };
+var S = {
+  trip:null, dayIdx:0, stopIdx:0,
+  pano:null, mini:null, dir:null, sph:null,
+  frames:[], fi:0, playing:false, timer:null, povRaf:0,
+  heading:0, pitch:-6, mode:'WALKING',
+  line:null, destMk:null, sfx:true, ac:null, ready:false
+};
+
+function toast(msg, ms){
+  var t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');}, ms||2600);
+}
+function loader(on, pct){
+  var l=$('loader');
+  if(on){ l.classList.add('on'); l.style.width=(pct||18)+'%'; }
+  else { l.style.width='100%'; setTimeout(function(){ l.classList.remove('on'); l.style.width='0%'; },320); }
+}
+function big(text){
+  var b=$('bigtext'); $('bigtextSpan').textContent=text;
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function shake(){ var s=$('stage'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* --- audio: tiny synth, no assets --- */
+function beep(freq, dur, type, gain){
+  if(!S.sfx) return;
+  try{
+    if(!S.ac) S.ac = new (window.AudioContext||window.webkitAudioContext)();
+    if(S.ac.state==='suspended') S.ac.resume();
+    var o=S.ac.createOscillator(), g=S.ac.createGain();
+    o.type=type||'square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001, S.ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(gain||0.09, S.ac.currentTime+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, S.ac.currentTime+(dur||0.12));
+    o.connect(g); g.connect(S.ac.destination);
+    o.start(); o.stop(S.ac.currentTime+(dur||0.12)+0.02);
+  }catch(e){}
+}
+function sfxStart(){ beep(392,.09,'square'); setTimeout(function(){beep(587,.14,'square');},95); }
+function sfxStep(){ beep(150,.045,'triangle',.035); }
+function sfxPassed(){
+  [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ beep(f,.19,'square',.085); }, i*115); });
+}
+
+/* --- geometry helpers --- */
+function normAng(a){ a=a%360; if(a>180)a-=360; if(a<-180)a+=360; return a; }
+function resample(path, step){
+  if(!path || path.length<2) return path||[];
+  var out=[path[0]], acc=0, i, a, b, d, t;
+  for(i=1;i<path.length;i++){
+    a=path[i-1]; b=path[i]; d=S.sph.computeDistanceBetween(a,b);
+    if(d<0.5) continue;
+    t=0;
+    while(acc + (d-t) >= step){
+      t += step-acc; acc=0;
+      out.push(S.sph.interpolate(a,b,t/d));
+    }
+    acc += d-t;
+  }
+  out.push(path[path.length-1]);
+  return out;
+}
+var MODE_CFG = {
+  WALKING:  { state:'walk', step:14, ms:560, zoom:.85, pitch:-6,  kmh:5,  cyc:'.62s', label:'ברגל',    cls:'w', gmode:'walking' },
+  BICYCLING:{ state:'bike', step:26, ms:430, zoom:.70, pitch:-4,  kmh:18, cyc:'.44s', label:'אופניים', cls:'b', gmode:'bicycling' },
+  DRIVING:  { state:'car',  step:42, ms:360, zoom:.55, pitch:-3,  kmh:38, cyc:'.30s', label:'ברכב',    cls:'d', gmode:'driving' },
+  TRANSIT:  { state:'walk', step:20, ms:420, zoom:.80, pitch:-5,  kmh:24, cyc:'.5s',  label:'תחבורה',  cls:'t', gmode:'transit' }
+};
+function cfg(m){ return MODE_CFG[m] || MODE_CFG.WALKING; }
+function curDay(){ return S.trip.days[S.dayIdx]; }
+function curStop(){ return curDay().stops[S.stopIdx]; }
+function nextStop(){ return curDay().stops[S.stopIdx+1] || null; }
+
+/* --- character --- */
+function buildActor(){ $('actor').innerHTML = RIG_WALK + RIG_BIKE + RIG_CAR; }
+function setActor(state, cycle){
+  var a=$('actor');
+  a.setAttribute('data-state', state);
+  a.className = state==='bike' ? 'veh-bike' : (state==='car' ? 'veh-car' : '');
+  if(cycle) a.style.setProperty('--cyc', cycle);
+  $('shadow').classList.toggle('hide', state==='car');
+}
+function speedlines(on){ $('speedlines').classList.toggle('on', !!on); }
+function buildSpeedlines(){
+  var el=$('speedlines'), h='';
+  for(var i=0;i<22;i++){
+    var a=(i/22)*360;
+    h += '<i style="--a:'+a+'deg;animation-delay:'+(i*0.045).toFixed(3)+'s"></i>';
+  }
+  el.innerHTML=h;
+}
+
+/* ============================================================
+   MAPS BOOTSTRAP
+   ============================================================ */
+var MAP_STYLE = [
+  {elementType:'geometry',stylers:[{color:'#0f1420'}]},
+  {elementType:'labels.icon',stylers:[{visibility:'off'}]},
+  {elementType:'labels.text.fill',stylers:[{color:'#8a94a8'}]},
+  {elementType:'labels.text.stroke',stylers:[{color:'#05060a'}]},
+  {featureType:'administrative',elementType:'geometry',stylers:[{color:'#2a3244'}]},
+  {featureType:'poi',stylers:[{visibility:'off'}]},
+  {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#16301f'},{visibility:'on'}]},
+  {featureType:'road',elementType:'geometry',stylers:[{color:'#28303f'}]},
+  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#0b0f18'}]},
+  {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#39445a'}]},
+  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#5a4a2a'}]},
+  {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#12161f'}]},
+  {featureType:'transit',stylers:[{visibility:'off'}]},
+  {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1a33'}]}
+];
+
+function loadMaps(key){
+  return new Promise(function(res, rej){
+    window.__nirsBiteReady = function(){ res(); };
+    window.gm_authFailure = function(){ rej(new Error('AUTH')); };
+    var s=document.createElement('script');
+    s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+
+          '&libraries=geometry&v=weekly&language=en&region=US&callback=__nirsBiteReady';
+    s.async=true; s.defer=true;
+    s.onerror=function(){ rej(new Error('NET')); };
+    document.head.appendChild(s);
+    setTimeout(function(){ if(!S.ready) rej(new Error('TIMEOUT')); }, 15000);
+  });
+}
+
+function initGame(){
+  S.ready = true;
+  S.sph = google.maps.geometry.spherical;
+  S.dir = new google.maps.DirectionsService();
+
+  var start = curStop();
+  var p0 = new google.maps.LatLng(start.lat, start.lng);
+
+  S.pano = new google.maps.StreetViewPanorama($('pano'), {
+    position: p0,
+    pov: {heading:0, pitch:-6},
+    zoom: 0.85,
+    disableDefaultUI: true,
+    linksControl: false,
+    panControl: false,
+    zoomControl: false,
+    addressControl: false,
+    fullscreenControl: false,
+    enableCloseButton: false,
+    showRoadLabels: false,
+    motionTracking: false,
+    motionTrackingControl: false,
+    clickToGo: false,
+    scrollwheel: false
+  });
+
+  S.mini = new google.maps.Map($('miniMap'), {
+    center: p0, zoom: 16,
+    disableDefaultUI: true, gestureHandling: 'none', keyboardShortcuts: false,
+    clickableIcons: false, styles: MAP_STYLE, backgroundColor: '#0b1020'
+  });
+
+  S.destMk = new google.maps.Marker({
+    map: S.mini, position: p0, zIndex: 5,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE, scale: 7,
+      fillColor:'#ffb300', fillOpacity:1, strokeColor:'#05060a', strokeWeight:3
+    }
+  });
+  S.line = new google.maps.Polyline({
+    map: S.mini, path: [], strokeColor:'#c8ff2e', strokeOpacity:.95, strokeWeight:5, zIndex:3
+  });
+
+  S.pano.addListener('pano_changed', function(){
+    var loc = S.pano.getLocation();
+    if(loc){
+      $('street').textContent = loc.description || loc.shortDescription || 'NEW YORK CITY';
+      if(loc.latLng){ S.mini.setCenter(loc.latLng); }
+    }
+  });
+  S.pano.addListener('pov_changed', function(){
+    if(S.playing) return;
+    var h = S.pano.getPov().heading;
+    $('radarRot').style.transform = 'rotate(' + (-h) + 'deg)';
+  });
+
+  renderDayTabs();
+  selectDay(todayIndex(), true);
+  setTimeout(function(){ big('MISSION START'); sfxStart(); }, 700);
+}
+
+function todayIndex(){
+  var now=new Date();
+  if(now.getFullYear()!==S.trip.year) return 0;
+  var key=(now.getDate())+'.'+(now.getMonth()+1);
+  for(var i=0;i<S.trip.days.length;i++){ if(S.trip.days[i].d===key) return i; }
+  return 0;
+}
+
+/* ============================================================
+   HUD + NAVIGATION
+   ============================================================ */
+function renderDayTabs(){
+  var wrap=$('dayTabs'), h='', ti=todayIndex(), now=new Date();
+  var isTripYear = now.getFullYear()===S.trip.year;
+  var todayKey = now.getDate()+'.'+(now.getMonth()+1);
+  S.trip.days.forEach(function(d,i){
+    var today = isTripYear && d.d===todayKey;
+    h += '<button data-day="'+i+'" class="'+(today?'today':'')+'">'+
+         esc(d.d)+'<small>'+esc(d.code)+'</small></button>';
+  });
+  wrap.innerHTML=h;
+  Array.prototype.forEach.call(wrap.querySelectorAll('button'), function(b){
+    b.onclick=function(){ selectDay(+b.dataset.day); };
+  });
+}
+
+function selectDay(i, silent){
+  stopPlay();
+  S.dayIdx = i; S.stopIdx = 0;
+  Array.prototype.forEach.call($('dayTabs').querySelectorAll('button'), function(b){
+    var on = +b.dataset.day===i;
+    b.classList.toggle('active', on);
+    if(on){ var w=$('dayTabs');
+      w.scrollLeft = b.offsetLeft - (w.clientWidth - b.offsetWidth)/2; }
+  });
+  renderStopList();
+  jumpToStop(0, true);
+  if(!silent){ toast('יום ' + curDay().d + ' — ' + curDay().title); }
+}
+
+function renderStopList(){
+  var day=curDay(), h='';
+  day.stops.forEach(function(s,j){
+    var c=cfg(s.mode);
+    var gq = encodeURIComponent(s.q);
+    var dirUrl = 'https://www.google.com/maps/dir/?api=1&destination='+gq+'&travelmode='+c.gmode;
+    var svUrl  = 'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+s.lat+','+s.lng;
+    h += '<div class="stopCard'+(j===S.stopIdx?' active':'')+'" data-stop="'+j+'">'+
+      '<div class="row1"><span class="time">'+esc(s.t)+'</span>'+
+        '<span class="mode '+c.cls+'">'+esc(c.label)+'</span></div>'+
+      '<h4>'+esc(s.name)+'</h4>'+
+      '<div class="he-addr">'+esc(s.addr)+'</div>'+
+      '<div class="he-eat">🍽 '+esc(s.eat)+'</div>'+
+      '<div class="he-why">'+esc(s.why)+'</div>'+
+      '<div class="go">'+
+        '<a href="'+dirUrl+'" target="_blank" rel="noopener">🧭 Directions</a>'+
+        '<a href="'+svUrl+'" target="_blank" rel="noopener">👁 Street View</a>'+
+      '</div></div>';
+  });
+  $('stopList').innerHTML=h;
+  Array.prototype.forEach.call($('stopList').querySelectorAll('.stopCard'), function(card){
+    card.onclick=function(e){
+      if(e.target.tagName==='A') return;
+      jumpToStop(+card.dataset.stop);
+      closeDrawer();
+    };
+  });
+}
+
+function renderHUD(){
+  var day=curDay(), s=curStop(), nx=nextStop(), c=cfg(nx? nx.mode : s.mode);
+  $('mTitle').textContent = day.title;
+  $('mSub').textContent = day.hood;
+  $('sDay').textContent = day.d;
+  $('sTime').textContent = s.t;
+
+  var pips='';
+  day.stops.forEach(function(_,j){
+    pips += '<i class="'+(j<S.stopIdx?'done':(j===S.stopIdx?'now':''))+'"></i>';
+  });
+  $('pips').innerHTML=pips;
+
+  if(nx){
+    $('oTag').textContent='NEXT STOP';
+    $('oName').textContent=nx.name;
+    $('oAddr').textContent=nx.addr+'  ·  '+nx.t;
+    $('oEat').textContent='🍽 '+nx.eat;
+    $('oWhy').textContent=nx.why;
+    $('oMode').textContent=c.label;
+    $('btnPlay').disabled=false; $('btnSkip').disabled=false; $('btnNext').disabled=false;
+    $('btnPlay').innerHTML=PLAY_HTML;
+  }else{
+    $('oTag').textContent='FINAL STOP';
+    $('oName').textContent=s.name;
+    $('oAddr').textContent=s.addr+'  ·  '+s.t;
+    $('oEat').textContent='🍽 '+s.eat;
+    $('oWhy').textContent=s.why;
+    $('oMode').textContent='—';
+    $('oDist').textContent='—'; $('oEta').textContent='—';
+    $('btnPlay').disabled=true; $('btnSkip').disabled=true; $('btnNext').disabled=true;
+  }
+  $('btnPrev').disabled = S.stopIdx===0;
+
+  Array.prototype.forEach.call($('stopList').querySelectorAll('.stopCard'), function(card){
+    card.classList.toggle('active', +card.dataset.stop===S.stopIdx);
+  });
+  if(nx) preview(nx);
+}
+
+/* ============================================================
+   ROUTING + PLAYBACK
+   ============================================================ */
+var routeCache = {};
+function routeKey(a,b,m){ return a+'|'+b+'|'+m; }
+
+function getRoute(from, to, mode){
+  var tm = (mode==='TRANSIT') ? 'WALKING' : mode;
+  var k = routeKey(from.q, to.q, tm);
+  if(routeCache[k]) return Promise.resolve(routeCache[k]);
+  return new Promise(function(res, rej){
+    S.dir.route({
+      origin: from.q, destination: to.q,
+      travelMode: google.maps.TravelMode[tm]
+    }, function(r, status){
+      if(status === 'OK' && r && r.routes && r.routes.length){ routeCache[k]=r; res(r); }
+      else rej(new Error(status||'ROUTE_FAIL'));
+    });
+  });
+}
+
+function densePath(result){
+  var pts=[], legs=result.routes[0].legs, i, j, k;
+  for(i=0;i<legs.length;i++){
+    for(j=0;j<legs[i].steps.length;j++){
+      var sp = legs[i].steps[j].path || legs[i].steps[j].lat_lngs || [];
+      for(k=0;k<sp.length;k++) pts.push(sp[k]);
+    }
+  }
+  if(pts.length<2) pts = result.routes[0].overview_path.slice();
+  return pts;
+}
+
+function preview(nx){
+  if(!S.dir || !S.sph) return;
+  var from = curStop();
+  getRoute(from, nx, nx.mode).then(function(r){
+    var leg = r.routes[0].legs[0];
+    var km = leg.distance ? (leg.distance.value/1000) : 0;
+    $('oDist').textContent = km<1 ? Math.round(km*1000)+' מ׳' : km.toFixed(1)+' ק״מ';
+    $('oEta').textContent  = leg.duration ? leg.duration.text.replace('mins','דק׳').replace('min','דק׳').replace('hours','ש׳').replace('hour','ש׳') : '—';
+    S.line.setPath(r.routes[0].overview_path);
+    S.destMk.setPosition(leg.end_location);
+  }).catch(function(){
+    $('oDist').textContent='—'; $('oEta').textContent='—';
+    S.line.setPath([]);
+  });
+}
+
+function panPovTo(target, dur){
+  var startH = S.pano.getPov().heading;
+  var d = normAng(target - startH), t0 = performance.now();
+  cancelAnimationFrame(S.povRaf);
+  function step(now){
+    var k = Math.min(1,(now-t0)/dur);
+    var e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+    S.pano.setPov({heading: startH + d*e, pitch: S.pitch});
+    $('radarRot').style.transform = 'rotate(' + (-(startH + d*e)) + 'deg)';
+    if(k<1) S.povRaf = requestAnimationFrame(step);
+  }
+  S.povRaf = requestAnimationFrame(step);
+}
+
+function jumpToStop(j, silent){
+  stopPlay();
+  var day=curDay();
+  S.stopIdx = Math.max(0, Math.min(day.stops.length-1, j));
+  var s = curStop(), nx = nextStop();
+  var pos = new google.maps.LatLng(s.lat, s.lng);
+  var c = cfg(nx ? nx.mode : s.mode);
+
+  S.pitch = -6;
+  if(S.pano){
+    S.pano.setPosition(pos);
+    S.pano.setZoom(0.85);
+    var h = nx ? S.sph.computeHeading(pos, new google.maps.LatLng(nx.lat, nx.lng)) : S.pano.getPov().heading;
+    S.heading = h;
+    S.pano.setPov({heading:h, pitch:-6});
+    $('radarRot').style.transform='rotate('+(-h)+'deg)';
+    S.mini.setCenter(pos); S.mini.setZoom(16);
+    S.destMk.setPosition(pos);
+    S.line.setPath([]);
+  }
+  setActor('idle'); speedlines(false); $('speedo').classList.remove('on');
+  renderHUD();
+  if(!silent) toast(s.t + ' · ' + s.name);
+}
+
+function playRoute(){
+  var to = nextStop();
+  if(!to){ toast('סוף היום. Eat the damn thing.'); return; }
+  var from = curStop(), c = cfg(to.mode);
+  loader(true, 25);
+  $('btnPlay').innerHTML='⏸ <span class="bl">STOP</span>';
+
+  getRoute(from, to, to.mode).then(function(r){
+    loader(true, 70);
+    var pts = densePath(r);
+    S.frames = resample(pts, c.step);
+    S.fi = 0; S.playing = true; S.mode = to.mode; S.pitch = c.pitch;
+    S.line.setPath(r.routes[0].overview_path);
+    S.destMk.setPosition(r.routes[0].legs[0].end_location);
+    S.pano.setZoom(c.zoom);
+    setActor(c.state, c.cyc);
+    speedlines(c.state!=='walk');
+    if(c.state!=='walk'){ $('speedo').classList.add('on'); }
+    S.mini.setZoom(c.state==='car' ? 15 : 16);
+    loader(false);
+    big(c.state==='car' ? 'DRIVE' : (c.state==='bike' ? 'RIDE' : 'GO'));
+    sfxStart();
+    tick();
+  }).catch(function(err){
+    loader(false); S.playing=false; $('btnPlay').innerHTML=PLAY_HTML;
+    toast('לא הצלחתי לחשב מסלול (' + (err.message||'') + '). קופץ ישר לתחנה.');
+    setTimeout(function(){ arrive(); }, 900);
+  });
+}
+
+function tick(){
+  if(!S.playing) return;
+  var n = S.frames.length;
+  if(S.fi >= n){ arrive(); return; }
+  var c = cfg(S.mode);
+  var p = S.frames[S.fi];
+  var q = S.frames[Math.min(S.fi+1, n-1)];
+  var h = (S.fi+1 < n) ? S.sph.computeHeading(p, q) : S.heading;
+  S.heading = h;
+
+  S.pano.setPosition(p);
+  S.mini.setCenter(p);
+  panPovTo(h, c.ms);
+
+  if(c.state!=='walk'){
+    var jitter = c.kmh + Math.round((Math.random()-.5)*7);
+    $('spdN').textContent = Math.max(0, jitter);
+  }
+  if(S.fi % 2 === 0) sfxStep();
+
+  var pct = Math.round((S.fi/n)*100);
+  $('oTag').textContent = 'EN ROUTE ' + pct + '%';
+
+  S.fi++;
+  S.timer = setTimeout(tick, c.ms);
+}
+
+function stopPlay(){
+  S.playing=false; clearTimeout(S.timer); cancelAnimationFrame(S.povRaf);
+  speedlines(false); $('speedo').classList.remove('on');
+  var b=$('btnPlay'); if(b) b.innerHTML=PLAY_HTML;
+}
+
+function arrive(){
+  stopPlay();
+  var to = nextStop();
+  if(!to){ return; }
+  S.stopIdx++;
+  var s = curStop();
+  var pos = new google.maps.LatLng(s.lat, s.lng);
+  S.pano.setPosition(pos);
+  S.pano.setZoom(0.85);
+  S.pitch=-6;
+  setActor('idle');
+  shake(); sfxPassed();
+  $('passedSub').textContent = s.t + ' · ' + s.name.toUpperCase();
+  $('passedEat').textContent = '🍽 ' + s.eat;
+  $('passed').classList.add('show');
+  renderHUD();
+}
+
+/* ============================================================
+   DRAWER + CONTROLS
+   ============================================================ */
+function openDrawer(){ $('drawer').classList.add('open'); }
+function closeDrawer(){ $('drawer').classList.remove('open'); }
+
+function wire(){
+  $('btnDays').onclick = function(){ $('drawer').classList.toggle('open'); };
+  $('btnCloseDrawer').onclick = closeDrawer;
+
+  $('btnPlay').onclick = function(){ if(S.playing) stopPlay(); else playRoute(); };
+  $('btnSkip').onclick = function(){ stopPlay(); arrive(); };
+  $('btnNext').onclick = function(){ jumpToStop(S.stopIdx+1); };
+  $('btnPrev').onclick = function(){ jumpToStop(S.stopIdx-1); };
+
+  $('btnMap').onclick = function(){
+    var to = nextStop() || curStop(), from = curStop();
+    var c = cfg(to.mode);
+    var url='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from.q)+
+            '&destination='+encodeURIComponent(to.q)+'&travelmode='+c.gmode;
+    window.open(url,'_blank','noopener');
+  };
+
+  $('btnSfx').onclick = function(){
+    S.sfx=!S.sfx;
+    try{ localStorage.setItem(LS.sfx, S.sfx?'1':'0'); }catch(e){}
+    $('btnSfx').textContent = S.sfx ? '🔊' : '🔇';
+    if(S.sfx) beep(660,.1,'square');
+  };
+
+  $('btnPassedNext').onclick = function(){
+    $('passed').classList.remove('show');
+    if(nextStop()){ setTimeout(playRoute, 260); }
+    else { big('DAY COMPLETE'); toast('סיימת את היום. עוברים ליום הבא מהתפריט.'); }
+  };
+
+  document.addEventListener('keydown', function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    if(e.code==='Space'){ e.preventDefault(); $('btnPlay').click(); }
+    if(e.code==='ArrowRight'){ jumpToStop(S.stopIdx+1); }
+    if(e.code==='ArrowLeft'){ jumpToStop(S.stopIdx-1); }
+    if(e.code==='KeyM'){ $('btnDays').click(); }
+    if(e.code==='Escape'){ closeDrawer(); $('passed').classList.remove('show'); }
+  });
+
+  /* import / reset in the drawer header */
+  var hdr = $('drawer').querySelector('header');
+  var tools = document.createElement('div');
+  tools.style.cssText='display:flex;gap:6px';
+  tools.innerHTML =
+    '<button id="btnImport" title="ייבוא מסלול">⇪</button>'+
+    '<button id="btnReset" title="חזרה למסלול המקורי">↺</button>';
+  hdr.insertBefore(tools, hdr.querySelector('button'));
+  $('btnImport').onclick = importTrip;
+  $('btnReset').onclick = function(){
+    if(!confirm('לחזור למסלול המקורי? הייבוא שלך יימחק.')) return;
+    try{ localStorage.removeItem(LS.trip); }catch(e){}
+    location.reload();
+  };
+}
+
+function importTrip(){
+  var tpl = JSON.stringify({city:'New York',year:S.trip.year,days:[{
+    d:'24.8',code:'LES',title:'PASTRAMI RUN',hood:'Lower East Side',
+    stops:[{t:'12:30',mode:'WALKING',name:"Katz's Delicatessen",addr:'205 E Houston St',
+      q:"Katz's Delicatessen, New York, NY",lat:40.72224,lng:-73.98733,
+      eat:'פסטרמי על ריי',why:'ההסבר של ניר'}]}]}, null, 1);
+  var raw = prompt(
+    'הדבק כאן JSON של המסלול (מבנה זהה למה שמופיע כאן).\n' +
+    'mode = WALKING / BICYCLING / DRIVING / TRANSIT\n\n' + tpl, '');
+  if(!raw) return;
+  try{
+    var t = JSON.parse(raw);
+    if(!t.days || !t.days.length) throw new Error('אין days');
+    t.days.forEach(function(d){
+      if(!d.stops || !d.stops.length) throw new Error('יום בלי stops');
+      d.stops.forEach(function(s){
+        if(typeof s.lat!=='number'||typeof s.lng!=='number') throw new Error('חסר lat/lng ב-'+(s.name||'?'));
+        if(!s.q) s.q = (s.name||'') + ', ' + (s.addr||'') + ', New York, NY';
+      });
+    });
+    localStorage.setItem(LS.trip, JSON.stringify(t));
+    toast('המסלול יובא. טוען מחדש…');
+    setTimeout(function(){ location.reload(); }, 900);
+  }catch(e){
+    alert('ה-JSON לא תקין: ' + e.message);
+  }
+}
+
+/* ============================================================
+   BOARD MODE (בלי מפתח)
+   ============================================================ */
+function renderBoard(){
+  var h='';
+  S.trip.days.forEach(function(d){
+    h += '<div style="grid-column:1/-1;margin-top:8px">'+
+         '<div style="font-family:Anton;font-size:20px;color:#ffd447">'+esc(d.d)+' — '+esc(d.title)+
+         '</div><div style="font-family:Heebo;font-size:12px;color:#7f8aa3">'+esc(d.hood)+'</div></div>';
+    d.stops.forEach(function(s){
+      var c=cfg(s.mode), gq=encodeURIComponent(s.q);
+      h += '<div class="stopCard">'+
+        '<div class="row1"><span class="time">'+esc(s.t)+'</span>'+
+        '<span class="mode '+c.cls+'">'+esc(c.label)+'</span></div>'+
+        '<h4>'+esc(s.name)+'</h4><div class="he-addr">'+esc(s.addr)+'</div>'+
+        '<div class="he-eat">🍽 '+esc(s.eat)+'</div>'+
+        '<div class="he-why">'+esc(s.why)+'</div>'+
+        '<div class="go">'+
+          '<a href="https://www.google.com/maps/dir/?api=1&destination='+gq+'&travelmode='+c.gmode+'" target="_blank" rel="noopener">🧭 Directions</a>'+
+          '<a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+s.lat+','+s.lng+'" target="_blank" rel="noopener">👁 Street View</a>'+
+        '</div></div>';
+    });
+  });
+  $('boardGrid').innerHTML=h;
+  $('board').classList.add('show');
+  $('hud').style.display='none';
+  $('actor').style.display='none';
+  $('shadow').style.display='none';
+  $('btnBoardKey').onclick=function(){
+    $('board').classList.remove('show');
+    $('boot').classList.remove('gone');
+  };
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function loadTrip(){
+  var t=null;
+  try{ var raw=localStorage.getItem(LS.trip); if(raw) t=JSON.parse(raw); }catch(e){}
+  S.trip = (t && t.days && t.days.length) ? t : TRIP_DEFAULT;
+  if(!S.trip.year) S.trip.year = TRIP_DEFAULT.year;
+}
+
+function start(key){
+  $('keyErr').textContent='';
+  loader(true, 10);
+  loadMaps(key).then(function(){
+    try{ localStorage.setItem(LS.key, key); }catch(e){}
+    $('boot').classList.add('gone');
+    loader(true, 60);
+    initGame();
+    loader(false);
+  }).catch(function(err){
+    loader(false);
+    var m = err.message==='AUTH'
+      ? 'המפתח נדחה. ודאי ש-Maps JavaScript API מופעל בפרויקט, שיש חשבון חיוב פעיל, ושה-referrer של הדומיין הזה מורשה.'
+      : (err.message==='NET' ? 'לא הצלחתי לטעון את Google Maps. בדקי חיבור.' : 'הטעינה נתקעה. נסי שוב.');
+    $('keyErr').textContent = m;
+    $('boot').classList.remove('gone');
+    try{ localStorage.removeItem(LS.key); }catch(e){}
+  });
+}
+
+function boot(){
+  buildActor();
+  buildSpeedlines();
+  loadTrip();
+  wire();
+
+  try{ S.sfx = localStorage.getItem(LS.sfx)!=='0'; }catch(e){}
+  $('btnSfx').textContent = S.sfx ? '🔊' : '🔇';
+
+  renderDayTabsSafe();
+
+  var urlKey=null;
+  try{
+    var u = new URL(location.href);
+    urlKey = u.searchParams.get('key');
+    if(urlKey){
+      localStorage.setItem(LS.key, urlKey);
+      u.searchParams.delete('key');
+      history.replaceState(null,'',u.pathname + (u.search||'') + u.hash);
+    }
+  }catch(e){}
+
+  var saved=null;
+  try{ saved = urlKey || localStorage.getItem(LS.key); }catch(e){ saved = urlKey; }
+
+  $('btnStart').onclick=function(){
+    var k=$('keyInput').value.trim();
+    if(k.length<20){ $('keyErr').textContent='המפתח נראה קצר מדי.'; return; }
+    start(k);
+  };
+  $('keyInput').addEventListener('keydown',function(e){ if(e.key==='Enter') $('btnStart').click(); });
+  $('btnNoKey').onclick=function(){ $('boot').classList.add('gone'); renderBoard(); };
+
+  if(saved){ $('keyInput').value=saved; start(saved); }
+}
+
+/* the drawer needs day tabs even before Maps loads (board mode) */
+function renderDayTabsSafe(){
+  try{ renderDayTabs(); }catch(e){}
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+})();
+</script>
+</body>
+</html>

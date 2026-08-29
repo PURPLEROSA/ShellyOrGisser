@@ -1,0 +1,19 @@
+{
+  "name": "NIR'S BITE — Eat the damn thing",
+  "short_name": "NIR'S BITE",
+  "description": "משחק רחוב בסגנון GTA על מסלול האוכל של ניר בניו יורק, 24–31.8",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#05060a",
+  "theme_color": "#05060a",
+  "categories": ["games", "travel", "food"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
