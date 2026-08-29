@@ -346,7 +346,8 @@ html[dir="rtl"] .drawer{transform:translateX(100%)}
       <p class="sub" style="margin-bottom:15px">התיאור הזה נכנס לכל פרומפט שהמעבדה מייצרת — ככה הדמות נשארת אותה דמות בכל המיקומים.</p>
       <div class="field"><label>שם הדמות</label><input id="s-name" placeholder="SHELLY"></div>
       <div class="field"><label>תיאור פיזי קבוע</label><textarea id="s-desc" rows="3" placeholder="a woman in her 30s, long wavy honey-blonde hair, warm hazel eyes, defined brows, subtle freckles across the nose"></textarea></div>
-      <div class="field"><label>לוק / סטיילינג ברירת מחדל</label><textarea id="s-outfit" rows="2" placeholder="oversized cream linen blazer, white tank, straight-leg denim, tan leather boots"></textarea></div>
+      <div class="field"><label>פריטים שתמיד עלייך (Signature)</label><textarea id="s-outfit" rows="2" placeholder="stacked gold rings, a fine gold chain with a small cross pendant, small gold hoops"></textarea></div>
+      <div class="hint" style="margin:-7px 0 13px">רק מה שחוזר בכל תמונה. את התלבושת עצמה המעבדה מרכיבה לכל מיקום בנפרד.</div>
       <div class="field"><label>חתימה קולנועית</label><input id="s-look" placeholder="shot on 35mm, shallow depth of field, natural warm light, editorial realism"></div>
       <button class="btn sm" id="s-save">שמירה</button>
       <div class="divider"></div>
@@ -845,7 +846,7 @@ function buildPrompt(l,time,shot){
   const a=AVATAR||{};
   const name=(a.name||'THE SUBJECT').toUpperCase();
   const desc=a.desc||'a woman in her 30s, long wavy honey-blonde hair, warm hazel eyes';
-  const outfit=a.outfit||'contemporary casual styling';
+  const outfit=(l.outfit&&l.outfit.trim())||suggestOutfit(l);
   const look=a.look||'shot on 35mm, shallow depth of field, natural light, editorial realism';
   const place=[l.name,l.address].filter(Boolean).join(' — ');
   const geo=r5(l.lat)+', '+r5(l.lng);
@@ -853,7 +854,7 @@ function buildPrompt(l,time,shot){
   return [
 '[CHARACTER LOCK] '+name+' — '+desc+'. Same face, same bone structure, same hair in every frame. Identity must stay pixel-consistent.',
 ((a.refs&&a.refs.length)?'[IDENTITY REFERENCE] '+a.refs.length+' reference photographs of '+name+' are attached. Treat them as the single source of truth for the face — bone structure, eye shape and spacing, nose, lips, jawline, hairline. Do not beautify, slim, or age the face away from the references.':''),
-'[WARDROBE] '+outfit+'.',
+'[WARDROBE] '+outfit.trim().replace(/\.+$/,'')+'.',
 '[LOCATION] '+place+', USA. Real street-level geography at '+geo+'. Reproduce the actual architecture, signage, road surface, vegetation and skyline of this exact spot.',
 '[CAMERA] '+(SHOTS[shot]||SHOTS.full)+'. Street View reference framing: '+frame+' — match this exact vantage point and eye level.',
 '[LIGHT] '+(TIMES[time]||TIMES['golden-pm'])+'.',
@@ -861,6 +862,115 @@ function buildPrompt(l,time,shot){
 (l.notes?'[DIRECTION] '+l.notes.replace(/\s+/g,' ').trim()+'.':''),
 '[NEGATIVE] plastic skin, waxy retouching, extra fingers, warped face, duplicated limbs, text artifacts, watermark, oversaturated HDR, cartoon, illustration, 3D render.'
   ].filter(Boolean).join('\n\n');
+}
+
+/* ============================================================
+   WARDROBE ENGINE — the outfit is born from the location.
+   Archetype is read from the place's own name, address and tags;
+   every look is overridable per location.
+   ============================================================ */
+const ARCH={
+  coastal:{label:'חוף',kw:['beach','ocean','pier','boardwalk','surf','bay','coast','malibu','venice','santa monica','harbor','marina','shore'],
+    light:'salt haze and bounced sand light',
+    looks:[
+      'a sun-bleached ribbed tank tucked into low-slung wide cotton trousers the colour of wet sand, an oversized linen shirt worn open and moving in the wind, bare ankles, worn leather sandals',
+      'a faded vintage surf tee cropped at the waist, high-rise raw denim shorts, an unbuttoned oversized chambray shirt slipping off one shoulder, canvas sneakers held in one hand',
+      'a slip dress in washed oyster silk under a heavy cream fisherman knit, the knit pushed up at the sleeves, flat leather slides, hair salt-textured',
+      'a black one-piece swimsuit as a bodysuit under wide ecru linen trousers, a woven straw tote, gold jewellery catching the low sun']},
+  desert:{label:'מדבר',kw:['desert','joshua','canyon','valley','dune','mojave','sedona','painted','arches','moab','badlands','white sands','palm springs'],
+    light:'hard low sun and long shadows on dust',
+    looks:[
+      'a rust suede western jacket with fringe over a thin white ribbed tank, straight dark denim, tan leather cowboy boots dulled with dust, a silver-and-turquoise cuff',
+      'a floor-length sand-coloured slip dress in heavy crepe, a cropped shearling jacket against the dropping temperature, worn brown boots, hem moving in the dry wind',
+      'a cream boilersuit with the sleeves rolled to the elbow and the zip low, a wide leather belt, scuffed hiking boots, a bandana knotted at the throat',
+      'an oversized black band tee, a long khaki utility skirt with a front slit, ankle boots, a canvas jacket tied at the waist']},
+  retro:{label:'רטרו אמריקאי',kw:['route 66','diner','motel','neon','vintage','drive-in','bowling','americana','vegas','memphis','nashville','sign'],
+    light:'neon spill and warm tungsten',
+    looks:[
+      'a navy varsity jersey worn oversized over baggy light-wash 90s denim, tan work boots, stacked gold rings, the jersey number reading clearly',
+      'a cherry-red satin bomber over a white ribbed tank, high-waisted cuffed jeans, white leather sneakers, a small vintage scarf at the neck',
+      'a leopard-print silk shirt half-tucked into black cigarette trousers, pointed leather boots, oversized gold hoops under neon light',
+      'a cropped leather moto jacket, a slip skirt in oxblood satin, sheer black socks in loafers, deliberately mismatched with the setting']},
+  urban:{label:'עירוני',kw:['downtown','times square','wall','financial','midtown','skyline','avenue','broadway','plaza','manhattan','chicago','subway','bridge','soho','brooklyn'],
+    light:'hard reflected light between towers',
+    looks:[
+      'an oversized charcoal wool blazer worn on bare shoulders over a fine black tank, wide tailored trousers pooling over square-toed boots, a structured leather bag',
+      'a long camel trench left open and caught by the draft between buildings, a grey marl hoodie underneath, straight indigo denim, low white sneakers',
+      'a black leather trench, matte black tailored trousers, a fine silk polo, sunglasses, everything monochrome against the city colour',
+      'a boxy pinstripe suit sized up two, a plain white cotton tank beneath, chunky loafers, a single gold chain']},
+  outdoor:{label:'טבע',kw:['mountain','forest','park','trail','lake','yosemite','redwood','falls','river','glacier','peak','national','tahoe','aspen grove'],
+    light:'cool filtered daylight through canopy',
+    looks:[
+      'a faded forest-green technical anorak over a cream waffle-knit henley, tapered canvas trousers, broken-in leather hiking boots, a small worn backpack',
+      'a heavy oatmeal cable knit, dark green cargo trousers cinched at the ankle, wool socks over boots, a flannel tied at the waist',
+      'a rust-orange fleece half-zip, black leggings, a light shell jacket knotted across the chest, trail runners caked in dirt',
+      'a long waxed cotton coat in olive, a thick ribbed polo neck, straight dark jeans, sturdy boots, hair pulled back']},
+  rustic:{label:'כפרי',kw:['vineyard','farm','ranch','barn','orchard','field','county','prairie','napa','sonoma','hill','meadow','stable'],
+    light:'soft golden dust in the air',
+    looks:[
+      'a butter-yellow cotton prairie dress with a low back, a denim jacket over the shoulders, tan leather boots, hair loose',
+      'a white oversized poplin shirt half-tucked into faded straight jeans, a woven belt, worn riding boots, sleeves rolled high',
+      'a chocolate suede waistcoat over a fine cream knit, wide corduroy trousers, boots, a leather satchel',
+      'a washed-linen jumpsuit in olive with the top unbuttoned over a tank, canvas espadrilles, gold at the wrists']},
+  refined:{label:'מוסדי / תרבות',kw:['museum','gallery','theater','theatre','opera','library','hall','institute','memorial','monument','capitol','cathedral','court'],
+    light:'even architectural daylight',
+    looks:[
+      'a floor-length column dress in deep bottle green, a slim leather belt, minimal gold, flat pointed shoes, posture doing the work',
+      'a sculptural cream coat worn closed as a dress, sheer black tights, polished loafers, hair severe and straight',
+      'a black polo neck tucked into a long pleated skirt in charcoal, a fine gold chain, low heeled boots',
+      'a tailored ivory trouser suit with nothing underneath the jacket but a silk camisole, minimal jewellery']},
+  night:{label:'לילה',kw:['bar','club','rooftop','night','lounge','casino','strip','downtown night','speakeasy','venue'],
+    light:'coloured practicals and deep shadow',
+    looks:[
+      'a black slip dress in heavy silk, an oversized vintage leather jacket thrown over it, bare legs, worn boots, gold hoops',
+      'a sheer black long-sleeve top over a bandeau, low wide black trousers, a fine belt chain, everything catching the neon',
+      'a deep-emerald satin shirt half-unbuttoned, tailored black trousers, pointed boots, hair slicked back wet',
+      'a cropped sequinned top under a boxy men’s blazer, straight dark jeans, no jewellery except stacked rings']},
+  street:{label:'סטריט',kw:[],
+    light:'flat daylight',
+    looks:[
+      'an oversized graphic tee, baggy light-wash denim breaking over tan work boots, a fine gold chain, sleeves pushed up',
+      'a cropped zip hoodie, wide track trousers with a side stripe, chunky retro trainers, small tinted sunglasses',
+      'an oversized wool overshirt in faded plaid over a white tank, straight black denim, low sneakers',
+      'a fitted long-sleeve top tucked into wide carpenter jeans, a leather belt, boots, hair straight and loose']}
+};
+const DIRS={
+  auto:'לפי הלוקיישן',
+  street90:'90s Streetwear', western:'Western', editorial:'Minimal Editorial',
+  athleisure:'Athleisure', tailored:'Tailored', evening:'Evening'
+};
+const DIRLOOKS={
+  street90:['an oversized sports jersey over baggy light-wash denim, tan work boots, stacked gold rings',
+            'a cropped puffer over a white ribbed tank, wide cargo trousers, chunky retro trainers, tinted oval sunglasses',
+            'a boxy flannel worn open over a band tee, low-slung jeans, a beanie pushed back'],
+  western:['a fringed suede jacket over a white tank, straight dark denim, tooled leather belt, cowboy boots',
+           'a long denim duster over a cream slip dress, worn brown boots, a silver cuff',
+           'a pearl-snap western shirt tucked into high-waisted jeans, a wide belt, boots, hair loose'],
+  editorial:['a single-shouldered column dress in matte black, no jewellery, flat leather shoes',
+             'an oversized ivory coat worn closed with nothing visible beneath, sharp sunglasses',
+             'a fine grey knit tucked into wide charcoal trousers, one gold chain, minimal shoes'],
+  athleisure:['a cropped tee, mesh running shorts, tube socks and retro trainers, tinted sunglasses',
+              'a zip track jacket half-open over a sports top, wide track trousers, clean white trainers',
+              'a fitted long-sleeve base layer, high-waisted leggings, an oversized windbreaker tied at the waist'],
+  tailored:['an oversized pinstripe suit sized up, a plain tank beneath, chunky loafers',
+            'a cropped structured blazer, wide trousers pooling at the shoe, a fine silk camisole',
+            'a long double-breasted coat worn as a dress, sheer tights, polished boots'],
+  evening:['a heavy silk slip dress with an oversized leather jacket thrown over it, worn boots',
+           'a deep-emerald satin shirt half-unbuttoned into tailored black trousers, pointed boots',
+           'a sequinned cropped top under a men’s blazer, straight dark denim, stacked rings']
+};
+function archOf(l){
+  const hay=[l.name,l.address,(l.tags||[]).join(' ')].join(' ').toLowerCase();
+  for(const k in ARCH){ if(ARCH[k].kw.some(w=>hay.includes(w)))return k; }
+  return 'street';
+}
+function suggestOutfit(l,dir,seed){
+  dir=dir||l.styleDir||'auto'; seed=seed==null?(l.outfitSeed||0):seed;
+  let look;
+  if(dir==='auto'){ const a=ARCH[archOf(l)]; look=a.looks[seed%a.looks.length]; }
+  else { const d=DIRLOOKS[dir]||DIRLOOKS.street90; look=d[seed%d.length]; }
+  const sig=(AVATAR.signature||'').trim();
+  return look+(sig?'. Always present: '+sig:'')+'.';
 }
 
 /* ============================================================
@@ -903,6 +1013,18 @@ function openDrawer(id){
     '<div class="shots" id="shots" style="margin-top:11px"></div>'+
     '<input type="file" id="shot-file" accept="image/*" multiple style="display:none">'+
 
+    '<div class="divider"></div><div class="eyebrow">תלבושת — נולדת מהלוקיישן</div>'+
+    '<div class="row" style="margin:11px 0 9px">'+
+      '<select id="w-dir" style="flex:1 1 150px">'+
+        Object.keys(DIRS).map(k=>'<option value="'+k+'"'+((l.styleDir||'auto')===k?' selected':'')+'>'+DIRS[k]+'</option>').join('')+
+      '</select>'+
+      '<button class="btn ghost sm" id="w-refresh">הצעה אחרת</button>'+
+    '</div>'+
+    '<textarea id="w-text" rows="3" placeholder="התלבושת..."></textarea>'+
+    '<div class="row" style="margin-top:9px"><span class="chip" id="w-src"></span>'+
+      '<button class="btn ghost sm" id="w-reset" style="margin-inline-start:auto">חזרה להצעה</button></div>'+
+    '<div class="hint">המנוע קורא את השם, הכתובת והתגיות של המקום ומרכיב לוק שמתאים לו. "הצעה אחרת" מחליף וריאציה, וכל טקסט שתכתבי גובר.</div>'+
+
     '<div class="divider"></div><div class="eyebrow">Prompt Studio</div>'+
     '<div class="row" style="margin:11px 0">'+
       '<select id="p-time" style="flex:1 1 140px">'+
@@ -922,8 +1044,20 @@ function openDrawer(id){
     $$('#st-pick button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
     cur.status=b.dataset.st;};
   $('#copy-geo').onclick=()=>copy(l.lat+', '+l.lng,'קואורדינטות הועתקו');
+  const wFill=()=>{
+    const over=(cur.outfit||'').trim();
+    $('#w-text').value=over||suggestOutfit(cur);
+    $('#w-src').textContent=over?'נכתב על ידך':'אוטומטי · '+(cur.styleDir&&cur.styleDir!=='auto'?DIRS[cur.styleDir]:ARCH[archOf(cur)].label);
+    $('#w-reset').style.display=over?'inline-flex':'none';
+  };
   const upd=()=>$('#p-out').textContent=buildPrompt(cur,$('#p-time').value,$('#p-shot').value);
   $('#p-time').onchange=upd; $('#p-shot').onchange=upd;
+  $('#w-dir').onchange=e=>{cur.styleDir=e.target.value;cur.outfitSeed=0;cur.outfit='';wFill();upd();};
+  $('#w-refresh').onclick=()=>{cur.outfitSeed=(cur.outfitSeed||0)+1;cur.outfit='';wFill();upd();toast('לוק אחר לאותו מקום');};
+  $('#w-reset').onclick=()=>{cur.outfit='';wFill();upd();};
+  $('#w-text').addEventListener('input',e=>{cur.outfit=e.target.value;
+    $('#w-src').textContent='נכתב על ידך';$('#w-reset').style.display='inline-flex';upd();});
+  wFill();
   ['#d-name','#d-addr','#d-notes'].forEach(s2=>$(s2).addEventListener('input',()=>{
     cur.name=$('#d-name').value; cur.address=$('#d-addr').value; cur.notes=$('#d-notes').value; upd();}));
   upd();
@@ -971,6 +1105,7 @@ $('#dr-save').onclick=()=>{ if(!cur)return;
   cur.address=$('#d-addr').value.trim();
   cur.notes=$('#d-notes').value;
   cur.tags=$('#d-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const wt=$('#w-text'); if(wt&&wt.value.trim()&&wt.value.trim()!==suggestOutfit(cur))cur.outfit=wt.value.trim();
   if(cur.status==='shot'&&!cur.shotAt)cur.shotAt=Date.now();
   persist(); toast('נשמר'); closeDrawer();};
 $('#dr-del').onclick=async()=>{ if(!cur)return;
@@ -995,14 +1130,15 @@ function copy(txt,msg){
    ============================================================ */
 function fillSettings(){
   $('#s-name').value=AVATAR.name||''; $('#s-desc').value=AVATAR.desc||'';
-  $('#s-outfit').value=AVATAR.outfit||''; $('#s-look').value=AVATAR.look||'';
+  $('#s-outfit').value=AVATAR.signature||AVATAR.outfit||''; $('#s-look').value=AVATAR.look||'';
   $('#s-key').value=MAPKEY;
   renderAvatarRefs();
 }
 function saveAvatar(){localStorage.setItem(K_AV,JSON.stringify(AVATAR));}
 $('#s-save').onclick=()=>{
   AVATAR.name=$('#s-name').value.trim(); AVATAR.desc=$('#s-desc').value.trim();
-  AVATAR.outfit=$('#s-outfit').value.trim(); AVATAR.look=$('#s-look').value.trim();
+  AVATAR.signature=$('#s-outfit').value.trim(); delete AVATAR.outfit;
+  AVATAR.look=$('#s-look').value.trim();
   saveAvatar(); toast('ה-Character Lock נשמר');
 };
 
