@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07030f">
+<meta name="description" content="NIR'S BITE — 119 המקומות של ניר, מאנהיים לניו יורק. אוגוסט 2026.">
+<title>NIR'S BITE — THE PLACES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Barlow+Condensed:wght@400;500;600;700&family=Heebo:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#07030f;
+  --ink2:#0e0620;
+  --paper:#f4f1ea;
+  --acc:#ff2d95;          /* set per city at runtime */
+  --acc2:#00e5ff;
+  --grain:.05;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--ink);color:#fff;overflow:hidden}
+body{font-family:'Barlow Condensed',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.he{font-family:'Heebo',system-ui,sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start}
+
+#app{position:fixed;inset:0;overflow:hidden;background:var(--ink)}
+
+/* ===================== film grain + frame ===================== */
+#grain{
+  position:fixed;inset:-60%;z-index:60;pointer-events:none;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+  animation:gr .9s steps(3) infinite;
+}
+@keyframes gr{0%{transform:translate(0,0)}33%{transform:translate(-2%,1.5%)}66%{transform:translate(1.5%,-2%)}100%{transform:translate(0,0)}}
+#vig{position:fixed;inset:0;z-index:55;pointer-events:none;
+  background:radial-gradient(120% 88% at 50% 44%, rgba(0,0,0,0) 40%, rgba(0,0,0,.72) 100%)}
+
+/* ===================== CINEMA ===================== */
+#cinema{position:absolute;inset:0;z-index:10}
+.card{position:absolute;inset:0;opacity:0;pointer-events:none}
+.card.live{opacity:1;pointer-events:auto}
+
+/* the photo plate — duotone, slow push */
+.plate{position:absolute;inset:0;overflow:hidden;background:var(--ink2)}
+.plate .img{
+  position:absolute;inset:-6%;background-size:cover;background-position:center;
+  filter:grayscale(1) contrast(1.28) brightness(.62);
+  transform:scale(1.04);
+}
+.card.live .plate .img{animation:push 14s ease-out forwards}
+@keyframes push{from{transform:scale(1.04) translate(0,0)}to{transform:scale(1.19) translate(-1.6%,-1.2%)}}
+.plate .tone{position:absolute;inset:0;background:var(--acc);mix-blend-mode:color;opacity:.85}
+.plate .lift{position:absolute;inset:0;
+  background:linear-gradient(120deg, rgba(0,229,255,.22), rgba(0,0,0,0) 55%);mix-blend-mode:screen}
+.plate .sink{position:absolute;inset:0;
+  background:linear-gradient(15deg, rgba(4,1,10,.96) 4%, rgba(4,1,10,.55) 38%, rgba(4,1,10,.10) 66%, rgba(4,1,10,.45) 100%)}
+
+/* the designed fallback when no photograph exists — still a poster */
+.plate.blank{
+  background:
+    repeating-linear-gradient(var(--rot,135deg), rgba(255,255,255,.045) 0 2px, rgba(0,0,0,0) 2px 24px),
+    radial-gradient(78% 62% at 74% 16%, color-mix(in srgb, var(--acc) 62%, #000), rgba(0,0,0,0) 60%),
+    radial-gradient(60% 50% at 12% 92%, color-mix(in srgb, var(--acc2) 26%, #000), rgba(0,0,0,0) 58%),
+    linear-gradient(160deg, var(--ink2), #05020c 70%);
+}
+
+/* ===================== type block ===================== */
+.tblock{
+  position:absolute;left:clamp(20px,5vw,84px);bottom:clamp(152px,19vh,208px);
+  right:clamp(20px,5vw,84px);z-index:4;
+  display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);
+  gap:clamp(22px,4vw,64px);align-items:end;
+}
+.tblock .col{min-width:0}
+.tblock .col.r{padding-bottom:6px}
+.rule{height:5px;width:78px;background:var(--acc);box-shadow:0 0 22px var(--acc);margin-bottom:16px;
+  transform-origin:left;}
+.kicker{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;
+  font-size:clamp(11px,1.25vw,14px);letter-spacing:.34em;text-transform:uppercase;font-weight:600;
+}
+.kicker .city{color:var(--acc);text-shadow:0 0 18px color-mix(in srgb, var(--acc) 60%, transparent)}
+.kicker .dot{opacity:.4}
+.kicker .when{color:#cfd6e6}
+.name{
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;text-transform:uppercase;
+  line-height:.88;letter-spacing:-.012em;overflow-wrap:break-word;
+  color:#fff;text-shadow:0 10px 40px rgba(0,0,0,.75), 0 2px 0 rgba(0,0,0,.5);
+  font-size:clamp(30px,5.6vw,92px);
+}
+.name.s1{font-size:clamp(38px,7.2vw,116px)}
+.name.s2{font-size:clamp(32px,5.4vw,88px)}
+.name.s3{font-size:clamp(26px,4.1vw,62px)}
+.name.s4{font-size:clamp(22px,3.1vw,46px);line-height:.98}
+.name em{font-style:normal;color:var(--acc);
+  text-shadow:0 0 40px color-mix(in srgb, var(--acc) 70%, transparent), 0 2px 0 rgba(0,0,0,.5)}
+.name.s4 em,.name.s3 em{text-shadow:0 0 26px color-mix(in srgb, var(--acc) 60%, transparent)}
+.addr{margin-top:12px;font-size:clamp(13px,1.6vw,19px);letter-spacing:.16em;color:#a9b2c6;text-transform:uppercase}
+
+.says{font-size:10.5px;letter-spacing:.42em;font-weight:700;color:var(--acc);
+  text-transform:uppercase;margin-bottom:9px}
+.quote{
+  max-width:none;
+  font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:clamp(14px,1.65vw,21px);line-height:1.62;color:#e8ecf6;font-weight:400;
+}
+.quote b{color:#fff;font-weight:700}
+.dish{
+  display:block;width:fit-content;max-width:100%;margin-inline-start:auto;
+  margin-top:clamp(12px,2vh,18px);padding:11px 16px;
+  border-right:4px solid var(--acc);background:rgba(0,0,0,.46);
+  font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;text-align:start;
+  font-size:clamp(13px,1.5vw,19px);line-height:1.5;color:#ffe6b0;font-weight:700;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+
+/* staggered entrance */
+.card.live .rule  {animation:wipe .62s cubic-bezier(.16,1,.3,1) both}
+.card.live .kicker{animation:rise .62s cubic-bezier(.16,1,.3,1) .06s both}
+.card.live .name  {animation:rise .72s cubic-bezier(.16,1,.3,1) .12s both}
+.card.live .addr  {animation:rise .62s cubic-bezier(.16,1,.3,1) .20s both}
+.card.live .says  {animation:rise .62s cubic-bezier(.16,1,.3,1) .24s both}
+.card.live .quote {animation:rise .62s cubic-bezier(.16,1,.3,1) .28s both}
+.card.live .dish  {animation:rise .62s cubic-bezier(.16,1,.3,1) .36s both}
+.card.live .idx   {animation:fadeIn .9s ease .18s both}
+@keyframes wipe{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:.14}}
+
+/* the index number, big and quiet */
+.idx{
+  position:absolute;right:clamp(16px,3.4vw,54px);top:clamp(74px,11vh,120px);z-index:3;opacity:.14;
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(90px,20vw,300px);line-height:.72;
+  color:#fff;letter-spacing:-.05em;pointer-events:none;
+}
+
+/* ===================== chapter card (a city opens) ===================== */
+#chapter{
+  position:absolute;inset:0;z-index:20;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:6px;
+  background:
+    radial-gradient(85% 60% at 50% 45%, color-mix(in srgb, var(--acc) 26%, transparent), rgba(0,0,0,0) 68%),
+    linear-gradient(160deg,#0d0620,#04010b);
+}
+#chapter.on{display:flex;animation:chIn .5s ease both}
+@keyframes chIn{from{opacity:0}to{opacity:1}}
+#chapter .num{font-size:clamp(11px,1.4vw,15px);letter-spacing:.55em;color:var(--acc);font-weight:700;margin-bottom:14px}
+#chapter .big{
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;text-transform:uppercase;
+  font-size:clamp(46px,12vw,190px);line-height:.82;letter-spacing:-.02em;text-align:center;
+  background:linear-gradient(180deg,#fff 0%,#e7eefb 26%,#93a7c6 48%,#fff 54%,var(--acc) 78%, color-mix(in srgb, var(--acc) 40%, #000) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 14px 40px rgba(0,0,0,.7));
+  animation:chBig .8s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes chBig{from{opacity:0;transform:translateY(34px) scale(.97)}to{opacity:1;transform:none}}
+#chapter .sub{margin-top:16px;font-size:clamp(12px,1.5vw,17px);letter-spacing:.34em;color:#b9c2d6;text-transform:uppercase;
+  animation:rise .7s cubic-bezier(.16,1,.3,1) .18s both}
+#chapter .bar{margin-top:26px;height:4px;width:min(52vw,420px);background:rgba(255,255,255,.12);overflow:hidden}
+#chapter .bar i{display:block;height:100%;width:100%;background:var(--acc);transform-origin:left;
+  animation:wipe 2.6s linear both}
+
+/* ===================== HUD ===================== */
+#hud{position:absolute;inset:0;z-index:30;pointer-events:none}
+#hud button,#hud a{pointer-events:auto}
+
+#brand{
+  position:absolute;left:clamp(16px,3vw,40px);top:clamp(14px,2.4vh,28px);
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(17px,2.1vw,26px);letter-spacing:.04em;
+  line-height:1;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.7);
+}
+#brand small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10.5px;
+  letter-spacing:.42em;color:var(--acc);margin-top:5px;font-weight:600}
+
+#track{
+  position:absolute;left:0;right:0;top:0;height:3px;background:rgba(255,255,255,.10);
+}
+#track i{display:block;height:100%;background:var(--acc);box-shadow:0 0 14px var(--acc);width:0;
+  transition:width .4s linear}
+
+#counter{
+  position:absolute;right:clamp(16px,3vw,40px);top:clamp(14px,2.4vh,28px);text-align:right;
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(15px,1.9vw,22px);color:#fff;line-height:1;
+}
+#counter small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10.5px;
+  letter-spacing:.4em;color:#8e97ab;margin-top:5px;font-weight:600}
+
+#deck{
+  position:absolute;left:50%;bottom:clamp(16px,2.6vh,30px);transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;padding:8px;
+  background:rgba(8,3,18,.72);border:1px solid rgba(255,255,255,.14);border-radius:999px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 18px 50px rgba(0,0,0,.6);
+}
+#deck button{
+  cursor:pointer;border:none;background:transparent;color:#dfe5f2;
+  width:42px;height:42px;border-radius:999px;font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:background .18s,color .18s;
+}
+#deck button:hover{background:rgba(255,255,255,.12);color:#fff}
+#deck button.play{
+  width:52px;height:52px;background:var(--acc);color:#0a0210;font-size:19px;
+  box-shadow:0 0 26px color-mix(in srgb, var(--acc) 65%, transparent);
+}
+#deck button.play:hover{filter:brightness(1.12);background:var(--acc)}
+#deck .lbl{
+  padding:0 14px 0 8px;font-size:12px;letter-spacing:.24em;color:#98a1b6;text-transform:uppercase;
+  white-space:nowrap;font-weight:600;
+}
+
+/* the day rail */
+#rail{
+  position:absolute;left:0;right:0;bottom:clamp(74px,10vh,92px);z-index:29;
+  display:flex;gap:6px;padding:0 clamp(16px,3vw,40px);overflow-x:auto;scrollbar-width:none;
+  pointer-events:auto;-webkit-overflow-scrolling:touch;
+}
+#rail::-webkit-scrollbar{display:none}
+#rail button{
+  flex:0 0 auto;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:rgba(8,3,18,.6);
+  color:#aab3c6;border-radius:999px;padding:6px 13px;font-size:11.5px;letter-spacing:.16em;
+  font-weight:600;text-transform:uppercase;backdrop-filter:blur(10px);white-space:nowrap;
+  transition:background .18s,color .18s,border-color .18s;
+}
+#rail button:hover{color:#fff;border-color:rgba(255,255,255,.34)}
+#rail button.on{background:var(--acc);color:#0a0210;border-color:transparent;
+  box-shadow:0 0 20px color-mix(in srgb, var(--acc) 55%, transparent)}
+
+/* ===================== WALL — every place at once ===================== */
+#wall{
+  position:absolute;inset:0;z-index:40;display:none;overflow-y:auto;overflow-x:hidden;
+  background:linear-gradient(180deg,#0a0418,#05020c);
+}
+#wall.on{display:block;animation:fade .35s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+#wall .wtop{
+  position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:clamp(16px,3vh,26px) clamp(16px,3vw,40px);
+  background:linear-gradient(180deg,rgba(8,3,18,.97),rgba(8,3,18,.86));
+  border-bottom:1px solid rgba(255,255,255,.10);backdrop-filter:blur(16px);
+}
+#wall .wtop h2{font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(20px,3vw,34px);letter-spacing:.02em}
+#wall .wtop h2 span{color:var(--acc)}
+#wall .filters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+#wall .filters button{
+  cursor:pointer;border:1px solid rgba(255,255,255,.16);background:transparent;color:#aab3c6;
+  border-radius:999px;padding:7px 15px;font-size:11.5px;letter-spacing:.2em;font-weight:600;
+  text-transform:uppercase;transition:.18s;
+}
+#wall .filters button:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+#wall .filters button.on{background:#fff;color:#0a0210;border-color:#fff}
+#wall .close{
+  cursor:pointer;border:none;background:var(--acc);color:#0a0210;border-radius:999px;
+  width:40px;height:40px;font-size:17px;
+}
+#grid{
+  display:grid;gap:clamp(10px,1.4vw,18px);padding:clamp(16px,3vw,40px);
+  grid-template-columns:repeat(auto-fill,minmax(258px,1fr));
+}
+.tile{
+  position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer;background:var(--ink2);
+  border:1px solid rgba(255,255,255,.09);
+  transition:transform .3s cubic-bezier(.16,1,.3,1), border-color .3s;
+}
+.tile:hover{transform:translateY(-5px);border-color:color-mix(in srgb, var(--tc) 70%, transparent)}
+.tile .ti{position:absolute;inset:0;background-size:cover;background-position:center;
+  filter:grayscale(1) contrast(1.25) brightness(.6);transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.tile:hover .ti{transform:scale(1.07)}
+.tile .tt{position:absolute;inset:0;background:var(--tc);mix-blend-mode:color;opacity:.85}
+.tile .tg{position:absolute;inset:0;
+  background:linear-gradient(0deg, rgba(3,1,8,.96) 6%, rgba(3,1,8,.35) 46%, rgba(3,1,8,.06) 100%)}
+.tile.blank .ti{
+  background:
+    repeating-linear-gradient(var(--rot,135deg), rgba(255,255,255,.055) 0 2px, rgba(0,0,0,0) 2px 20px),
+    radial-gradient(82% 58% at var(--gx,76%) var(--gy,20%), color-mix(in srgb, var(--tc) 58%, #000), rgba(0,0,0,0) 62%),
+    linear-gradient(160deg,#12082a,#05020c);
+  filter:none;
+}
+.tile.blank .no{font-size:64px;color:color-mix(in srgb, var(--tc) 34%, transparent)}
+.tile.blank .tt{display:none}
+.tile .no{position:absolute;right:10px;top:6px;font-family:'Anton','Arial Narrow',Impact,sans-serif;
+  font-size:52px;line-height:1;color:rgba(255,255,255,.16)}
+.tile .body{position:absolute;left:0;right:0;bottom:0;padding:14px 14px 16px;z-index:2}
+.tile .cty{font-size:10px;letter-spacing:.34em;font-weight:700;color:var(--tc);text-transform:uppercase}
+.tile h3{font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:19px;line-height:1.02;margin:6px 0 5px;
+  text-transform:uppercase;color:#fff}
+.tile .meta{font-size:11.5px;letter-spacing:.14em;color:#98a1b6;text-transform:uppercase}
+.tile .eat{margin-top:8px;font-family:'Heebo',sans-serif;direction:rtl;unicode-bidi:plaintext;
+  text-align:start;font-size:12px;line-height:1.5;color:#ffd9a0;font-weight:700;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile .bar{position:absolute;left:0;top:0;height:3px;width:100%;background:var(--tc);opacity:.9;z-index:3}
+
+/* ===================== INTRO ===================== */
+#intro{
+  position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  background:radial-gradient(80% 55% at 50% 42%, #1a0a33, #05020c 70%);
+}
+#intro.gone{display:none}
+#intro .logo{
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(48px,13.5vw,190px);line-height:.82;
+  letter-spacing:-.02em;text-align:center;
+  background:linear-gradient(180deg,#fff 0%,#eaf1ff 22%,#8fa6c6 46%,#fff 53%,#ffd400 74%,#ff7a18 92%,#a82f08 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(4px 5px 0 #ff2d95) drop-shadow(-3px -3px 0 #00e5ff) drop-shadow(0 20px 60px rgba(255,45,149,.4));
+  animation:chBig 1s cubic-bezier(.16,1,.3,1) both;
+}
+#intro .tag{font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:clamp(13px,2.6vw,26px);letter-spacing:.42em;
+  color:#00e5ff;text-shadow:0 0 26px rgba(0,229,255,.6);animation:rise .8s ease .22s both}
+#intro .sub{font-family:'Heebo',sans-serif;direction:rtl;color:#b6bfd4;font-size:clamp(13px,1.6vw,17px);
+  line-height:1.8;text-align:center;max-width:min(88vw,640px);margin-top:16px;animation:rise .8s ease .34s both}
+#intro .cta{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:rise .8s ease .46s both}
+#intro .cta button{
+  cursor:pointer;border:none;border-radius:999px;padding:15px 30px;
+  font-family:'Anton','Arial Narrow',Impact,sans-serif;font-size:17px;letter-spacing:.06em;
+  background:#ff2d95;color:#0a0210;box-shadow:0 0 34px rgba(255,45,149,.5);transition:.2s;
+}
+#intro .cta button.ghost{background:transparent;color:#dfe5f2;border:1px solid rgba(255,255,255,.28);box-shadow:none}
+#intro .cta button:hover{filter:brightness(1.14);transform:translateY(-2px)}
+#intro .grid3{position:absolute;left:-20%;right:-20%;bottom:0;height:38%;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,45,149,.26) 0 2px, rgba(0,0,0,0) 2px 74px),
+    repeating-linear-gradient(0deg,  rgba(0,229,255,.22) 0 2px, rgba(0,0,0,0) 2px 50px);
+  transform:perspective(340px) rotateX(69deg);transform-origin:50% 100%;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 62%);
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 62%);
+}
+
+/* ===================== phones ===================== */
+@media (max-width:760px){
+  .tblock{left:18px;right:18px;bottom:132px;grid-template-columns:1fr;gap:14px;align-items:start}
+  .tblock .col.r{padding-bottom:0}
+  .says{font-size:9.5px;letter-spacing:.34em;margin-bottom:6px}
+  .name{font-size:clamp(28px,9.6vw,54px)}
+  .quote{font-size:13.5px;max-width:none;
+    display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .dish{font-size:12.5px;max-width:none}
+  .idx{font-size:96px;top:64px;right:12px}
+  #rail{bottom:88px}
+  #deck{gap:4px;padding:6px}
+  #deck button{width:38px;height:38px}
+  #deck button.play{width:46px;height:46px}
+  #deck .lbl{display:none}
+  #grid{grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px;padding:14px}
+  .tile h3{font-size:15px}
+  .tile .no{font-size:36px}
+  .tile .eat{-webkit-line-clamp:2;font-size:11px}
+  #wall .filters{margin-left:0;width:100%}
+  #brand small{letter-spacing:.3em}
+}
+@media (max-width:760px) and (orientation:landscape){
+  .tblock{bottom:96px}
+  .quote{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="cinema"></div>
+
+  <div id="chapter">
+    <div class="num" id="chNum">CHAPTER</div>
+    <div class="big" id="chBig">CITY</div>
+    <div class="sub" id="chSub">—</div>
+    <div class="bar"><i></i></div>
+  </div>
+
+  <div id="hud">
+    <div id="track"><i id="trackFill"></i></div>
+    <div id="brand">NIR'S BITE<small>EAT THE DAMN THING</small></div>
+    <div id="counter"><span id="cNow">1</span><span style="opacity:.35">/119</span><small id="cCity">—</small></div>
+
+    <div id="rail"></div>
+
+    <div id="deck">
+      <button id="bPrev" title="קודם">◀</button>
+      <button id="bPlay" class="play" title="נגן">❚❚</button>
+      <button id="bNext" title="הבא">▶</button>
+      <span class="lbl" id="deckLbl">AUTOPLAY</span>
+      <button id="bWall" title="כל המקומות">▦</button>
+    </div>
+  </div>
+
+  <div id="wall">
+    <div class="wtop">
+      <h2>ALL <span id="wCount">119</span> PLACES</h2>
+      <div class="filters" id="wFilters"></div>
+      <button class="close" id="wClose">✕</button>
+    </div>
+    <div id="grid"></div>
+  </div>
+
+  <div id="intro">
+    <div class="grid3"></div>
+    <div class="logo">NIR'S BITE</div>
+    <div class="tag">EAT THE DAMN THING</div>
+    <div class="sub">
+      119 מקומות. 22 ימים. חמש ערים.<br>
+      המסלול שניר בנה למשפחה, אוגוסט 2026.
+    </div>
+    <div class="cta">
+      <button id="bStart">▶ &nbsp;הפעל</button>
+      <button class="ghost" id="bAll">▦ &nbsp;כל המקומות</button>
+    </div>
+  </div>
+
+  <div id="vig"></div>
+  <div id="grain"></div>
+</div>
+<script>
+(function(){
+"use strict";
+
+var TRIP = {"city":"USA","year":2026,"days":[{"d":"10.8","code":"ANA","title":"TOUCHDOWN","hood":"LAX → Anaheim","stops":[{"t":"16:30","mode":"DRIVING","name":"Los Angeles International Airport","addr":"LAX, Terminal Arrivals","q":"Los Angeles International Airport, Los Angeles, CA","lat":33.9416,"lng":-118.4085,"eat":"כלום. אוכלים כשמגיעים.","why":"נחיתה, ביקורת גבולות ומזוודות. היום הזה נועד להגיע, לאכול ולישון — לא להוכיח כלום."},{"t":"19:30","mode":"DRIVING","name":"Best Western Plus Park Place Inn","addr":"1544 S Harbor Blvd, Anaheim","q":"Best Western Plus Park Place Inn - Mini Suites, 1544 S Harbor Blvd, Anaheim, CA","lat":33.8103,"lng":-117.9186,"eat":"ארוחה קלה ליד המלון. ארוחת בוקר כלולה למחר.","why":"צ׳ק-אין. המלון על הארבור, מרחק הליכה מהשערים — זה כל הרעיון."},{"t":"20:00","mode":"WALKING","name":"Downtown Disney District","addr":"Disneyland Resort, Anaheim","q":"Downtown Disney District, Anaheim, CA","lat":33.8085,"lng":-117.9226,"eat":"משהו קטן, מה שפתוח.","why":"רק אם נשאר כוח. אין חובה — מחר יום ארוך."}]},{"d":"11.8","code":"ANA","title":"GOOFY'S BRUNCH","hood":"Downtown Disney → California Adventure","stops":[{"t":"09:50","mode":"WALKING","name":"Downtown Disney District","addr":"Disneyland Resort, Anaheim","q":"Downtown Disney District, Anaheim, CA","lat":33.8085,"lng":-117.9226,"eat":"קפה ומשהו קטן בלבד — לא לאכול לפני גופי.","why":"סיבוב רגוע: חנויות, תמונות ואווירה. מתחילים לאט."},{"t":"11:45","mode":"WALKING","name":"Goofy's Kitchen","addr":"Disneyland Hotel, 1150 Magic Way, Anaheim","q":"Goofy's Kitchen, Disneyland Hotel, Anaheim, CA","lat":33.8062,"lng":-117.9243,"eat":"בראנץ׳ דמויות — בופה all-you-care-to-enjoy. מגיעים רעבים.","why":"צ׳ק-אין ב-11:45, הזמנה ל-12:00 לארבעה. הדמויות עוברות בין השולחנות."},{"t":"16:00","mode":"WALKING","name":"Disney California Adventure Park","addr":"Disneyland Resort, Anaheim","q":"Disney California Adventure Park, Anaheim, CA","lat":33.808,"lng":-117.919,"eat":"דוכנים לפי האזור. Mobile Order מקצר תור.","why":"פארק הפתיחה. מפעילים Lightning Lane ראשון על Soarin׳ או WEB SLINGERS."},{"t":"17:00","mode":"WALKING","name":"Cars Land","addr":"Disney California Adventure, Anaheim","q":"Cars Land, Disney California Adventure, Anaheim, CA","lat":33.8055,"lng":-117.9175,"eat":"ארוחת ערב מדוכני Cars Land או Avengers Campus.","why":"Mater, Luigi ו-Radiator Springs Racers לפי התור. בלילה זה הדבר הכי יפה בפארק."},{"t":"19:15","mode":"WALKING","name":"Pixar Pier","addr":"Disney California Adventure, Anaheim","q":"Pixar Pier, Disney California Adventure, Anaheim, CA","lat":33.8059,"lng":-117.9204,"eat":"גלידה על המזח.","why":"Toy Story Midway Mania, Little Mermaid ו-Pixar Pal-A-Round — הקרון שלא מתנדנד."}]},{"d":"12.8","code":"ANA","title":"DISNEYLAND","hood":"Disneyland Park — יום מלא","stops":[{"t":"07:30","mode":"WALKING","name":"Main Street, U.S.A.","addr":"Disneyland Park, Anaheim","q":"Main Street U.S.A., Disneyland Park, Anaheim, CA","lat":33.8107,"lng":-117.9189,"eat":"ארוחת בוקר קלה במלון לפני היציאה.","why":"כניסה מוקדמת. מזמינים Lightning Lane ראשון עוד לפני שנכנסים."},{"t":"08:00","mode":"WALKING","name":"Fantasyland","addr":"Disneyland Park, Anaheim","q":"Fantasyland, Disneyland Park, Anaheim, CA","lat":33.8129,"lng":-117.9189,"eat":"עוד לא. שומרים מקום.","why":"Alice in Wonderland ו-it's a small world. פיטר פן רק אם התור קצר."},{"t":"10:00","mode":"WALKING","name":"Star Wars: Galaxy's Edge","addr":"Disneyland Park, Anaheim","q":"Star Wars Galaxy's Edge, Disneyland Park, Anaheim, CA","lat":33.815,"lng":-117.9223,"eat":"Quick Service ב-Docking Bay 7 — ובלו מילק.","why":"Rise of the Resistance ו-Millennium Falcon. שעתיים שלמות, זה שווה את זה."},{"t":"13:15","mode":"WALKING","name":"New Orleans Square","addr":"Disneyland Park, Anaheim","q":"New Orleans Square, Disneyland Park, Anaheim, CA","lat":33.8112,"lng":-117.92,"eat":"בייני מהעגלה.","why":"Pirates of the Caribbean או Haunted Mansion לפי התור. אחר כך חוזרים למלון למזגן."},{"t":"20:00","mode":"WALKING","name":"Sleeping Beauty Castle","addr":"Disneyland Park, Anaheim","q":"Sleeping Beauty Castle, Disneyland Park, Anaheim, CA","lat":33.8121,"lng":-117.9189,"eat":"ארוחת ערב מדוכנים, בלי הזמנה קשיחה.","why":"מצעד וזיקוקים לפי האפליקציה. תמונות לילה, ואז הליכה חזרה למלון לפי האנרגיה."}]},{"d":"13.8","code":"LA","title":"HOLLYWOOD MOVE","hood":"Anaheim → Hollywood + Warner Bros.","stops":[{"t":"10:40","mode":"DRIVING","name":"Forest Lawn Hollywood Hills","addr":"6300 Forest Lawn Dr, Los Angeles","q":"Forest Lawn Memorial Park Hollywood Hills, 6300 Forest Lawn Dr, Los Angeles, CA","lat":34.1478,"lng":-118.323,"eat":"לא אוכלים כאן.","why":"עצירה קצרה לזכר מת׳יו פרי. 30–40 דקות, לא יותר."},{"t":"11:45","mode":"DRIVING","name":"Hollywood Boulevard","addr":"Hollywood Walk of Fame, Los Angeles","q":"Hollywood Walk of Fame, Hollywood Blvd, Los Angeles, CA","lat":34.1016,"lng":-118.3406,"eat":"עוד רגע — 25 Degrees ממש כאן.","why":"סיבוב קצר ותמונות. הכוכבים על המדרכה, TCL Chinese Theatre, וזהו."},{"t":"12:15","mode":"WALKING","name":"25 Degrees","addr":"Hollywood Roosevelt, 7000 Hollywood Blvd","q":"25 Degrees, 7000 Hollywood Blvd, Los Angeles, CA","lat":34.1018,"lng":-118.341,"eat":"המבורגר Number One עם גבינת קמומבר ובצל מקורמל.","why":"בלובי של הרוזוולט. אפלולי, אדום, ומצוין — הפוגה מהשמש של הבולוורד."},{"t":"15:00","mode":"DRIVING","name":"Warner Bros. Studio Tour Hollywood","addr":"3400 W Riverside Dr, Burbank","q":"Warner Bros. Studio Tour Hollywood, 3400 W Riverside Dr, Burbank, CA","lat":34.1487,"lng":-118.337,"eat":"קפה בקפיטריה של הסטודיו.","why":"שלוש שעות בתוך הסטים האמיתיים. יוצאים ב-13:30 עם מרווח לתנועה ולחניה."},{"t":"18:30","mode":"DRIVING","name":"Loews Hollywood Hotel","addr":"1755 N Highland Ave, Los Angeles","q":"Loews Hollywood Hotel, 1755 N Highland Ave, Los Angeles, CA","lat":34.103,"lng":-118.3387,"eat":"מנוחה לפני הערב.","why":"הבסיס לחמשת הימים הבאים. Valet, מזוודות, ונושמים."},{"t":"20:00","mode":"WALKING","name":"Mel's Drive-In Hollywood","addr":"1660 N Highland Ave, Los Angeles","q":"Mel's Drive-In, 1660 N Highland Ave, Los Angeles, CA","lat":34.1022,"lng":-118.3385,"eat":"צ׳יזבורגר, פרנץ׳ פרייז ומילקשייק. דיינר אמריקאי קלאסי.","why":"מרחק הליכה מהמלון. ערב ראשון בהוליווד — לא צריך יותר."}]},{"d":"14.8","code":"LA","title":"BEVERLY HILLS","hood":"Rodeo Drive → The Grove","stops":[{"t":"14:35","mode":"DRIVING","name":"Rodeo Drive","addr":"Beverly Hills, CA","q":"Rodeo Drive, Beverly Hills, CA","lat":34.0674,"lng":-118.4009,"eat":"עוד לא — צ׳יזקייק בערב.","why":"סיבוב, תמונות וחנויות. חונים ב-345 N Beverly Dr, שעתיים ראשונות בדרך כלל חינם."},{"t":"15:30","mode":"WALKING","name":"Beverly Hills Sign & Lily Pond","addr":"9439 Santa Monica Blvd","q":"Beverly Gardens Park Beverly Hills Sign, 9439 Santa Monica Blvd, Beverly Hills, CA","lat":34.067,"lng":-118.4,"eat":"מים. חם.","why":"מהחניה הולכים צפונה ב-N Beverly Dr, שבע עד עשר דקות. השלט והבריכה — התמונה הקלאסית."},{"t":"16:05","mode":"DRIVING","name":"The Beverly Hills Hotel","addr":"9641 Sunset Blvd, Beverly Hills","q":"The Beverly Hills Hotel, 9641 Sunset Blvd, Beverly Hills, CA","lat":34.0814,"lng":-118.4136,"eat":"אפשר לימונדה ב-Fountain Coffee Room אם עוצרים.","why":"הפינק פאלאס. מעבר וצילום מבחוץ, לא נכנסים."},{"t":"16:15","mode":"DRIVING","name":"Carolwood Drive","addr":"Holmby Hills, Los Angeles","q":"Carolwood Drive, Los Angeles, CA","lat":34.079,"lng":-118.43,"eat":"בלי עצירות.","why":"סיור נסיעה ברחובות היוקרה. רוב ״בתי הסלב״ הם שערים וגדרות — החוויה היא הנסיעה עצמה."},{"t":"16:55","mode":"DRIVING","name":"Greystone Mansion & Gardens","addr":"905 Loma Vista Dr, Beverly Hills","q":"Greystone Mansion and Gardens, 905 Loma Vista Dr, Beverly Hills, CA","lat":34.0925,"lng":-118.4005,"eat":"כלום — זה גן.","why":"רק אם השעות והעומס מאפשרים. אם התנועה מתארכת, זו התחנה הראשונה שיורדת."},{"t":"18:00","mode":"DRIVING","name":"The Grove","addr":"189 The Grove Dr, Los Angeles","q":"The Grove, 189 The Grove Dr, Los Angeles, CA","lat":34.0722,"lng":-118.3576,"eat":"דוכני Farmers Market בזמן ההמתנה.","why":"נרשמים ב-Cheesecake Factory מיד בהגעה ובודקים זמן המתנה, ואז מסתובבים."},{"t":"19:30","mode":"WALKING","name":"The Cheesecake Factory","addr":"The Grove, 189 The Grove Dr","q":"The Cheesecake Factory, The Grove, Los Angeles, CA","lat":34.0718,"lng":-118.358,"eat":"מנה אחת לשניים ופרוסת צ׳יזקייק אחת לשולחן. המנות ענקיות.","why":"אם ההמתנה בלתי אפשרית — La Piazza או דוכני Farmers Market."}]},{"d":"15.8","code":"LA","title":"BEACH RIDE","hood":"Santa Monica → Venice → Griffith","stops":[{"t":"09:30","mode":"DRIVING","name":"Santa Monica Pier","addr":"200 Santa Monica Pier, Santa Monica","q":"Santa Monica Pier, Santa Monica, CA","lat":34.0094,"lng":-118.4973,"eat":"עוד לא. אוכלים אחרי הרכיבה.","why":"חונים ב-Santa Monica Beach Parking Lot 1 North. מזח, גלגל ענק, חוף."},{"t":"10:15","mode":"BICYCLING","name":"Venice Beach Boardwalk","addr":"1800 Ocean Front Walk, Venice","q":"Venice Beach Boardwalk, Los Angeles, CA","lat":33.985,"lng":-118.4695,"eat":"מיץ טרי או גלידה על הבורדווק.","why":"משכירים אופניים על המזח ורוכבים דרומה לוונציה וחזרה. שביל האופניים צמוד לחוף כל הדרך."},{"t":"12:15","mode":"BICYCLING","name":"Third Street Promenade","addr":"Third Street Promenade, Santa Monica","q":"Third Street Promenade, Santa Monica, CA","lat":34.0163,"lng":-118.496,"eat":"ארוחת צהריים באזור Ocean Avenue או המזח.","why":"מחזירים אופניים, אוכלים, וחוזרים ללואוס למנוחה ארוכה עד הערב."},{"t":"18:30","mode":"DRIVING","name":"Griffith Observatory","addr":"2800 E Observatory Rd, Los Angeles","q":"Griffith Observatory, 2800 E Observatory Rd, Los Angeles, CA","lat":34.1184,"lng":-118.3004,"eat":"מים וחטיף — ארוחת הערב מאוחרת.","why":"מגיעים ב-Uber לשעת הזהב. תצפית, שלט הוליווד, שקיעה ואורות העיר."},{"t":"21:30","mode":"DRIVING","name":"Mel's Drive-In Hollywood","addr":"1660 N Highland Ave, Los Angeles","q":"Mel's Drive-In, 1660 N Highland Ave, Los Angeles, CA","lat":34.1022,"lng":-118.3385,"eat":"ארוחת ערב מאוחרת — בורגר ושייק, או Dave & Buster's לפי האנרגיה.","why":"מזמינים Uber חזרה ב-20:45. אם הילדים גמורים, יוצאים מגריפית׳ ב-20:15."}]},{"d":"16.8","code":"LA","title":"MELROSE DAY","hood":"Melrose → CityWalk","stops":[{"t":"11:00","mode":"DRIVING","name":"Melrose Place","addr":"Melrose Place, Los Angeles","q":"Melrose Place, Los Angeles, CA","lat":34.0838,"lng":-118.3776,"eat":"קפה בבוטיק.","why":"קפה, בוטיקים ותמונות. יום הטעינה לפני יוניברסל — לא מוסיפים אטרקציה."},{"t":"12:30","mode":"DRIVING","name":"Pink's Hot Dogs","addr":"709 N La Brea Ave, Los Angeles","q":"Pink's Hot Dogs, 709 N La Brea Ave, Los Angeles, CA","lat":34.0838,"lng":-118.3444,"eat":"צ׳ילי דוג. אחד. עומדים ואוכלים.","why":"רק אם התור סביר. מעל 20–25 דקות — אוכלים ליד המלון וזהו."},{"t":"18:50","mode":"DRIVING","name":"Universal CityWalk Hollywood","addr":"100 Universal City Plaza, Universal City","q":"Universal CityWalk Hollywood, Universal City, CA","lat":34.136,"lng":-118.3534,"eat":"שומרים מקום ל-Toothsome.","why":"מגיעים ב-Uber. סיבוב קצר לפני הארוחה."},{"t":"19:30","mode":"WALKING","name":"Toothsome Chocolate Emporium","addr":"Universal CityWalk Hollywood","q":"Toothsome Chocolate Emporium, Universal CityWalk, Universal City, CA","lat":34.1365,"lng":-118.353,"eat":"מילקשייק מפלצתי אחד לשולחן. באמת אחד.","why":"הזמנה קיימת ל-19:30. חוזרים מוקדם — מחר יוניברסל מ-07:00."}]},{"d":"17.8","code":"LA","title":"UNIVERSAL","hood":"Universal Studios Hollywood","stops":[{"t":"07:20","mode":"DRIVING","name":"Universal Studios Hollywood","addr":"100 Universal City Plaza, Universal City","q":"Universal Studios Hollywood, Universal City, CA","lat":34.1381,"lng":-118.3534,"eat":"ארוחת בוקר ב-06:30 במלון. בפארק אוכלים בצהריים.","why":"Uber ב-07:00, בידוק והתייצבות בשערים לפני הפתיחה."},{"t":"08:00","mode":"WALKING","name":"Super Nintendo World","addr":"Universal Studios Hollywood","q":"Super Nintendo World, Universal Studios Hollywood, Universal City, CA","lat":34.1372,"lng":-118.3585,"eat":"עוד לא.","why":"Mario Kart בתור הרגיל בבוקר, ושומרים את Express לסיבוב נוסף."},{"t":"11:15","mode":"WALKING","name":"Studio Tour","addr":"Universal Studios Hollywood","q":"Studio Tour, Universal Studios Hollywood, Universal City, CA","lat":34.1395,"lng":-118.3538,"eat":"אחרי הסיור — Three Broomsticks.","why":"הסטים האמיתיים, קינג קונג והמפולת. זה הדבר שאי אפשר לפספס כאן."},{"t":"12:35","mode":"WALKING","name":"Three Broomsticks","addr":"Wizarding World, Universal Studios Hollywood","q":"Three Broomsticks, Universal Studios Hollywood, Universal City, CA","lat":34.136,"lng":-118.357,"eat":"פיש אנד צ׳יפס או צלעות, ובאטרבירה קרה. Mobile Order אם זמין.","why":"אוכלים בתוך הוגסמיד. אחר כך Forbidden Journey וההיפוגריף."},{"t":"17:15","mode":"WALKING","name":"Universal CityWalk Hollywood","addr":"100 Universal City Plaza","q":"Universal CityWalk Hollywood, Universal City, CA","lat":34.136,"lng":-118.3534,"eat":"משהו קטן בדרך החוצה.","why":"קניות אחרונות, ואז Uber חזרה למלון. מחר יוצאים לסן דייגו."}]},{"d":"18.8","code":"SD","title":"COAST MOVE","hood":"Laguna Beach → Mission Bay","stops":[{"t":"10:25","mode":"DRIVING","name":"Heisler Park","addr":"375 Cliff Dr, Laguna Beach","q":"Heisler Park, 375 Cliff Dr, Laguna Beach, CA","lat":33.545,"lng":-117.792,"eat":"עוד לא. קפה וגלידה בהמשך.","why":"מחליפים רכב ב-Avis ויוצאים ב-09:00. הליכה לאורך המצוק והתצפיות."},{"t":"11:10","mode":"WALKING","name":"Laguna Main Beach","addr":"Main Beach Park, Laguna Beach","q":"Main Beach Park, Laguna Beach, CA","lat":33.5427,"lng":-117.7854,"eat":"גלידה או קפה בדרך למרכז לגונה.","why":"בריכות הגאות רק אם השפל מתאים. נעלי מים הן בונוס."},{"t":"14:00","mode":"DRIVING","name":"Bahia Resort Hotel","addr":"998 W Mission Bay Dr, San Diego","q":"Bahia Resort Hotel, 998 W Mission Bay Dr, San Diego, CA","lat":32.7702,"lng":-117.24,"eat":"ארוחת צהריים במלון או במישן ביץ׳.","why":"רישום מוקדם והשארת מזוודות. החדר ב-16:00. אחרי לגונה נותנים ל-Waze לבחור את הדרך."},{"t":"16:30","mode":"WALKING","name":"Mission Beach Boardwalk","addr":"Ocean Front Walk, San Diego","q":"Mission Beach Boardwalk, San Diego, CA","lat":32.7708,"lng":-117.252,"eat":"ארוחת ערב קרובה לפי החשק.","why":"בריכה, Mission Bay ומנוחה. שלושה לילות כאן — אפשר להוריד הילוך."}]},{"d":"19.8","code":"SD","title":"SEAWORLD","hood":"SeaWorld San Diego","stops":[{"t":"08:00","mode":"WALKING","name":"Dockside 1953","addr":"Bahia Resort Hotel, San Diego","q":"Dockside 1953, Bahia Resort Hotel, San Diego, CA","lat":32.7702,"lng":-117.2405,"eat":"ארוחת בוקר על המים, או קפה מ-Better Buzz בדרך.","why":"יוצאים ב-09:15 בהנחה שהפארק נפתח ב-10:00."},{"t":"10:00","mode":"DRIVING","name":"SeaWorld San Diego","addr":"500 Sea World Dr, San Diego","q":"SeaWorld San Diego, 500 Sea World Dr, San Diego, CA","lat":32.7645,"lng":-117.2265,"eat":"עוד לא — אוכלים אחרי מופע הדולפינים.","why":"חניית Up-Close מקצרת הליכה, לא בידוק. מתחילים ב-Explorer's Reef."},{"t":"11:15","mode":"WALKING","name":"Dolphin Stadium","addr":"SeaWorld San Diego","q":"Dolphin Point, SeaWorld San Diego, San Diego, CA","lat":32.764,"lng":-117.228,"eat":"אחרי המופע — צהריים באזור שבו הוא נגמר.","why":"מגיעים 20–25 דקות מראש. זמני המופעים בפועל קובעים את סדר היום."},{"t":"14:00","mode":"WALKING","name":"Orca Encounter","addr":"SeaWorld San Diego","q":"Orca Encounter, SeaWorld San Diego, San Diego, CA","lat":32.763,"lng":-117.225,"eat":"גלידה בחלון ההשלמות.","why":"אחר כך האזור המערבי ו-Shipwreck Rapids אם יש זמן. כרישים נשמרים לסוף."},{"t":"19:30","mode":"DRIVING","name":"Dockside 1953","addr":"Bahia Resort Hotel, San Diego","q":"Dockside 1953, Bahia Resort Hotel, San Diego, CA","lat":32.7702,"lng":-117.2405,"eat":"ארוחת ערב על המים. מומלץ שולחן בחוץ.","why":"יוצאים מהפארק ב-16:15. ים, בריכה ומקלחות לפני הארוחה."}]},{"d":"20.8","code":"SD","title":"ZOO & BELMONT","hood":"Balboa Park → Mission Beach","stops":[{"t":"08:30","mode":"DRIVING","name":"San Diego Zoo","addr":"2920 Zoo Dr, San Diego","q":"San Diego Zoo, 2920 Zoo Dr, San Diego, CA","lat":32.7353,"lng":-117.149,"eat":"ארוחת בוקר מהירה לפני היציאה.","why":"חניה בתשלום והליכה לשערים. Guided Bus Tour רק אם ההמתנה עד עשרים דקות."},{"t":"10:00","mode":"WALKING","name":"Skyfari Aerial Tram","addr":"San Diego Zoo","q":"Skyfari, San Diego Zoo, San Diego, CA","lat":32.736,"lng":-117.151,"eat":"עוד לא.","why":"עוברים לצד הצפוני מלמעלה. דובי הקוטב בונוס בלבד — אם יש עיכוב, מדלגים."},{"t":"10:30","mode":"WALKING","name":"Panda Ridge","addr":"San Diego Zoo","q":"Panda Ridge, San Diego Zoo, San Diego, CA","lat":32.737,"lng":-117.15,"eat":"עדיין לא.","why":"הפנדות הן החלק ששומרים עליו גם אם היום מתעכב."},{"t":"11:00","mode":"WALKING","name":"Africa Rocks","addr":"San Diego Zoo","q":"Africa Rocks, San Diego Zoo, San Diego, CA","lat":32.734,"lng":-117.147,"eat":"ארוחת צהריים בגן, לפי המסלול שבחרתם.","why":"המסלול המומלץ: פילים ← Africa Rocks ← קואלות. מגוון וזורם יותר מהגורילות."},{"t":"18:00","mode":"DRIVING","name":"Belmont Park","addr":"3146 Mission Blvd, San Diego","q":"Belmont Park, 3146 Mission Blvd, San Diego, CA","lat":32.7707,"lng":-117.2523,"eat":"עוד רגע — Draft ממש כאן.","why":"מתקנים, ארקייד ושקיעה על הרכבת העץ. הליכה מהמלון."},{"t":"19:30","mode":"WALKING","name":"Draft Belmont Park","addr":"3105 Ocean Front Walk, San Diego","q":"Draft South Mission, Belmont Park, San Diego, CA","lat":32.7705,"lng":-117.253,"eat":"בירה, פיצה או פיש טאקוס מול הים.","why":"בדרך כלל walk-in. אם מלא — יש מספיק חלופות במתחם."}]},{"d":"21.8","code":"LV","title":"ROAD TRIP","hood":"San Diego → Las Vegas על I-15","stops":[{"t":"09:40","mode":"DRIVING","name":"Cabazon Dinosaurs","addr":"50770 Seminole Dr, Cabazon","q":"Cabazon Dinosaurs, 50770 Seminole Dr, Cabazon, CA","lat":33.9243,"lng":-116.777,"eat":"כלום. עצירת צילום.","why":"הדינוזאורים הענקיים מ-Pee-wee's Big Adventure. חמש עשרה עד עשרים דקות ויוצאים."},{"t":"11:45","mode":"DRIVING","name":"Calico Ghost Town","addr":"36600 Ghost Town Rd, Yermo","q":"Calico Ghost Town, 36600 Ghost Town Rd, Yermo, CA","lat":34.9483,"lng":-116.864,"eat":"שתייה קרה. חם.","why":"עיירת רפאים אמיתית מתקופת הכסף. הרחוב הראשי, החנויות והמכרה אם פתוח. קצר בכוונה."},{"t":"12:35","mode":"DRIVING","name":"Eddie World","addr":"35634 Yermo Rd, Yermo","q":"Eddie World, 35634 Yermo Rd, Yermo, CA","lat":34.901,"lng":-116.828,"eat":"ממתקים, ביף ג׳רקי ושתייה קרה להמשך הדרך.","why":"תחנת הדרכים הכי מטורפת ב-I-15. עשרים דקות מספיקות."},{"t":"13:00","mode":"WALKING","name":"Peggy Sue's 50's Diner","addr":"35654 Yermo Rd, Yermo","q":"Peggy Sue's 50's Diner, 35654 Yermo Rd, Yermo, CA","lat":34.9004,"lng":-116.8271,"eat":"בורגר, מילקשייק ופאי. הארוחה המרכזית של היום.","why":"דיינר משנות החמישים עם ג׳וקבוקס ופסלי שעווה. ממש ליד אדי וורלד."},{"t":"14:45","mode":"DRIVING","name":"Alien Fresh Jerky","addr":"72242 Baker Blvd, Baker","q":"Alien Fresh Jerky, 72242 Baker Blvd, Baker, CA","lat":35.268,"lng":-116.073,"eat":"ג׳רקי בטעמים שאסור לספר עליהם.","why":"בונוס. אם יש איחור — זו העצירה הראשונה שיורדת."},{"t":"15:00","mode":"WALKING","name":"World's Tallest Thermometer","addr":"72157 Baker Blvd, Baker","q":"World's Tallest Thermometer, 72157 Baker Blvd, Baker, CA","lat":35.2677,"lng":-116.0725,"eat":"כלום. רק מסתכלים כמה חם.","why":"134 רגל, כמו השיא שנמדד בעמק המוות. צילום מהיר בלבד."},{"t":"16:45","mode":"DRIVING","name":"Vdara Hotel & Spa","addr":"2600 W Harmon Ave, Las Vegas","q":"Vdara Hotel & Spa, 2600 W Harmon Ave, Las Vegas, NV","lat":36.1075,"lng":-115.176,"eat":"אין ארוחת בוקר במלון — לתכנן בהתאם.","why":"Valet, צ׳ק-אין ומשאירים את הרכב. חלון ההגעה 16:45–17:15. מנוחה עד 18:25."},{"t":"18:35","mode":"WALKING","name":"Bellagio Conservatory","addr":"3600 S Las Vegas Blvd, Las Vegas","q":"Bellagio Conservatory & Botanical Gardens, Las Vegas, NV","lat":36.1126,"lng":-115.1767,"eat":"עוד לא.","why":"הליכה מ-Vdara. הגן מתחלף לפי עונה — זה שווה את חמש עשרה הדקות."},{"t":"19:00","mode":"WALKING","name":"Bellagio Fountains","addr":"3600 S Las Vegas Blvd, Las Vegas","q":"Fountains of Bellagio, Las Vegas, NV","lat":36.1125,"lng":-115.1742,"eat":"עדיין לא.","why":"מופע המזרקות בכפוף ללוח של אותו יום. בודקים לפני שיוצאים."},{"t":"20:00","mode":"WALKING","name":"Rainforest Cafe","addr":"MGM Grand, 3799 S Las Vegas Blvd","q":"Rainforest Cafe, MGM Grand, Las Vegas, NV","lat":36.1023,"lng":-115.1697,"eat":"ארוחת ערב בג׳ונגל. הזמנה ל-20:00.","why":"הליכה לאורך הסטריפ מהמזרקות. ביום חם — Uber וקטעי הליכה קצרים."}]},{"d":"22.8","code":"LV","title":"AREA15 & AIR","hood":"Museum of Ice Cream → מסוק לילה","stops":[{"t":"11:25","mode":"DRIVING","name":"Museum of Ice Cream","addr":"3072 Rigel Ave, AREA15 Zone 2, Las Vegas","q":"Museum of Ice Cream Las Vegas, 3072 Rigel Ave, Las Vegas, NV","lat":36.135,"lng":-115.191,"eat":"גלידה. הרבה. זה שם המקום.","why":"מחזירים את הרכב ל-Avis ב-ARIA ב-10:30 — עדיף שרק הנהג ילך. משם Uber."},{"t":"12:00","mode":"WALKING","name":"AREA15","addr":"3215 S Rancho Dr, Las Vegas","q":"AREA15, 3215 S Rancho Dr, Las Vegas, NV","lat":36.1362,"lng":-115.1927,"eat":"משהו קטן ב-Beast או בבר.","why":"הכרטיס תקף לכל היום, אבל לא חייבים למצות אותו על חשבון המנוחה."},{"t":"17:45","mode":"DRIVING","name":"Proper Eats Food Hall","addr":"ARIA Resort, 3730 S Las Vegas Blvd","q":"Proper Eats Food Hall, ARIA Resort, Las Vegas, NV","lat":36.1073,"lng":-115.1765,"eat":"ארוחה קלה — לא ממלאים לפני המסוק.","why":"אפשר גם Block 16. מקלחות והתארגנות עד 20:00."},{"t":"20:50","mode":"DRIVING","name":"Maverick Helicopters","addr":"6075 S Las Vegas Blvd, Las Vegas","q":"Maverick Helicopters, 6075 S Las Vegas Blvd, Las Vegas, NV","lat":36.079,"lng":-115.172,"eat":"כלום לפני הטיסה.","why":"לימוזינה אוספת מהלובי ב-20:15, נסיעה ישירה. דרכונים או תעודות זהות פיזיות חובה."},{"t":"22:00","mode":"DRIVING","name":"Welcome to Fabulous Las Vegas Sign","addr":"5100 S Las Vegas Blvd","q":"Welcome to Fabulous Las Vegas Sign, Las Vegas, NV","lat":36.082,"lng":-115.1728,"eat":"אחרי הטיסה — מה שבא.","why":"סיבוב לימוזינה בסטריפ וצילום בשלט. אין עצירות לפני המסוק — הכל אחריו."}]},{"d":"23.8","code":"LV","title":"STRIP MORNING","hood":"Mon Ami Gabi → Hell's Kitchen","stops":[{"t":"08:30","mode":"WALKING","name":"Mon Ami Gabi","addr":"Paris Las Vegas, 3655 S Las Vegas Blvd","q":"Mon Ami Gabi, Paris Las Vegas, Las Vegas, NV","lat":36.1123,"lng":-115.172,"eat":"ארוחת בוקר על המרפסת מול המזרקות. הזמנה ל-08:30.","why":"יוצאים ברגל מ-Vdara ב-07:55. זה הבראנץ׳ הכי טוב בסטריפ, ובשעה הזאת עוד נעים בחוץ."},{"t":"09:40","mode":"WALKING","name":"M&M'S World Las Vegas","addr":"3785 S Las Vegas Blvd, Las Vegas","q":"M&M'S World Las Vegas, 3785 S Las Vegas Blvd, Las Vegas, NV","lat":36.1043,"lng":-115.1717,"eat":"מילוי שקית בצבעים שלא קיימים בארץ.","why":"ארבע קומות. הכי כיף לילדים בכל הסטריפ."},{"t":"10:00","mode":"WALKING","name":"Coca-Cola Store Las Vegas","addr":"3785 S Las Vegas Blvd, Las Vegas","q":"Coca-Cola Store Las Vegas, 3785 S Las Vegas Blvd, Las Vegas, NV","lat":36.104,"lng":-115.1715,"eat":"מגש הטעימות של קולה מכל העולם. הביטר איטלקי — בהצלחה.","why":"צמוד ל-M&M'S. אחרי זה Uber חזרה בגלל החום."},{"t":"19:30","mode":"DRIVING","name":"Gordon Ramsay Hell's Kitchen","addr":"Caesars Palace, 3570 S Las Vegas Blvd","q":"Gordon Ramsay Hell's Kitchen, Caesars Palace, Las Vegas, NV","lat":36.1162,"lng":-115.1745,"eat":"Beef Wellington. חובה. שני מבוגרים ב-Prix Fixe והילדים à la carte.","why":"יום התאוששות מכוון — כל הבוקר רגוע בשביל הערב הזה. הזמנה ל-19:30."}]},{"d":"24.8","code":"NYC","title":"NYC TOUCHDOWN","hood":"JFK → Midtown","stops":[{"t":"19:00","mode":"DRIVING","name":"John F. Kennedy International Airport","addr":"JFK Airport, Queens, NY","q":"John F. Kennedy International Airport, Queens, NY","lat":40.6413,"lng":-73.7781,"eat":"כלום. שומרים ל-Shake Shack.","why":"טיסת American Airlines מלאס וגאס, 11:00–19:00. נחיתה, מזוודות והסעה."},{"t":"21:30","mode":"DRIVING","name":"Residence Inn New York Manhattan/Times Square","addr":"1033 Avenue of the Americas, NY 10018","q":"Residence Inn New York Manhattan Times Square, 1033 Avenue of the Americas, New York, NY","lat":40.7519,"lng":-73.984,"eat":"ארוחת בוקר כלולה מחר.","why":"שעת ההגעה היא חלון, לא הבטחה. לא לבנות על 21:00 מדויק."},{"t":"21:45","mode":"WALKING","name":"Shake Shack Times Square","addr":"691 8th Ave, New York","q":"Shake Shack Theater District, 691 8th Ave, New York, NY","lat":40.7574,"lng":-73.989,"eat":"ShackBurger, fries וקונקריט. הביס הראשון בניו יורק.","why":"אוכל מהיר, לא תוכנית מלאה. רק אם יש כוח."},{"t":"22:15","mode":"WALKING","name":"Times Square","addr":"Times Square, New York","q":"Times Square, New York, NY","lat":40.758,"lng":-73.9855,"eat":"אכלנו. עכשיו רק מסתכלים.","why":"סיבוב קצר באורות וזהו. מחר בבוקר SUMMIT."}]},{"d":"25.8","code":"NYC","title":"SUMMIT DAY","hood":"One Vanderbilt → Times Square","stops":[{"t":"09:30","mode":"WALKING","name":"SUMMIT One Vanderbilt","addr":"45 E 42nd St, New York","q":"SUMMIT One Vanderbilt, 45 E 42nd St, New York, NY","lat":40.7527,"lng":-73.9785,"eat":"עוד לא. אחרי זה קפה בבריאנט פארק.","why":"כרטיסים ל-09:30. מכנסיים נוחים ומשקפי שמש — הרצפות והתקרות מראות, וזה מסנוור."},{"t":"11:00","mode":"WALKING","name":"Grand Central Terminal","addr":"89 E 42nd St, New York","q":"Grand Central Terminal, 89 E 42nd St, New York, NY","lat":40.7527,"lng":-73.9772,"eat":"עוד לא.","why":"האולם המרכזי, התקרה עם הכוכבים, ופינת הלחישות ליד Oyster Bar. רבע שעה מספיקה."},{"t":"11:25","mode":"WALKING","name":"New York Public Library","addr":"476 5th Ave, New York","q":"New York Public Library Stephen A. Schwarzman Building, 476 5th Ave, New York, NY","lat":40.7532,"lng":-73.9822,"eat":"עדיין לא.","why":"ביקור עצמאי. הרוז ריידינג רום והאריות בכניסה — פטיינס ופורטיטיוד."},{"t":"12:05","mode":"WALKING","name":"Bryant Park","addr":"5th Ave & 42nd St, New York","q":"Bryant Park, New York, NY","lat":40.7536,"lng":-73.9832,"eat":"ארוחת צהריים קלה מהדוכנים בפארק.","why":"ממש מאחורי הספרייה. אחרי זה חוזרים למלון למנוחה ארוכה עד 17:40."},{"t":"18:05","mode":"WALKING","name":"Hard Rock Cafe New York","addr":"1501 Broadway, New York","q":"Hard Rock Cafe New York, 1501 Broadway, New York, NY","lat":40.7566,"lng":-73.9866,"eat":"לא אוכלים כאן. Rock Shop בלבד.","why":"ביקור קצר במזכרות. אם עוד קיימת הזמנת אוכל — לבטל."},{"t":"18:30","mode":"WALKING","name":"Times Square","addr":"Times Square, New York","q":"Times Square, New York, NY","lat":40.758,"lng":-73.9855,"eat":"שומרים מקום ל-Sugar Factory.","why":"טיול באורות ובחנויות. חמישים דקות ואז הולכים לארוחה."},{"t":"19:30","mode":"WALKING","name":"Sugar Factory Times Square","addr":"694 8th Ave, New York, NY 10036","q":"Sugar Factory American Brasserie, 694 8th Ave, New York, NY","lat":40.7583,"lng":-73.9887,"eat":"הגובלט הדולק — אחד לשולחן, לא לכל אחד. המנות ענקיות.","why":"הזמנה מאושרת ל-19:30. זו ארוחת הערב המרכזית של היום."}]},{"d":"26.8","code":"NYC","title":"SHOPPING DAY","hood":"Jersey Gardens → Tony's Di Napoli","stops":[{"t":"10:00","mode":"DRIVING","name":"The Mills at Jersey Gardens","addr":"651 Kapkowski Rd, Elizabeth, NJ","q":"The Mills at Jersey Gardens, 651 Kapkowski Rd, Elizabeth, NJ","lat":40.669,"lng":-74.169,"eat":"קפה בהגעה. ארוחת צהריים מהירה ב-13:00.","why":"נהג פרטי הלוך-חזור, יציאה ב-09:15, הגעה לפתיחה. ניו ג׳רזי — בלי מס על בגדים."},{"t":"13:00","mode":"WALKING","name":"Food Court, Jersey Gardens","addr":"651 Kapkowski Rd, Elizabeth, NJ","q":"The Mills at Jersey Gardens Food Court, Elizabeth, NJ","lat":40.6688,"lng":-74.1688,"eat":"ארוחת צהריים מהירה במתחם. חצי שעה, לא יותר.","why":"מתחילים מהחנויות החשובות. יום קניות נשאר יום קניות — לא מוסיפים אטרקציה."},{"t":"17:30","mode":"DRIVING","name":"Residence Inn New York Manhattan/Times Square","addr":"1033 Avenue of the Americas","q":"Residence Inn New York Manhattan Times Square, New York, NY","lat":40.7519,"lng":-73.984,"eat":"מנוחה ומדידות.","why":"יוצאים מהמול ב-16:00. אם הקניות מתארכות — מקצרים את המנוחה, לא את טוניס."},{"t":"20:00","mode":"WALKING","name":"Tony's Di Napoli","addr":"147 W 43rd St, New York","q":"Tony's Di Napoli Times Square, 147 W 43rd St, New York, NY","lat":40.7565,"lng":-73.986,"eat":"מנות משפחתיות — צ׳יקן פרמזן וריגטוני וודקה לשולחן. לחלוק לפי הרעב.","why":"יוצאים ברגל ב-19:40, צ׳ק-אין אצל המארחת ב-19:50. הזמנה ל-20:00."}]},{"d":"27.8","code":"NYC","title":"WATER & RAILS","hood":"Circle Line → High Line → Harry Potter","stops":[{"t":"09:45","mode":"DRIVING","name":"Pier 83 — Circle Line Sightseeing","addr":"W 42nd St & 12th Ave, New York","q":"Circle Line Sightseeing Cruises, Pier 83, New York, NY","lat":40.7625,"lng":-73.9995,"eat":"ארוחת בוקר במלון לפני היציאה.","why":"Uber ב-09:20. השייט Liberty Midtown נמשך שעה ולא יורד באי החירות."},{"t":"12:00","mode":"DRIVING","name":"Chelsea Market","addr":"75 9th Ave, New York","q":"Chelsea Market, 75 9th Ave, New York, NY","lat":40.7424,"lng":-74.0061,"eat":"ארוחת צהריים בשוק — לוס טאקוס נמבר וואן, או לובסטר פלייס.","why":"יורדים מהסירה ב-11:30 ולוקחים Uber. שעה ועשר דקות לאכול ולהסתובב."},{"t":"13:20","mode":"WALKING","name":"The High Line","addr":"Gansevoort St entrance, New York","q":"The High Line, Gansevoort St, New York, NY","lat":40.7396,"lng":-74.0082,"eat":"קפה קר בדרך.","why":"מדרום לצפון על פסי הרכבת הישנים. יוצא ישר מ-Chelsea Market לכיוון Hudson Yards."},{"t":"14:40","mode":"WALKING","name":"Hudson Yards & Vessel","addr":"20 Hudson Yards, New York","q":"The Vessel, Hudson Yards, New York, NY","lat":40.7538,"lng":-74.0021,"eat":"קפה, גלידה ושירותים במזגן.","why":"את הווסל רואים מבחוץ. לא חוזרים למלון באמצע — המנוחה נעשית כאן."},{"t":"16:00","mode":"DRIVING","name":"Madison Square Park","addr":"11 Madison Ave, New York","q":"Madison Square Park, New York, NY","lat":40.7424,"lng":-73.9878,"eat":"אפשר Shake Shack המקורי אם יש חשק.","why":"עשר דקות: הפלטאיירון והפארק מבחוץ, ואז לחנות של הארי פוטר."},{"t":"16:10","mode":"WALKING","name":"Harry Potter New York","addr":"935 Broadway, New York","q":"Harry Potter New York, 935 Broadway, New York, NY","lat":40.7392,"lng":-73.9895,"eat":"באטרבירה. חובה.","why":"החנות הכי גדולה בעולם. שעתיים: חנות, צילומים ובאטרבירה."},{"t":"19:00","mode":"WALKING","name":"Black Tap Craft Burgers","addr":"136 W 35th St, New York","q":"Black Tap Craft Burgers & Beer, 136 W 35th St, New York, NY","lat":40.75,"lng":-73.988,"eat":"מזמינים אוכל קודם, ושני CrazyShakes לחלוקה רק לקראת הסוף.","why":"הזמנה ל-19:00 בסניף 35th Street. הליכה חזרה למלון בעשר דקות."}]},{"d":"28.8","code":"NYC","title":"BIKE DAY","hood":"Park Lane → Central Park על אופניים","stops":[{"t":"11:30","mode":"DRIVING","name":"Park Lane New York","addr":"36 Central Park South, New York","q":"Park Lane New York, 36 Central Park S, New York, NY","lat":40.7654,"lng":-73.976,"eat":"עוד לא — צהריים ברוקפלר.","why":"צ׳ק-אאוט מהרזידנס ב-11:00, Uber XL עם המזוודות. משאירים אותן ומיד יוצאים."},{"t":"12:00","mode":"WALKING","name":"Rockefeller Center","addr":"45 Rockefeller Plaza, New York","q":"Rockefeller Center, 45 Rockefeller Plaza, New York, NY","lat":40.7587,"lng":-73.9787,"eat":"ארוחת צהריים במתחם. 45 דקות.","why":"הכיכר, האטלס ובניין ה-GE. יורדים לקומת המסעדות."},{"t":"13:00","mode":"WALKING","name":"FAO Schwarz","addr":"30 Rockefeller Plaza, New York","q":"FAO Schwarz, 30 Rockefeller Plaza, New York, NY","lat":40.759,"lng":-73.9794,"eat":"כלום. רק הפסנתר.","why":"הפסנתר הגדול מ-Big — עולים עליו. שעה ורבע."},{"t":"14:35","mode":"WALKING","name":"Apple Fifth Avenue","addr":"767 5th Ave, New York","q":"Apple Fifth Avenue, 767 5th Ave, New York, NY","lat":40.7636,"lng":-73.9729,"eat":"כלום.","why":"הליכה צפונה בשדרה החמישית. הקובייה פתוחה 24/7 — יורדים במדרגות הזכוכית."},{"t":"17:15","mode":"WALKING","name":"Grand Army Plaza — השכרת אופניים","addr":"Grand Army Plaza, New York","q":"Grand Army Plaza, 5th Ave & 59th St, New York, NY","lat":40.7645,"lng":-73.974,"eat":"עוד לא. אוכלים בפיקניק.","why":"ילדים מתחת ל-16 לא משתמשים ב-Citi Bike — מזמינים אופניים משפחתיים מראש מחברת השכרה רגילה."},{"t":"17:30","mode":"BICYCLING","name":"Central Park Loop","addr":"Central Park Drive, New York","q":"Central Park Loop, East Drive, New York, NY","lat":40.7736,"lng":-73.9712,"eat":"מים מהעגלה.","why":"רוכבים רק בכבישי האופניים המורשים, נגד כיוון השעון. שעה שלמה."},{"t":"18:30","mode":"BICYCLING","name":"Sheep Meadow","addr":"Central Park, New York","q":"Sheep Meadow, Central Park, New York, NY","lat":40.7714,"lng":-73.9755,"eat":"פיקניק על הדשא — אוכל שאספנו בדרך.","why":"מחזירים אופניים ב-18:15 ואוספים אוכל. שעה וחצי על המדשאה מול קו הרקיע."}]},{"d":"29.8","code":"NYC","title":"HEART OF THE PARK","hood":"Central Park → The Smith","stops":[{"t":"09:20","mode":"WALKING","name":"The Mall & Literary Walk","addr":"Central Park, New York","q":"The Mall, Central Park, New York, NY","lat":40.7716,"lng":-73.9722,"eat":"עוד לא.","why":"יוצאים ברגל מ-Park Lane ב-09:00. השדרה עם עצי הבוקיצה — הפרומנדה הכי יפה בפארק."},{"t":"09:30","mode":"WALKING","name":"Bethesda Terrace","addr":"Central Park, New York","q":"Bethesda Terrace, Central Park, New York, NY","lat":40.7742,"lng":-73.9709,"eat":"עדיין לא.","why":"המזרקה, הטרסה והתקרה המרוצפת מתחתיה. משם ישר לסירות."},{"t":"10:00","mode":"WALKING","name":"Central Park Boathouse","addr":"E 72nd St & Park Dr N, New York","q":"Loeb Boathouse, Central Park, New York, NY","lat":40.7756,"lng":-73.9683,"eat":"כלום. חותרים.","why":"סירות משוטים לשעה. פועלות לפי מזג האוויר ועל בסיס מקום פנוי."},{"t":"11:15","mode":"WALKING","name":"Belvedere Castle","addr":"Central Park, New York","q":"Belvedere Castle, Central Park, New York, NY","lat":40.7797,"lng":-73.9692,"eat":"מים.","why":"יורדים מהסירה והולכים צפונה. הטירה, התצפית ו-Turtle Pond מלמעלה."},{"t":"12:20","mode":"WALKING","name":"Strawberry Fields","addr":"Central Park West & 72nd St, New York","q":"Strawberry Fields, Central Park, New York, NY","lat":40.7756,"lng":-73.9755,"eat":"עוד קצת סבלנות.","why":"הליכה לצד המערבי. פסיפס Imagine ומול זה בניין הדקוטה."},{"t":"13:30","mode":"WALKING","name":"The Smith — Lincoln Square","addr":"1900 Broadway, New York","q":"The Smith Lincoln Square, 1900 Broadway, New York, NY","lat":40.7719,"lng":-73.9822,"eat":"המק אנד צ׳יז עם הפירורים, וסטייק פריטס. הזמנה מאושרת ל-13:30, ארבעה סועדים.","why":"זה הסניף הנכון — מול לינקולן סנטר. אחרי זה חוזרים למלון לשלוש שעות מנוחה."},{"t":"18:30","mode":"WALKING","name":"Columbus Circle","addr":"Columbus Circle, New York","q":"Columbus Circle, New York, NY","lat":40.7681,"lng":-73.9819,"eat":"שומרים ל-Whole Foods.","why":"סיבוב קצר בטיים וורנר סנטר. הפינה הדרום-מערבית של הפארק."},{"t":"19:00","mode":"WALKING","name":"Whole Foods Market Columbus Circle","addr":"10 Columbus Cir, New York","q":"Whole Foods Market Columbus Circle, 10 Columbus Cir, New York, NY","lat":40.7683,"lng":-73.9829,"eat":"ערב חופשי מהדוכנים — כל אחד לוקח מה שבא לו.","why":"קליל וגמיש. אם יש יותר אנרגיה, בוחרים מסעדה אחרת במתחם."}]},{"d":"30.8","code":"NYC","title":"FIFTH AVENUE","hood":"Tiffany → Serendipity → הגן","stops":[{"t":"09:30","mode":"WALKING","name":"Tiffany & Co. — The Landmark","addr":"727 5th Ave, New York","q":"Tiffany & Co. The Landmark, 727 5th Ave, New York, NY","lat":40.7629,"lng":-73.9738,"eat":"אפשר קפה ב-Blue Box Cafe בקומה העליונה.","why":"מתחילים את השדרה החמישית מלמעלה ויורדים דרומה. שעתיים ורבע לכל החנויות."},{"t":"10:30","mode":"WALKING","name":"Nike NYC House of Innovation","addr":"650 5th Ave, New York","q":"Nike NYC House of Innovation 000, 650 5th Ave, New York, NY","lat":40.7594,"lng":-73.9761,"eat":"עוד לא.","why":"שש קומות. אחרי זה עוד חנויות לפי החשק, ואז מונית קצרה או הליכה לסרנדיפיטי."},{"t":"12:30","mode":"WALKING","name":"Serendipity 3","addr":"225 E 60th St, New York","q":"Serendipity 3, 225 E 60th St, New York, NY","lat":40.7627,"lng":-73.9649,"eat":"Frrrozen Hot Chocolate. אחד לשניים, באמת. וסנדוויץ׳ לפני.","why":"הסניף המקורי. הזמנה ל-12:30. קיטש מוחלט — ומגיע לו."},{"t":"14:30","mode":"WALKING","name":"Central Park Zoo","addr":"E 64th St & 5th Ave, New York","q":"Central Park Zoo, New York, NY","lat":40.7678,"lng":-73.9718,"eat":"גלידה בגן.","why":"אופציונלי לפי האנרגיה. אחרי סי וורלד וגן החיות של סן דייגו — זה החלק הכי פחות חיוני במסלול."},{"t":"19:00","mode":"WALKING","name":"Burger Joint","addr":"Thompson Central Park, 119 W 56th St, New York","q":"Burger Joint, Le Parker Meridien, 119 W 56th St, New York, NY","lat":40.7638,"lng":-73.9779,"eat":"צ׳יזבורגר וצ׳יפס. אין תפריט אחר וזה כל הקסם.","why":"walk-in בלבד, מאחורי הווילון בלובי — להגיע יחסית מוקדם. סיום קז׳ואלי ורגוע לטיול."}]},{"d":"31.8","code":"NYC","title":"THE LAST BITE","hood":"Park Lane → JFK","stops":[{"t":"11:00","mode":"WALKING","name":"Park Lane New York","addr":"36 Central Park South, New York","q":"Park Lane New York, 36 Central Park S, New York, NY","lat":40.7654,"lng":-73.976,"eat":"ארוחת בוקר אחרונה, אריזה ובדיקה של החדר.","why":"צ׳ק-אאוט עד 11:00 ושמירת מזוודות במלון. לא מתכננים אטרקציה מרוחקת בבוקר האחרון."},{"t":"11:30","mode":"WALKING","name":"Central Park South","addr":"Central Park South, New York","q":"Central Park South, New York, NY","lat":40.766,"lng":-73.977,"eat":"ארוחת צהריים קלה ליד המלון. הביס האחרון.","why":"זמן חופשי רגוע ליד המלון. שעתיים לנשום את העיר לפני הטיסה."},{"t":"14:00","mode":"DRIVING","name":"John F. Kennedy International Airport","addr":"JFK Airport, Queens, NY","q":"John F. Kennedy International Airport, Queens, NY","lat":40.6413,"lng":-73.7781,"eat":"אכלנו מספיק. Eat the damn thing — עשינו את זה.","why":"יוצאים מ-Park Lane ב-14:00, הגעה משוערת 15:00. טיסה ב-18:00 לברצלונה, קונקשן לישראל ב-1.9."}]}]};
+
+var CITY = {
+  ANA:{name:'ANAHEIM',     full:'Anaheim · California',    acc:'#b39dff'},
+  LA :{name:'LOS ANGELES', full:'Los Angeles · California',acc:'#ff9e2c'},
+  SD :{name:'SAN DIEGO',   full:'San Diego · California',  acc:'#2ce0ff'},
+  LV :{name:'LAS VEGAS',   full:'Las Vegas · Nevada',      acc:'#ffd400'},
+  NYC:{name:'NEW YORK',    full:'New York City',           acc:'#ff2d95'}
+};
+var CITY_ORDER = ['ANA','LA','SD','LV','NYC'];
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* one flat reel of every stop, in trip order */
+var REEL = [];
+TRIP.days.forEach(function(d, di){
+  d.stops.forEach(function(st, si){
+    REEL.push({st:st, day:d, di:di, si:si, city:d.code});
+  });
+});
+var N = REEL.length;
+
+var S = { i:0, playing:false, timer:0, chapTimer:0, lastCity:null, wallOn:false, filter:'ALL' };
+var DWELL = 8200, CHAPTER = 2900;
+
+/* ---------- photographs, keyless: Wikipedia by coordinates ---------- */
+var photoCache = {};
+function photoFor(st){
+  var key = st.lat.toFixed(4) + ',' + st.lng.toFixed(4);
+  if(photoCache[key] !== undefined) return Promise.resolve(photoCache[key]);
+  var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*' +
+            '&generator=geosearch&ggscoord=' + st.lat + '%7C' + st.lng +
+            '&ggsradius=700&ggslimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=1400';
+  return fetch(url).then(function(r){ return r.json(); }).then(function(j){
+    var pages = (j.query && j.query.pages) ? j.query.pages : {};
+    var best = null;
+    Object.keys(pages).forEach(function(k){
+      var p = pages[k];
+      if(p.thumbnail && p.thumbnail.source){
+        if(!best || (p.index||99) < (best.index||99)) best = p;
+      }
+    });
+    var u = best ? best.thumbnail.source : null;
+    photoCache[key] = u;
+    return u;
+  }).catch(function(){ photoCache[key] = null; return null; });
+}
+
+/* ---------- the card ---------- */
+function cardHTML(){
+  return '<div class="plate"><div class="img"></div><div class="tone"></div>' +
+         '<div class="lift"></div><div class="sink"></div></div>' +
+         '<div class="idx"></div>' +
+         '<div class="tblock">' +
+           '<div class="col l">' +
+             '<div class="rule"></div>' +
+             '<div class="kicker"><span class="city"></span><span class="dot">/</span>' +
+               '<span class="when"></span></div>' +
+             '<div class="name"></div>' +
+             '<div class="addr"></div>' +
+           '</div>' +
+           '<div class="col r">' +
+             '<div class="says">NIR SAYS</div>' +
+             '<div class="quote"></div>' +
+             '<div class="dish"></div>' +
+           '</div>' +
+         '</div>';
+}
+var layers = [], live = 0;
+(function(){
+  var i, el;
+  for(i=0;i<2;i++){
+    el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = cardHTML();
+    $('cinema').appendChild(el);
+    layers.push(el);
+  }
+})();
+
+function accentFor(code){ return (CITY[code] || CITY.NYC).acc; }
+
+function nameHTML(name){
+  var w = name.split(' ');
+  if(w.length >= 2 && w.length <= 4){
+    var last = w.pop();
+    return esc(w.join(' ')) + ' <em>' + esc(last) + '</em>';
+  }
+  return esc(name);
+}
+
+function paint(i){
+  var r = REEL[i], st = r.st, c = CITY[r.city] || CITY.NYC;
+  var next = layers[1 - live], q = function(sel){ return next.querySelector(sel); };
+
+  document.documentElement.style.setProperty('--acc', c.acc);
+
+  q('.idx').textContent = String(i+1).padStart(3,'0');
+  q('.city').textContent = c.name;
+  q('.when').textContent = r.day.d + ' · ' + st.t + ' · ' + r.day.title;
+  var nm = q('.name'), L = st.name.length;
+  nm.className = 'name ' + (L <= 13 ? 's1' : L <= 24 ? 's2' : L <= 36 ? 's3' : 's4');
+  nm.innerHTML = nameHTML(st.name);
+  q('.addr').textContent = st.addr;
+  q('.quote').textContent = st.why;
+  q('.dish').textContent = st.eat;
+
+  var plate = q('.plate'), img = q('.img');
+  plate.classList.add('blank');
+  plate.style.setProperty('--rot', ((i * 37) % 360) + 'deg');
+  img.style.backgroundImage = 'none';
+
+  photoFor(st).then(function(u){
+    if(!u) return;
+    if(REEL[S.i] !== r) return;                  /* we already moved on */
+    var pre = new Image();
+    pre.onload = function(){
+      if(REEL[S.i] !== r) return;
+      img.style.backgroundImage = 'url("' + u + '")';
+      plate.classList.remove('blank');
+    };
+    pre.src = u;
+  });
+
+  layers[live].classList.remove('live');
+  next.classList.add('live');
+  live = 1 - live;
+
+  $('cNow').textContent = i + 1;
+  $('cCity').textContent = c.full;
+  $('trackFill').style.width = ((i+1) / N * 100) + '%';
+  markRail(r.di);
+
+  /* keep the next two warm */
+  if(REEL[i+1]) photoFor(REEL[i+1].st);
+  if(REEL[i+2]) photoFor(REEL[i+2].st);
+}
+
+/* ---------- chapter cards between cities ---------- */
+function chapterFor(code, then){
+  var c = CITY[code] || CITY.NYC;
+  var stops = REEL.filter(function(r){ return r.city === code; }).length;
+  var days  = TRIP.days.filter(function(d){ return d.code === code; });
+  var span  = days.length ? (days[0].d + ' – ' + days[days.length-1].d) : '';
+  document.documentElement.style.setProperty('--acc', c.acc);
+  $('chNum').textContent = 'CHAPTER ' + (CITY_ORDER.indexOf(code)+1) + ' OF ' + CITY_ORDER.length;
+  $('chBig').textContent = c.name;
+  $('chSub').textContent = span + '  ·  ' + stops + ' PLACES';
+  var el = $('chapter');
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  clearTimeout(S.chapTimer);
+  S.chapTimer = setTimeout(function(){ el.classList.remove('on'); then(); }, CHAPTER);
+}
+
+function go(i, opts){
+  opts = opts || {};
+  if(i < 0) i = N - 1;
+  if(i >= N) i = 0;
+  S.i = i;
+  clearTimeout(S.timer);
+  var city = REEL[i].city;
+  var needChapter = !opts.silent && city !== S.lastCity;
+  S.lastCity = city;
+  function after(){
+    paint(i);
+    if(S.playing) S.timer = setTimeout(function(){ go(S.i + 1); }, DWELL);
+  }
+  if(needChapter) chapterFor(city, after);
+  else { $('chapter').classList.remove('on'); after(); }
+}
+
+function play(on){
+  S.playing = on;
+  $('bPlay').textContent = on ? '❚❚' : '▶';
+  $('bPlay').title = on ? 'עצור' : 'נגן';
+  $('deckLbl').textContent = on ? 'AUTOPLAY' : 'PAUSED';
+  clearTimeout(S.timer);
+  if(on) S.timer = setTimeout(function(){ go(S.i + 1); }, DWELL);
+}
+
+/* ---------- the day rail ---------- */
+function buildRail(){
+  var h = '';
+  TRIP.days.forEach(function(d, di){
+    h += '<button data-day="' + di + '">' + esc(d.d) + ' · ' + esc(d.code) + '</button>';
+  });
+  $('rail').innerHTML = h;
+  Array.prototype.forEach.call($('rail').querySelectorAll('button'), function(b){
+    b.onclick = function(){
+      var di = +b.dataset.day, k;
+      for(k = 0; k < N; k++) if(REEL[k].di === di){ go(k); break; }
+    };
+  });
+}
+function markRail(di){
+  var rail = $('rail');
+  Array.prototype.forEach.call(rail.querySelectorAll('button'), function(b){
+    var on = +b.dataset.day === di;
+    b.classList.toggle('on', on);
+    if(on) rail.scrollLeft = b.offsetLeft - (rail.clientWidth - b.offsetWidth)/2;
+  });
+}
+
+/* ---------- the wall ---------- */
+var wallBuilt = false, io = null;
+function buildWall(){
+  if(wallBuilt) return;
+  wallBuilt = true;
+  var h = '';
+  REEL.forEach(function(r, i){
+    var c = CITY[r.city] || CITY.NYC;
+    h += '<div class="tile blank" data-i="' + i + '" data-city="' + r.city + '" ' +
+         'style="--tc:' + c.acc + ';--rot:' + ((i*53)%180) + 'deg;--gx:' +
+         (28 + (i*29)%56) + '%;--gy:' + (12 + (i*17)%40) + '%">' +
+      '<div class="bar"></div><div class="ti"></div><div class="tt"></div><div class="tg"></div>' +
+      '<div class="no">' + String(i+1).padStart(2,'0') + '</div>' +
+      '<div class="body">' +
+        '<div class="cty">' + esc(c.name) + '</div>' +
+        '<h3>' + esc(r.st.name) + '</h3>' +
+        '<div class="meta">' + esc(r.day.d) + ' · ' + esc(r.st.t) + '</div>' +
+        '<div class="eat">' + esc(r.st.eat) + '</div>' +
+      '</div></div>';
+  });
+  $('grid').innerHTML = h;
+  $('wCount').textContent = N;
+
+  var fh = '<button data-f="ALL" class="on">ALL</button>';
+  CITY_ORDER.forEach(function(code){
+    fh += '<button data-f="' + code + '">' + esc(CITY[code].name) + '</button>';
+  });
+  $('wFilters').innerHTML = fh;
+  Array.prototype.forEach.call($('wFilters').querySelectorAll('button'), function(b){
+    b.onclick = function(){
+      S.filter = b.dataset.f;
+      Array.prototype.forEach.call($('wFilters').querySelectorAll('button'), function(x){
+        x.classList.toggle('on', x === b);
+      });
+      var shown = 0;
+      Array.prototype.forEach.call($('grid').children, function(t){
+        var vis = (S.filter === 'ALL' || t.dataset.city === S.filter);
+        t.style.display = vis ? '' : 'none';
+        if(vis) shown++;
+      });
+      $('wCount').textContent = shown;
+      if(S.filter !== 'ALL')
+        document.documentElement.style.setProperty('--acc', CITY[S.filter].acc);
+    };
+  });
+
+  Array.prototype.forEach.call($('grid').children, function(t){
+    t.onclick = function(){ closeWall(); go(+t.dataset.i, {silent:true}); };
+  });
+
+  /* photographs load as tiles come into view */
+  if('IntersectionObserver' in window){
+    io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        var t = e.target; io.unobserve(t);
+        photoFor(REEL[+t.dataset.i].st).then(function(u){
+          if(!u) return;
+          var pre = new Image();
+          pre.onload = function(){
+            t.querySelector('.ti').style.backgroundImage = 'url("' + u + '")';
+            t.classList.remove('blank');
+          };
+          pre.src = u;
+        });
+      });
+    }, {rootMargin:'400px'});
+    Array.prototype.forEach.call($('grid').children, function(t){ io.observe(t); });
+  }
+}
+function openWall(){
+  buildWall();
+  S.wallOn = true;
+  play(false);
+  $('wall').classList.add('on');
+}
+function closeWall(){
+  S.wallOn = false;
+  $('wall').classList.remove('on');
+  document.documentElement.style.setProperty('--acc', accentFor(REEL[S.i].city));
+}
+
+/* ---------- wiring ---------- */
+function start(fromIntro){
+  $('intro').classList.add('gone');
+  S.lastCity = null;
+  go(0);
+  play(true);
+}
+$('bStart').onclick = function(){ start(true); };
+$('bAll').onclick   = function(){ $('intro').classList.add('gone'); S.lastCity = REEL[0].city; paint(0); openWall(); };
+$('bPlay').onclick  = function(){ play(!S.playing); };
+$('bNext').onclick  = function(){ play(false); go(S.i + 1, {silent:true}); };
+$('bPrev').onclick  = function(){ play(false); go(S.i - 1, {silent:true}); };
+$('bWall').onclick  = openWall;
+$('wClose').onclick = closeWall;
+
+document.addEventListener('keydown', function(e){
+  if(!$('intro').classList.contains('gone')){
+    if(e.code === 'Space' || e.code === 'Enter'){ e.preventDefault(); start(); }
+    return;
+  }
+  if(e.code === 'Space'){ e.preventDefault(); play(!S.playing); }
+  if(e.code === 'ArrowRight'){ play(false); go(S.i + 1, {silent:true}); }
+  if(e.code === 'ArrowLeft'){ play(false); go(S.i - 1, {silent:true}); }
+  if(e.code === 'KeyW'){ S.wallOn ? closeWall() : openWall(); }
+  if(e.code === 'Escape'){ closeWall(); }
+});
+
+/* swipe on phones */
+(function(){
+  var x0 = null, y0 = null;
+  $('cinema').addEventListener('touchstart', function(e){
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, {passive:true});
+  $('cinema').addEventListener('touchend', function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)){
+      play(false);
+      go(S.i + (dx < 0 ? 1 : -1), {silent:true});
+    }
+    x0 = null;
+  }, {passive:true});
+})();
+
+buildRail();
+document.documentElement.style.setProperty('--acc', CITY.NYC.acc);
+
+})();
+</script>
+</body>
+</html>
